@@ -152,12 +152,17 @@ class App
 			if ($this->container["settings"]["options"]["showErrors"] ?? false)
 			{
 				$e = error_get_last();
-				if( $e['type'] == E_ERROR || $e['type'] == E_PARSE || $e['type'] == E_CORE_ERROR || $e['type'] == E_COMPILE_ERROR || $e['type'] == E_USER_ERROR )
+				if ($e)
 				{
-			//		echo "Error type:\t {$e['type']}<br>";
-					echo "Error message:\t {$e['message']}<br>";
-					echo "Error file:\t {$e['file']}<br>";
-					echo "Error line:\t {$e['line']}<br>";
+					$type = $e["type"] ?? null;
+					if( $type == E_ERROR || $type == E_PARSE || $type == E_CORE_ERROR || $type == E_COMPILE_ERROR || $type == E_USER_ERROR )
+					{
+						echo "<br>";
+						echo "Error type:\t {$e['type']}<br>";
+						echo "Error message:\t {$e['message']}<br>";
+						echo "Error file:\t {$e['file']}<br>";
+						echo "Error line:\t {$e['line']}<br>";
+					}
 				}
 			}
 		});
