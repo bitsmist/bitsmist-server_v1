@@ -43,7 +43,7 @@ class LoggingExceptionHandler extends MiddlewareBase
 
 		switch (get_class($exception))
 		{
-		case "Bitsmist\\v1\Plugins\Exception\HttpException":
+		case "Bitsmist\\v1\Exception\HttpException":
 			break;
 		default:
 			$this->add("code = " . $exception->getCode() . ", message = ". $exception->getMessage() . ", file = " . $exception->getFile() . ", lineno = " . $exception->getLine());

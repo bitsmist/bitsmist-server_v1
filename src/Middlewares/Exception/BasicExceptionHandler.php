@@ -37,7 +37,7 @@ class BasicExceptionHandler extends MiddlewareBase
 
 		switch (get_class($exception))
 		{
-		case "Bitsmist\\v1\Plugins\Exception\HttpException":
+		case "Bitsmist\\v1\Exception\HttpException":
 			$resultCode = $exception->getCode();
 			$resultMessage = $exception->getMessage();
 			break;
