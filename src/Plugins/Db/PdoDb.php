@@ -614,6 +614,10 @@ class PdoDb extends DbBase
 		case "@CURRENT_DATETIME@":
 			$ret = $field . " " . $comparer . " " . $this->getDBDateTime();
 			break;
+		case "@SESSION_USER_ID@":
+			$ret = $field . " " . $comparer . " :" . $this->escape($parameter);
+			$params[$parameter] = $_SESSION["USER"]["ID"];
+			break;
 		default:
 			$ret = $field . " " . $comparer . " :" . $this->escape($parameter);
 			if ($comparer == "like")
