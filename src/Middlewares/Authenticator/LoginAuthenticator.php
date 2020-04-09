@@ -38,8 +38,6 @@ class LoginAuthenticator extends MiddlewareBase
 		$dbs = $request->getAttribute("databases");
 		$spec = $request->getAttribute("appInfo")["spec"];
 
-		$dbName = array_keys($spec["databases"])[0];
-		$db = $dbs->getPlugins()[$dbName];
 		$data = null;
 		$resultCount = 0;
 		$totalCount = 0;
@@ -55,7 +53,13 @@ class LoginAuthenticator extends MiddlewareBase
 			// Found
 			session_start();
 			session_regenerate_id(TRUE);
-			$_SESSION["USER"] = $data[0];
+			$user_id = $spec["options"]["userId"] ?? "";
+			$user_name = $spec["options"]["userName"] ?? "";
+			$_SESSION["USER"] = [
+				"ID" => $data[0][$user_id],
+				"NAME" => $data[0][$user_name],
+				"DATA" => $data[0],
+			];
 			$this->logger->notice("User logged in. user={user}", ["method"=>__METHOD__, "user"=>implode(",",$data[0])]);
 		}
 		else
