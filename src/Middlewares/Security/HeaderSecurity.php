@@ -49,12 +49,21 @@ class HeaderSecurity extends MiddlewareBase
 			throw new HttpException(HttpException::ERRNO_PARAMETER, HttpException::ERRMSG_PARAMETER);
 		}
 
-		// check origin
+		// check origin is set
+		if ($spec["options"]["needOrigin"] ?? false)
+		{
+			if (!isset($headers["origin"][0]))
+			{
+				$this->logger->alert("Invalid origin: no origin", ["method"=>__METHOD__]);
+				throw new HttpException(HttpException::ERRNO_PARAMETER, HttpException::ERRMSG_PARAMETER);
+			}
+		}
+
+		// check origin is valid
 		//if (isset($headers["HTTP_ORIGIN"][0]) && !in_array($headers["HTTP_ORIGIN"][0], $origins))
 		if (isset($headers["origin"][0]) && !in_array($headers["origin"][0], $origins))
 		{
-			//$this->logger->alert("Invalid origin: origin = {origin}", ["method"=>__METHOD__, "origin"=>$headers["HTTP_ORIGIN"][0]]);
-			$this->logger->alert("Invalid origin: origin = {origin}", ["method"=>__METHOD__, "origin"=>$headers["origin"][0]]);
+			$this->logger->alert("Invalid origin: origin = {origin}", ["method"=>__METHOD__, "origin"=>$headers["HTTP_ORIGIN"][0]]);
 			throw new HttpException(HttpException::ERRNO_PARAMETER, HttpException::ERRMSG_PARAMETER);
 		}
 
