@@ -58,7 +58,7 @@ class ModelUtil
 	{
 
 		$id = $request->getAttribute("appInfo")["args"]["id"];
-		$gets = $request->getQueryParams();
+		$gets = $request->getAttribute("queryParams");
 		$dbs = $request->getAttribute("databases")->getPlugins();
 		$spec = $request->getAttribute("appInfo")["spec"];
 		$fields = $spec["fields"] ?? "*";
@@ -90,6 +90,7 @@ class ModelUtil
 					// Get total count
 					$this->totalCount = $db->getTotalCount();
 				}
+
 				break;
 			default:
 				$data = $db->selectById($spec["databases"][$dbName]["tableName"], $fields, [ "field" => $spec["databases"][$dbName]["keyName"], "value" => $id ]);
@@ -173,7 +174,7 @@ class ModelUtil
 	{
 
 		$id = $request->getAttribute("appInfo")["args"]["id"];
-		$gets = $request->getQueryParams();
+		$gets = $request->getAttribute("queryParams");
 		$posts = $request->getParsedBody();
 		$spec = $request->getAttribute("appInfo")["spec"];
 		$fields = $spec["fields"] ?? "*";
@@ -228,7 +229,7 @@ class ModelUtil
 	{
 
 		$id = $request->getAttribute("appInfo")["args"]["id"];
-		$gets = $request->getQueryParams();
+		$gets = $request->getAttribute("queryParams");
 		$posts = $request->getParsedBody();
 		$spec = $request->getAttribute("appInfo")["spec"];
 		$searches = $spec["searches"] ?? null;
