@@ -90,13 +90,17 @@ class EventController extends PluginBase implements RequestHandlerInterface
 		$request = $request->withAttribute("appInfo", $this->container["appInfo"]);
 		$request = $request->withAttribute("loader", $this->container["loader"]);
 		$request = $request->withAttribute("databases", $this->container["dbManager"]);
+		$request = $request->withAttribute("loggers", $this->container["loggerManager"]);
 		$request = $request->withAttribute("resultCode", HttpException::ERRNO_NONE);
 		$request = $request->withAttribute("resultMessage", HttpException::ERRMSG_NONE);
+		$request = $request->withAttribute("queryParams", $request->getQueryParams());
 
+		/*
 		$container = new Container();
 		$container["appInfo"] = $this->container["appInfo"];
 		$container["loader"] = $this->container["loader"];
 		$container["databases"] = $this->container["dbManager"];
+		 */
 		$response = $this->container["response"];
 
 		foreach ($this->handlers as $eventName => $manager)
