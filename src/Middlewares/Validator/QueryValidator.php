@@ -35,7 +35,7 @@ class QueryValidator extends MiddlewareBase
 
 		$spec = $request->getAttribute("appInfo")["spec"];
 		$params = $spec["parameters"] ?? array();
-		$gets = $request->getQueryParams();
+		$gets = $request->getAttribute("queryParams");
 
 		foreach ($params as $param => $spec)
 		{
@@ -54,7 +54,7 @@ class QueryValidator extends MiddlewareBase
 			}
 		}
 
-		return $request->withQueryParams($gets);
+		return $request;
 
 	 }
 

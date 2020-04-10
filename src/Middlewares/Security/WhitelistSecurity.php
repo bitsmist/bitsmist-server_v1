@@ -36,7 +36,7 @@ class WhitelistSecurity extends MiddlewareBase
 		$spec = $request->getAttribute("appInfo")["spec"];
 		$method = strtolower($request->getMethod());
 		$resource = $request->getAttribute("appInfo")["args"]["resource"];
-		$gets = $request->getQueryParams();
+		$gets = $request->getAttribute("queryParams");
 		$posts = $request->getParsedBody();
 		$whitelist = $spec["parameters"];
 

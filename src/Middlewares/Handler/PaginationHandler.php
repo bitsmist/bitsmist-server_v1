@@ -33,7 +33,7 @@ class PaginationHandler extends MiddlewareBase
 	{
 
 		$method = strtolower($request->getMethod());
-		$gets = $request->getQueryParams();
+		$gets = $request->getAttribute("queryParams");
 		$totalCount = $request->getAttribute("totalCount");
 		$limit = 0;
 		$offset = 0;

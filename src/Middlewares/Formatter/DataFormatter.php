@@ -36,7 +36,7 @@ class DataFormatter extends MiddlewareBase
 		$spec = $request->getAttribute("appInfo")["spec"];
 		$fields = $spec["fields"] ?? array();
 		$params = $spec["parameters"] ?? array();
-		$gets = $request->getQueryParams();
+		$gets = $request->getAttribute("queryParams");
 		$data = $request->getAttribute("data");
 
 		if ($data)

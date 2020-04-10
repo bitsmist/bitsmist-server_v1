@@ -35,7 +35,7 @@ class QueryFormatter extends MiddlewareBase
 
 		$spec = $request->getAttribute("appInfo")["spec"];
 		$params = $spec["parameters"] ?? array();
-		$gets = $request->getQueryParams();
+		$gets = $request->getAttribute("queryParams");
 
 		foreach ($params as $param => $spec)
 		{

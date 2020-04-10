@@ -34,7 +34,7 @@ class LoginAuthenticator extends MiddlewareBase
 	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
 	{
 
-		$gets = $request->getQueryParams();
+		$gets = $request->getAttribute("queryParams");
 		$dbs = $request->getAttribute("databases");
 		$spec = $request->getAttribute("appInfo")["spec"];
 
