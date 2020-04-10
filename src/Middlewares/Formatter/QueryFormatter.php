@@ -48,7 +48,7 @@ class QueryFormatter extends MiddlewareBase
 			}
 		}
 
-		return $request->withQueryParams($gets);
+		return $request->withAttribute("queryParams", $gets);
 
 	 }
 
