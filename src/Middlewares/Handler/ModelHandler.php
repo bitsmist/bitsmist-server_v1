@@ -33,12 +33,30 @@ class ModelHandler extends MiddlewareBase
 	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
 	{
 
-		$data = null;
+		$spec = $request->getAttribute("appInfo")["spec"];
+		$options = $spec["options"] ?? array();
 		$method = strtolower($request->getMethod());
+		$data = null;
 
 		$model = new ModelUtil();
 		$methodName = $method . "Items";
 		$data = $model->$methodName($request, $response);
+
+		// Retry with another offset when offset is too big.
+		if (array_key_exists("retryOffset", $options))
+		{
+			if ($method == "get")
+			{
+				$gets = $request->getAttribute("queryParams");
+				$offset = $gets["_offset"] ?? 0;
+				if ($offset > $model->totalCount)
+				{
+					$gets["_offset"] = $options["retryOffset"];
+					$request = $request->withAttribute("queryParams", $gets);
+					$data = $model->$methodName($request, $response);
+				}
+			}
+		}
 
 		$request = $request->withAttribute("data", $data);
 		$request = $request->withAttribute("resultCount", $model->resultCount);
