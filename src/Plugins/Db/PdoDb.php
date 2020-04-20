@@ -650,6 +650,10 @@ class PdoDb extends DbBase
 		case "@CURRENT_DATETIME@":
 			$ret = $this->getDBDateTime();
 			break;
+		case "@SESSION_USER_ID@":
+			$ret = ":" . $this->escape($key);
+			$params[$key] = $_SESSION["USER"]["ID"] ?? null;
+			break;
 		default:
 			$ret = ":" . $this->escape($key);
 			$params[$key] = $item["value"] ?? null;
