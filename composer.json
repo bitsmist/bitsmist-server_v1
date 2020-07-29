@@ -1,5 +1,5 @@
 {
-    "name": "bitsmist/bitsmist_v1",
+    "name": "bitsmist/bitsmist-server_v1",
     "type": "framework",
     "description": "PHP WebAPI Server Framework v1.",
 	"keywords": ["php", "framework", "webapi", "bitsmist"],
