@@ -34,7 +34,28 @@ class StartSession extends MiddlewareBase
 
 		if (session_status() != PHP_SESSION_ACTIVE)
 		{
+			// Cookie options
+			$cookieOptions = $request->getAttribute("appInfo")["settings"]["options"]["session"]["cookieOptions"] ?? null;
+			if ($cookieOptions)
+			{
+				session_set_cookie_params($cookieOptions);
+			}
+
+			// Session name
+			$sessionName = $request->getAttribute("appInfo")["settings"]["options"]["session"]["name"] ?? null;
+			if ($sessionName)
+			{
+				session_name($sessionName);
+			}
+
+			// Start session
 			session_start();
+
+			// Overwrites existing session cookie options
+			if ($cookieOptions)
+			{
+				setcookie(session_name(), session_id(), $cookieOptions);
+			}
 		}
 
 	}
