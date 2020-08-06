@@ -34,18 +34,33 @@ class StartSession extends MiddlewareBase
 
 		if (session_status() != PHP_SESSION_ACTIVE)
 		{
-			// Cookie options
-			$cookieOptions = $request->getAttribute("appInfo")["settings"]["options"]["session"]["cookieOptions"] ?? null;
-			if ($cookieOptions)
-			{
-				session_set_cookie_params($cookieOptions);
-			}
-
-			// Session name
+			// Set session name
 			$sessionName = $request->getAttribute("appInfo")["settings"]["options"]["session"]["name"] ?? null;
 			if ($sessionName)
 			{
 				session_name($sessionName);
+			}
+
+			// Set cookie options
+			$cookieOptions = $request->getAttribute("appInfo")["settings"]["options"]["session"]["cookieOptions"] ?? null;
+			if ($cookieOptions)
+			{
+				if(PHP_VERSION_ID < 70300)
+				{
+					$currentOptions = session_get_cookie_params();
+					$newOptions = array_merge($currentOptions, $cookieOptions);
+					session_set_cookie_params(
+						$newOptions["lifetime"],
+						$newOptions["path"],
+						$newOptions["domain"],
+						$newOptions["secure"],
+						$newOptions["httponly"]
+					);
+				}
+				else
+				{
+					session_set_cookie_params($cookieOptions);
+				}
 			}
 
 			// Start session
@@ -54,7 +69,22 @@ class StartSession extends MiddlewareBase
 			// Overwrites existing session cookie options
 			if ($cookieOptions)
 			{
-				setcookie(session_name(), session_id(), $cookieOptions);
+				if(PHP_VERSION_ID < 70300)
+				{
+					setcookie(
+						session_name(),
+						session_id(),
+						$newOptions["lifetime"],
+						$newOptions["path"],
+						$newOptions["domain"],
+						$newOptions["secure"],
+						$newOptions["httponly"]
+					);
+				}
+				else
+				{
+					setcookie(session_name(), session_id(), $cookieOptions);
+				}
 			}
 		}
 
