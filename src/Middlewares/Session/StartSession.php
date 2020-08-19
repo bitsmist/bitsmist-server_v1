@@ -45,10 +45,11 @@ class StartSession extends MiddlewareBase
 			$cookieOptions = $request->getAttribute("appInfo")["settings"]["options"]["session"]["cookieOptions"] ?? null;
 			if ($cookieOptions)
 			{
+				$currentOptions = session_get_cookie_params();
+				$newOptions = array_merge($currentOptions, $cookieOptions);
+
 				if(PHP_VERSION_ID < 70300)
 				{
-					$currentOptions = session_get_cookie_params();
-					$newOptions = array_merge($currentOptions, $cookieOptions);
 					session_set_cookie_params(
 						$newOptions["lifetime"],
 						$newOptions["path"],
@@ -59,7 +60,7 @@ class StartSession extends MiddlewareBase
 				}
 				else
 				{
-					session_set_cookie_params($cookieOptions);
+					session_set_cookie_params($newOptions);
 				}
 			}
 
@@ -69,12 +70,16 @@ class StartSession extends MiddlewareBase
 			// Overwrites existing session cookie options
 			if ($cookieOptions)
 			{
+				// Converts lifetime option to expires option
+				$newOptions["expires"] = ( $newOptions["lifetime"] ? time() + $newOptions["lifetime"] : $newOptions["lifetime"] );
+				unset($newOptions["lifetime"]);
+
 				if(PHP_VERSION_ID < 70300)
 				{
 					setcookie(
 						session_name(),
 						session_id(),
-						$newOptions["lifetime"],
+						$newOptions["expires"],
 						$newOptions["path"],
 						$newOptions["domain"],
 						$newOptions["secure"],
@@ -83,7 +88,7 @@ class StartSession extends MiddlewareBase
 				}
 				else
 				{
-					setcookie(session_name(), session_id(), $cookieOptions);
+					setcookie(session_name(), session_id(), $newOptions);
 				}
 			}
 		}
