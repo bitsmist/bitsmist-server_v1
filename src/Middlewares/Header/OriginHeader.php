@@ -32,7 +32,7 @@ class OriginHeader extends MiddlewareBase
 	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
 	{
 
-		$origins = $request->getAttribute("appInfo")["settings"]["options"]["allowedOrigins"];
+		$origins = $request->getAttribute("appInfo")["settings"]["options"]["allowedOrigins"] ?? null;
 		$headers = $request->getHeaders();
 
 		//if (array_key_exists("HTTP_ORIGIN", $headers))

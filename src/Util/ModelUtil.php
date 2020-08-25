@@ -117,7 +117,7 @@ class ModelUtil
 	public function postItems(ServerRequestInterface $request, ResponseInterface $response): ?array
 	{
 
-		$id = $request->getAttribute("appInfo")["args"]["id"];
+		$id = $request->getAttribute("appInfo")["args"]["id"] ?? null;
 		$posts = $request->getParsedBody();
 		$spec = $request->getAttribute("appInfo")["spec"];
 		$fields = $spec["fields"] ?? "*";
@@ -136,6 +136,7 @@ class ModelUtil
 					switch ($id)
 					{
 					case "new":
+					case null:
 						$item = $this->buildFields($fields, $posts["items"][$i]);
 						$cnt += $db->insert($spec["databases"][$dbName]["tableName"], $item);
 						break;

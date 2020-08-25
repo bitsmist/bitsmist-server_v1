@@ -32,7 +32,7 @@ class ExtraHeader extends MiddlewareBase
 	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
 	{
 
-		$extras = $request->getAttribute("appInfo")["settings"]["options"]["extraHeaders"];
+		$extras = $request->getAttribute("appInfo")["settings"]["options"]["extraHeaders"] ?? null;
 		if ($extras)
 		{
 			foreach ($extras as $key => $value)
