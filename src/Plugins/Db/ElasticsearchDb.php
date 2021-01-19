@@ -253,7 +253,7 @@ class ElasticsearchDb extends DbBase
 
 		if ($this->props["lastResponse"])
 		{
-			$result = $this->props["lastResponse"]["hits"]["total"];
+			$result = $this->props["lastResponse"]["hits"]["total"]["value"];
 		}
 
 		return $result;
