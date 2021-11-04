@@ -114,7 +114,7 @@ class ElasticsearchDb extends DbBase
 		$cmd["method"] = "GET";
 		$cmd["index"] = $tableName;
 		$cmd["id"] = $id["value"];
-		$cmd["url"] = $this->props["dsn"] . "/" . $cmd["index"] . "/doc/" . $cmd["id"];
+		$cmd["url"] = $this->props["dsn"] . "/" . $cmd["index"] . "/_doc/" . $cmd["id"];
 
 		return $this->getData($cmd);
 
@@ -130,7 +130,7 @@ class ElasticsearchDb extends DbBase
 		$cmd["method"] = "POST";
 		$cmd["index"] = $tableName;
 		$cmd["id"] = $id;
-		$cmd["url"]  = $this->props["dsn"] . "/" . $cmd["index"] . "/doc/";
+		$cmd["url"]  = $this->props["dsn"] . "/" . $cmd["index"] . "/_doc/";
 
 		return $this->execute($cmd);
 
@@ -146,7 +146,7 @@ class ElasticsearchDb extends DbBase
 		$cmd["method"] = "POST";
 		$cmd["index"] = $tableName;
 		$cmd["id"] = $id;
-		$cmd["url"] = $this->props["dsn"] . "/" . $cmd["index"] . "/doc/" . $cmd["id"];
+		$cmd["url"] = $this->props["dsn"] . "/" . $cmd["index"] . "/_doc/" . $cmd["id"];
 
 		return $this->execute($cmd);
 
@@ -178,7 +178,7 @@ class ElasticsearchDb extends DbBase
 		$cmd["method"] = "PUT";
 		$cmd["index"] = $tableName;
 		$cmd["id"] = $id["value"];
-		$cmd["url"] = $this->props["dsn"] . "/" . $cmd["index"] . "/doc/" . $cmd["id"];
+		$cmd["url"] = $this->props["dsn"] . "/" . $cmd["index"] . "/_doc/" . $cmd["id"];
 
 		return $this->execute($cmd);
 
@@ -209,7 +209,7 @@ class ElasticsearchDb extends DbBase
 		$cmd["method"] = "DELETE";
 		$cmd["index"] = $tableName;
 		$cmd["id"] = $id["value"];
-		$cmd["url"] = $this->props["dsn"] . "/" . $cmd["index"] . "/doc/" . $cmd["id"];
+		$cmd["url"] = $this->props["dsn"] . "/" . $cmd["index"] . "/_doc/" . $cmd["id"];
 
 		return $this->execute($cmd);
 
