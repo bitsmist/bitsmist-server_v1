@@ -231,7 +231,6 @@ class ModelUtil
 
 		$id = $request->getAttribute("appInfo")["args"]["id"];
 		$gets = $request->getAttribute("queryParams");
-		$posts = $request->getParsedBody();
 		$spec = $request->getAttribute("appInfo")["spec"];
 		$searches = $spec["searches"] ?? null;
 
@@ -340,10 +339,9 @@ class ModelUtil
 			foreach ($fields as $key => &$item)
 			{
 				$parameter = $item["parameter"] ?? $key;
-				$value = $parameters[$parameter] ?? null;
-				if ($value !== null)
+				if (array_key_exists($parameter, $parameters))
 				{
-					$item["value"] = $value;
+					$item["value"] = $parameters[$parameter];
 				}
 			}
 		}

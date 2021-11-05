@@ -252,13 +252,10 @@ class PdoDb extends DbBase
 		$parmas = array();
 		foreach ($fields as $key => $item)
 		{
-			if ($item["value"] ?? null)
-			{
-				$key = $this->escape($key);
+			$key = $this->escape($key);
 
-				$sql1 .= $key . ",";
-				$sql2 .= $this->buildParam($key, $item, $params) . ",";
-			}
+			$sql1 .= $key . ",";
+			$sql2 .= $this->buildParam($key, $item, $params) . ",";
 		}
 		$sql1 = rtrim($sql1, ",");
 		$sql2 = rtrim($sql2, ",");
@@ -284,11 +281,8 @@ class PdoDb extends DbBase
 		$fieldParams = array();
 		foreach ($fields as $key => $item)
 		{
-			if ($item["value"] ?? null)
-			{
-				$key = $this->escape($key);
-				$field .= $key . "=" .$this->buildParam($key, $item, $fieldParams) . ",";
-			}
+			$key = $this->escape($key);
+			$field .= $key . "=" .$this->buildParam($key, $item, $fieldParams) . ",";
 		}
 		$field = rtrim($field, ",");
 

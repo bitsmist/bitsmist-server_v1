@@ -253,7 +253,14 @@ class ElasticsearchDb extends DbBase
 
 		if ($this->props["lastResponse"])
 		{
-			$result = $this->props["lastResponse"]["hits"]["total"]["value"];
+			if (array_key_exists("value", $this->props["lastResponse"]["hits"]["total"])
+			{
+				$result = $this->props["lastResponse"]["hits"]["total"]["value"];
+			}
+			else
+			{
+				$result = $this->props["lastResponse"]["hits"]["total"];
+			}
 		}
 
 		return $result;
@@ -413,10 +420,7 @@ class ElasticsearchDb extends DbBase
 
 		foreach ($fields as $key => $item)
 		{
-			if ($item["value"] ?? null)
-			{
-				$query[$key] = $this->buildValue($key, $item);
-			}
+			$query[$key] = $this->buildValue($key, $item);
 		}
 
 		return array($query);
@@ -433,10 +437,7 @@ class ElasticsearchDb extends DbBase
 		$query["script"] = "";
 		foreach ($fields as $key => $item)
 		{
-			if ($item["value"] ?? null)
-			{
-				$query["script"] .= "ctx._source." . $key . "=\"" . $this->buildValue($key, $item) . "\";";
-			}
+			$query["script"] .= "ctx._source." . $key . "=\"" . $this->buildValue($key, $item) . "\";";
 		}
 
 		// Key
@@ -464,10 +465,7 @@ class ElasticsearchDb extends DbBase
 
 		foreach ($fields as $key => $item)
 		{
-			if ($item["value"] ?? null)
-			{
-				$query[$key] = $this->buildValue($key, $item);
-			}
+			$query[$key] = $this->buildValue($key, $item);
 		}
 
 		return array($query);
