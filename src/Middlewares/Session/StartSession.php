@@ -66,31 +66,6 @@ class StartSession extends MiddlewareBase
 
 			// Start session
 			session_start();
-
-			// Overwrites existing session cookie options
-			if ($cookieOptions)
-			{
-				// Converts lifetime option to expires option
-				$newOptions["expires"] = ( $newOptions["lifetime"] ? time() + $newOptions["lifetime"] : $newOptions["lifetime"] );
-				unset($newOptions["lifetime"]);
-
-				if(PHP_VERSION_ID < 70300)
-				{
-					setcookie(
-						session_name(),
-						session_id(),
-						$newOptions["expires"],
-						$newOptions["path"],
-						$newOptions["domain"],
-						$newOptions["secure"],
-						$newOptions["httponly"]
-					);
-				}
-				else
-				{
-					setcookie(session_name(), session_id(), $newOptions);
-				}
-			}
 		}
 
 	}
