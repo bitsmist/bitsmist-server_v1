@@ -253,7 +253,7 @@ class ElasticsearchDb extends DbBase
 
 		if ($this->props["lastResponse"])
 		{
-			if (array_key_exists("value", $this->props["lastResponse"]["hits"]["total"])
+			if (array_key_exists("value", $this->props["lastResponse"]["hits"]["total"]))
 			{
 				$result = $this->props["lastResponse"]["hits"]["total"]["value"];
 			}
