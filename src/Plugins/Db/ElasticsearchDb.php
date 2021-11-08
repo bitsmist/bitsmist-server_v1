@@ -12,7 +12,7 @@
 namespace Bitsmist\v1\Plugins\Db;
 
 use Bitsmist\v1\Exception\HttpException;
-use Bitsmist\v1\Plugins\Base\DbBase;
+use Bitsmist\v1\Plugins\Base\BaseDb;
 
 // -----------------------------------------------------------------------------
 //	Class
@@ -21,7 +21,7 @@ use Bitsmist\v1\Plugins\Base\DbBase;
 /**
  * Elasticsearch database class.
  */
-class ElasticsearchDb extends DbBase
+class ElasticsearchDb extends BaseDb
 {
 
 	// -------------------------------------------------------------------------

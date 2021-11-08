@@ -11,7 +11,7 @@
 
 namespace Bitsmist\v1\Plugins\Db;
 
-use Bitsmist\v1\Plugins\Base\DbBase;
+use Bitsmist\v1\Plugins\Db\BaseDb;
 use PDO;
 
 // -----------------------------------------------------------------------------
@@ -21,7 +21,7 @@ use PDO;
 /**
  * PDO database class.
  */
-class PdoDb extends DbBase
+class PdoDb extends BaseDb
 {
 
 	// -------------------------------------------------------------------------

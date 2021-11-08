@@ -11,7 +11,7 @@
 
 namespace Bitsmist\v1\Plugins\Logger;
 
-use Bitsmist\v1\Plugins\Base\LoggerBase;
+use Bitsmist\v1\Plugins\Logger\BaseLogger;
 
 // -----------------------------------------------------------------------------
 //	Class
@@ -20,7 +20,7 @@ use Bitsmist\v1\Plugins\Base\LoggerBase;
 /**
  * File logger class.
  */
-class FileLogger extends LoggerBase
+class FileLogger extends BaseLogger
 {
 
 	// -------------------------------------------------------------------------

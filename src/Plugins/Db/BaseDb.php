@@ -9,7 +9,7 @@
  */
 // =============================================================================
 
-namespace Bitsmist\v1\Plugins\Base;
+namespace Bitsmist\v1\Plugins\Db;
 
 use Bitsmist\v1\Plugins\Base\PluginBase;
 
@@ -18,9 +18,9 @@ use Bitsmist\v1\Plugins\Base\PluginBase;
 // -----------------------------------------------------------------------------
 
 /**
- * Database base class.
+ * Base Database class.
  */
-class DbBase extends PluginBase
+class BaseDb extends PluginBase
 {
 
 	// -------------------------------------------------------------------------

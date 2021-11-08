@@ -9,7 +9,7 @@
  */
 // =============================================================================
 
-namespace Bitsmist\v1\Plugins\Base;
+namespace Bitsmist\v1\Plugins\Logger;
 
 use Psr\Log\AbstractLogger;
 use Psr\Log\LogLevel;
@@ -19,9 +19,9 @@ use Psr\Log\LogLevel;
 // -----------------------------------------------------------------------------
 
 /**
- * Logger class.
+ * Base Logger class.
  */
-class LoggerBase extends AbstractLogger
+class BaseLogger extends AbstractLogger
 {
 
 	// -------------------------------------------------------------------------

@@ -9,11 +9,13 @@
  */
 // =============================================================================
 
-namespace Bitsmist\v1\Loader;
+namespace Bitsmist\v1\Plugins\Loader;
 
 use Bitsmist\v1\Exception\HttpException;
-use Bitsmist\v1\Manager\MiddlewareManager;
-use Bitsmist\v1\Manager\PluginManager;
+/* use Bitsmist\v1\Manager\MiddlewareManager; */
+/* use Bitsmist\v1\Manager\PluginManager; */
+use Bitsmist\v1\Middlewares\Manager\MiddlewareManager;
+use Bitsmist\v1\Plugins\Manager\PluginManager;
 use Bitsmist\v1\Plugins\Base\PluginBase;
 use Exception;
 use Psr\Http\Message\ResponseInterface;
@@ -42,7 +44,7 @@ class DefaultLoader extends PluginBase
 	{
 
 		$container = $this->options["container"];
-		$className = $container["settings"]["request"]["class"];
+		$className = $container["settings"]["request"]["className"];
 
 		$body = $_POST;
 		if (strtolower($_SERVER["REQUEST_METHOD"]) == "put")
@@ -73,7 +75,7 @@ class DefaultLoader extends PluginBase
 	{
 
 		$container = $this->options["container"];
-		$className = $container["settings"]["response"]["class"];
+		$className = $container["settings"]["response"]["className"];
 
 		return new $className();
 
