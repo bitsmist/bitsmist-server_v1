@@ -184,7 +184,7 @@ class App
 			$options = array(
 				"container" => $c,
 			);
-			$className = $c["settings"]["loader"]["class"];
+			$className = $c["settings"]["loader"]["className"];
 
 			return new $className($options);
 		};

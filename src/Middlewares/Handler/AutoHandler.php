@@ -41,12 +41,12 @@ class AutoHandler extends MiddlewareBase
 
 		if ($loader->isHandlerExists())
 		{
-			$className = $appInfo["settings"]["middlewares"][$this->options["handlers"]["custom"]]["class"];
+			$className = $appInfo["settings"]["middlewares"][$this->options["handlers"]["custom"]]["className"];
 			$options = null;
 		}
 		else
 		{
-			$className = $appInfo["settings"]["middlewares"][$this->options["handlers"]["default"]]["class"];
+			$className = $appInfo["settings"]["middlewares"][$this->options["handlers"]["default"]]["className"];
 			$options = null;
 		}
 
