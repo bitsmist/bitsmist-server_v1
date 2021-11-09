@@ -83,7 +83,7 @@ class MiddlewareManager
 	public function create(?array $options = null): MiddlewareBase
 	{
 
-		$className = $options["class"] ?? null;
+		$className = $options["className"] ?? null;
 		$middleware = new $className($options);
 		if (method_exists($middleware, "setLogger"))
 		{

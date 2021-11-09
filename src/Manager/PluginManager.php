@@ -81,7 +81,7 @@ class PluginManager
 	public function create(?array $options = null)
 	{
 
-		$className = $options["class"] ?? null;
+		$className = $options["className"] ?? null;
 		$plugin = new $className($options);
 		if (method_exists($plugin, "setLogger"))
 		{
