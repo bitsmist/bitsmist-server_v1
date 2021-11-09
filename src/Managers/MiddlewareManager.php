@@ -9,7 +9,7 @@
  */
 // =============================================================================
 
-namespace Bitsmist\v1\Manager;
+namespace Bitsmist\v1\Managers;
 
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
 use Psr\Container\ContainerInterface;
