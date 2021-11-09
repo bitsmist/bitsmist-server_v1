@@ -12,7 +12,7 @@
 namespace Bitsmist\v1\Plugins\Controller;
 
 use Bitsmist\v1\Exception\HttpException;
-use Bitsmist\v1\Manager\MiddlewareManager;
+use Bitsmist\v1\Managers\MiddlewareManager;
 use Bitsmist\v1\Plugins\Base\PluginBase;
 use Pimple\Container;
 use Psr\Http\Message\ResponseInterface;
