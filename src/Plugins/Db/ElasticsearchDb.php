@@ -12,7 +12,7 @@
 namespace Bitsmist\v1\Plugins\Db;
 
 use Bitsmist\v1\Exception\HttpException;
-use Bitsmist\v1\Plugins\Base\BaseDb;
+use Bitsmist\v1\Plugins\Db\BaseDb;
 
 // -----------------------------------------------------------------------------
 //	Class
