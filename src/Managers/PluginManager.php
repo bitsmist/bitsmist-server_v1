@@ -58,9 +58,20 @@ class PluginManager
 
 		$this->container = $container;
 
-		if (is_array($settings)){
-			foreach ($settings as $title => $options)
+		if (is_array($settings["uses"])){
+			foreach ($settings["uses"] as $key => $value)
 			{
+				if (is_array($value))
+				{
+					$title = $key;
+					$options = $value;
+				}
+				else
+				{
+					$title = $value;
+					$options = null;
+				}
+
 				$this->add($title, $options);
 			}
 		}
@@ -120,8 +131,13 @@ class PluginManager
 	{
 
 		$options["container"] = $this->container;
+		$setting = $this->container["appInfo"]["spec"][$title];
+		if ($options)
+		{
+			$setting = array_merge($setting, $options);
+		}
 
-		$plugin = $this->create($options);
+		$plugin = $this->create($setting);
 
 		if ($plugin)
 		{

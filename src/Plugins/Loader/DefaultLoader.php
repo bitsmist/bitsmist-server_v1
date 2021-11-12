@@ -101,9 +101,7 @@ class DefaultLoader extends PluginBase
 			}
 		});
 
-		$uri = $_SERVER["REQUEST_URI"];
-		$method = $_SERVER["REQUEST_METHOD"];
-		$routeinfo = $dispatcher->dispatch($method, $uri);
+		$routeinfo = $dispatcher->dispatch($_SERVER["REQUEST_METHOD"], $_SERVER["REQUEST_URI"]);
 
 		$args = null;
 		switch ($routeinfo[0])
@@ -111,12 +109,10 @@ class DefaultLoader extends PluginBase
 		case \FastRoute\Dispatcher::NOT_FOUND:
 			header("HTTP/1.1 404 OK\r\n");
 			throw new HttpException(HttpException::ERRNO_PARAMETER_INVALIDROUTE, HttpException::ERRMSG_PARAMETER_INVALIDROUTE);
-			//exit;
 			break;
 		case \FastRoute\Dispatcher::METHOD_NOT_ALLOWED:
 			header("HTTP/1.1 405 OK\r\n");
 			throw new HttpException(HttpException::ERRNO_PARAMETER_INVALIDMETHOD, HttpException::ERRMSG_PARAMETER_INVALIDMETHOD);
-			//exit;
 			break;
 		case \FastRoute\Dispatcher::FOUND:
 			$routeName = $routeinfo[1];
@@ -146,8 +142,8 @@ class DefaultLoader extends PluginBase
 		// Error handler manager
 		$container["exceptionManager"] = function($c)
 		{
-			$manager = new MiddlewareManager($c);
-			$c["loader"]->loadMiddlewares("exceptions", $manager);
+			$spec = $this->options["container"]["appInfo"]["spec"]["exceptionManager"];
+			$manager = new MiddlewareManager($c, $spec);
 
 			return $manager;
 		};
@@ -155,18 +151,17 @@ class DefaultLoader extends PluginBase
 		// Logger manager
 		$container["loggerManager"] = function($c)
 		{
-			$manager = new PluginManager($c);
-			$c["loader"]->loadPlugins("loggers", $manager);
+			$spec = $this->options["container"]["appInfo"]["spec"]["loggerManager"];
+			$manager = new PluginManager($c, $spec);
 
 			return $manager;
-
 		};
 
 		// Db manager
 		$container["dbManager"] = function($c)
 		{
-			$manager = new PluginManager($c);
-			$c["loader"]->loadPlugins("databases", $manager);
+			$spec = $this->options["container"]["appInfo"]["spec"]["dbManager"];
+			$manager = new PluginManager($c, $spec);
 
 			return $manager;
 		};
@@ -174,8 +169,8 @@ class DefaultLoader extends PluginBase
 		// Controller manager
 		$container["controllerManager"] = function($c)
 		{
-			$manager = new PluginManager($c);
-			$c["loader"]->loadPlugins("controllers", $manager);
+			$spec = $this->options["container"]["appInfo"]["spec"]["controllerManager"];
+			$manager = new PluginManager($c, $spec);
 
 			return $manager;
 		};
@@ -183,8 +178,8 @@ class DefaultLoader extends PluginBase
 		// Emitter manager
 		$container["emitterManager"] = function($c)
 		{
-			$manager = new PluginManager($c);
-			$c["loader"]->loadPlugins("emitters", $manager);
+			$spec = $this->options["container"]["appInfo"]["spec"]["emitterManager"];
+			$manager = new PluginManager($c, $spec);
 
 			return $manager;
 		};
@@ -205,7 +200,6 @@ class DefaultLoader extends PluginBase
 
 		$globalSettings = $this->loadGlobalSettings();
 		$localSettings = $this->loadLocalSettings();
-		//$ret = array_merge($globalSettings, $localSettings);
 		$ret = $this->mergeArray($globalSettings, $localSettings);
 
 		return $ret;
@@ -242,56 +236,6 @@ class DefaultLoader extends PluginBase
 		$spec = $this->loadLocalSpec($appInfo, $spec, $method, $resource);
 
 		return $spec;
-
-	}
-
-	// -----------------------------------------------------------------------------
-
-	/**
-	 * Load middlewares from the settings.
-	 *
-	 * @param	$categoryName	Middleware category.
-	 * @param	$manager		Middleware manager.
-	 * @param	$spec			Spec given to the middleware.
-	 */
-	public function loadMiddlewares(string $categoryName, MiddlewareManager $manager, ?array $spec = null)
-	{
-
-		if (!$spec)
-		{
-			$spec = $this->options["container"]["appInfo"]["spec"];
-		}
-
-		$specs = $spec[$categoryName] ?? array();
-		foreach ($specs as $middlewareName => $options)
-		{
-			$this->loadMiddleware($middlewareName, $options, $manager);
-		}
-
-	}
-
-	// -----------------------------------------------------------------------------
-
-	/**
-	 * Load plugins from the settings.
-	 *
-	 * @param	$categoryName	Plugin category.
-	 * @param	$manager		Plugin manager.
-	 * @param	$spec			Spec given to the plugin.
-	 */
-	public function loadPlugins(string $categoryName, PluginManager $manager, ?array $spec = null)
-	{
-
-		if (!$spec)
-		{
-			$spec = $this->options["container"]["appInfo"]["spec"];
-		}
-
-		$specs = $spec[$categoryName] ?? array();
-		foreach ($specs as $pluginName => $options)
-		{
-			$this->loadPlugin($categoryName, $pluginName, $options, $manager);
-		}
 
 	}
 
@@ -348,6 +292,66 @@ class DefaultLoader extends PluginBase
 		if (is_readable($fileName))
 		{
 			$ret = true;
+		}
+
+		return $ret;
+
+	}
+
+	// -----------------------------------------------------------------------------
+
+	/**
+	 * Merge two arrays. Overwrites $arr1 with $arr2.
+	 *
+	 * @param	$arr1			Array1.
+	 * @param	$arr2			Array2.
+	 *
+	 * @return	Mergeed array.
+	 */
+	public function mergeArray(array $arr1, array $arr2, int $depth = 2): array
+	{
+
+		$ret = array();
+
+		// Iterate each keys in arr1
+		foreach ($arr1 as $key1 => $val1)
+		{
+			if (is_array($val1))
+			{
+				$val2 = $arr2[$key1] ?? null;
+				if (!$val2)
+				{
+					$ret[$key1] = $val1;
+				}
+				else if (is_array($val2))
+				{
+					if ($depth == 0)
+					{
+						$ret[$key1] = $val2;
+					}
+					else
+					{
+						$ret[$key1] = $this->mergeArray($val1, $val2, $depth-1);
+					}
+				}
+				else
+				{
+					$ret[$key1] = $val2;
+				}
+			}
+			else
+			{
+				$ret[$key1] = $arr2[$key1] ?? $val1;
+			}
+		}
+
+		// Add keys exists only in arr2
+		foreach ($arr2 as $key2 => $val2)
+		{
+			if (!array_key_exists($key2, $arr1))
+			{
+				$ret[$key2] = $val2;
+			}
 		}
 
 		return $ret;
@@ -433,11 +437,7 @@ class DefaultLoader extends PluginBase
 			$newSpec = require $fileName;
 			if (is_array($newSpec))
 			{
-				/*
-				$ret = array_merge($spec, $newSpec);
-				$ret["middlewares"] = array_merge($spec["middlewares"] ?? array(), $newSpec["middlewares"] ?? array());
-				 */
-				$ret = $this->mergeArray($spec, $newSpec);
+				$ret = $this->mergeArray($spec, $newSpec, 1);
 				$ret["lastSpecFile"] = $method . ($resource ? "_" : "") . $resource;
 			}
 		}
@@ -468,115 +468,8 @@ class DefaultLoader extends PluginBase
 			$newSpec = require $fileName;
 			if (is_array($newSpec))
 			{
-				/*
-				$ret = array_merge($spec, $newSpec);
-				$ret["middlewares"] = array_merge($spec["middlewares"] ?? array(), $newSpec["middlewares"] ?? array());
-				 */
-				$ret = $this->mergeArray($spec, $newSpec);
+				$ret = $this->mergeArray($spec, $newSpec, 1);
 				$ret["lastSpecFile"] = $method . ($resource ? "_" : "") . $resource;
-			}
-		}
-
-		return $ret;
-
-	}
-
-	// -----------------------------------------------------------------------------
-
-	/**
-	 * Load a middleware.
-	 *
-	 * @param	$response		Response.
-	 * @param	$options		Options.
-	 * @param	$manager		Middleware manager.
-	 */
-	private function loadMiddleware(string $middlewareName, array $options, MiddlewareManager $manager)
-	{
-
-		$settings = $this->options["container"]["appInfo"]["settings"]["middlewares"];
-
-		$setting = $settings[$middlewareName];
-		$setting = array_merge($setting, $options);
-		//$setting = $this->mergeArray($setting, $options);
-		$manager->add($middlewareName, $setting);
-
-	}
-
-	// -----------------------------------------------------------------------------
-
-	/**
-	 * Load a Plugin.
-	 *
-	 * @param	$categoryName	Plugin category.
-	 * @param	$pluginName		Plugin name.
-	 * @param	$options		Options.
-	 * @param	$manager		Plugin manager.
-	 */
-	private function loadPlugin(string $categoryName, string $pluginName, array $options, PluginManager $manager)
-	{
-
-		$settings = $this->options["container"]["appInfo"]["settings"][$categoryName];
-
-		$setting = $settings[$pluginName];
-		$setting = array_merge($setting, $options);
-		//$setting = $this->mergeArray($setting, $options);
-		$manager->add($pluginName, $setting);
-
-	}
-
-	// -----------------------------------------------------------------------------
-
-	/**
-	 * Merge two arrays. Overwrites $arr1 with $arr2.
-	 *
-	 * @param	$arr1			Array1.
-	 * @param	$arr2			Array2.
-	 *
-	 * @return	Mergeed array.
-	 */
-	private function mergeArray(array $arr1, array $arr2, int $depth = 2): array
-	{
-
-		$ret = array();
-
-		// Iterate each keys in arr1
-		foreach ($arr1 as $key1 => $val1)
-		{
-			if (is_array($val1))
-			{
-				$val2 = $arr2[$key1] ?? null;
-				if (!$val2)
-				{
-					$ret[$key1] = $val1;
-				}
-				else if (is_array($val2))
-				{
-					if ($depth == 0)
-					{
-						$ret[$key1] = $val2;
-					}
-					else
-					{
-						$ret[$key1] = $this->mergeArray($val1, $val2, $depth-1);
-					}
-				}
-				else
-				{
-					$ret[$key1] = $val2;
-				}
-			}
-			else
-			{
-				$ret[$key1] = $arr2[$key1] ?? $val1;
-			}
-		}
-
-		// Add keys exists only in arr2
-		foreach ($arr2 as $key2 => $val2)
-		{
-			if (!array_key_exists($key2, $arr1))
-			{
-				$ret[$key2] = $val2;
 			}
 		}
 

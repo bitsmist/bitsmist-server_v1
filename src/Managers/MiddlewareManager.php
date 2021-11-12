@@ -60,9 +60,20 @@ class MiddlewareManager
 
 		$this->container = $container;
 
-		if (is_array($settings)){
-			foreach ($settings as $title => $options)
+		if (is_array($settings["uses"])){
+			foreach ($settings["uses"] as $key => $value)
 			{
+				if (is_array($value))
+				{
+					$title = $key;
+					$options = $value;
+				}
+				else
+				{
+					$title = $value;
+					$options = null;
+				}
+
 				$this->add($title, $options);
 			}
 		}
@@ -121,7 +132,13 @@ class MiddlewareManager
 	public function add(string $title, ?array $options): MiddlewareBase
 	{
 
-		$middleware = $this->create($options);
+		$setting = $this->container["appInfo"]["spec"][$title];
+		if ($options)
+		{
+			$setting = array_merge($setting, $options);
+		}
+
+		$middleware = $this->create($setting);
 
 		if ($middleware)
 		{

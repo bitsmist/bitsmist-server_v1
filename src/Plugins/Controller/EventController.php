@@ -65,8 +65,16 @@ class EventController extends PluginBase implements RequestHandlerInterface
 		// Load event handlers
 		foreach ($options["events"] as $eventName => $spec)
 		{
-			$this->handlers[$eventName] = new MiddlewareManager($this->container);
-			$this->container["loader"]->loadMiddlewares($eventName, $this->handlers[$eventName], $options["events"]);
+			$settings = array("uses" => $spec);
+			$this->handlers[$eventName] = new MiddlewareManager($this->container, $settings);
+
+			$specs = $options["events"][$eventName] ?? array();
+			foreach ($specs as $middlewareName => $options)
+			{
+				$setting = $this->container["appInfo"]["spec"][$middlewareName];
+				$setting = $this->container["loader"]->mergeArray($setting, $options);
+				$this->handlers[$eventName]->add($middlewareName, $setting);
+			}
 		}
 
 	}

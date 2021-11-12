@@ -61,9 +61,9 @@ class ModelUtil
 		$gets = $request->getAttribute("queryParams");
 		$dbs = $request->getAttribute("databases")->getPlugins();
 		$spec = $request->getAttribute("appInfo")["spec"];
-		$fields = $spec["fields"] ?? "*";
-		$searches = $spec["searches"] ?? null;
-		$orders = $spec["orders"] ?? null;
+		$fields = $spec["options"]["fields"] ?? "*";
+		$searches = $spec["options"]["searches"] ?? null;
+		$orders = $spec["options"]["orders"] ?? null;
 
 		$search = $searches[($gets["_search"] ?? "default")] ?? null;
 		$limit = $gets["_limit"] ?? null;
@@ -79,7 +79,7 @@ class ModelUtil
 				$search = $this->buildSearchKeys($search, $gets);
 
 				// Get data
-				$data = $db->select($spec["databases"][$dbName]["tableName"], $fields, $search, $order, $limit, $offset);
+				$data = $db->select($spec[$dbName]["tableName"], $fields, $search, $order, $limit, $offset);
 				if ($data) {
 					$this->resultCount = count($data);
 					$this->totalCount = count($data);
@@ -93,7 +93,7 @@ class ModelUtil
 
 				break;
 			default:
-				$data = $db->selectById($spec["databases"][$dbName]["tableName"], $fields, [ "field" => $spec["databases"][$dbName]["keyName"], "value" => $id ]);
+				$data = $db->selectById($spec[$dbName]["tableName"], $fields, [ "field" => $spec[$dbName]["keyName"], "value" => $id ]);
 				$this->resultCount = count($data);
 				$this->totalCount = count($data);
 				break;
@@ -120,7 +120,7 @@ class ModelUtil
 		$id = $request->getAttribute("appInfo")["args"]["id"] ?? null;
 		$posts = $request->getParsedBody();
 		$spec = $request->getAttribute("appInfo")["spec"];
-		$fields = $spec["fields"] ?? "*";
+		$fields = $spec["options"]["fields"] ?? "*";
 
 		$data = null;
 		$dbs = $request->getAttribute("databases")->getPlugins();
@@ -138,11 +138,11 @@ class ModelUtil
 					case "new":
 					case null:
 						$item = $this->buildFields($fields, $posts["items"][$i]);
-						$cnt += $db->insert($spec["databases"][$dbName]["tableName"], $item);
+						$cnt += $db->insert($spec[$dbName]["tableName"], $item);
 						break;
 					default:
 						$item = $this->buildFields($fields, $posts["items"][$i]);
-						$cnt += $db->insertWithId($spec["databases"][$dbName]["tableName"], $item, $posts["items"][$i][$spec["databases"][$dbName]["keyName"]]);
+						$cnt += $db->insertWithId($spec[$dbName]["tableName"], $item, $posts["items"][$i][$spec[$dbName]["keyName"]]);
 						break;
 					}
 				}
@@ -178,8 +178,8 @@ class ModelUtil
 		$gets = $request->getAttribute("queryParams");
 		$posts = $request->getParsedBody();
 		$spec = $request->getAttribute("appInfo")["spec"];
-		$fields = $spec["fields"] ?? "*";
-		$searches = $spec["searches"] ?? null;
+		$fields = $spec["options"]["fields"] ?? "*";
+		$searches = $spec["options"]["searches"] ?? null;
 
 		$data = null;
 		$dbs = $request->getAttribute("databases")->getPlugins();
@@ -195,11 +195,11 @@ class ModelUtil
 					$item = $this->buildFields($fields, $posts["items"][0]);
 					$search = $searches[($gets["_search"] ?? "default")] ?? null;
 					$search = $this->buildSearchKeys($search, $gets);
-					$cnt = $db->update($spec["databases"][$dbName]["tableName"], $item, $search);
+					$cnt = $db->update($spec[$dbName]["tableName"], $item, $search);
 					break;
 				default:
 					$item = $this->buildFields($fields, $posts["items"][0]);
-					$cnt = $db->updateById($spec["databases"][$dbName]["tableName"], $item, ["field" => $spec["databases"][$dbName]["keyName"], "value" => $id]);
+					$cnt = $db->updateById($spec[$dbName]["tableName"], $item, ["field" => $spec[$dbName]["keyName"], "value" => $id]);
 					break;
 				}
 
@@ -232,7 +232,7 @@ class ModelUtil
 		$id = $request->getAttribute("appInfo")["args"]["id"];
 		$gets = $request->getAttribute("queryParams");
 		$spec = $request->getAttribute("appInfo")["spec"];
-		$searches = $spec["searches"] ?? null;
+		$searches = $spec["options"]["searches"] ?? null;
 
 		$data = null;
 		$dbs = $request->getAttribute("databases")->getPlugins();
@@ -247,10 +247,10 @@ class ModelUtil
 					case "list":
 						$search = $searches[($gets["_search"] ?? "default")] ?? null;
 						$search = $this->buildSearchKeys($search, $gets);
-						$cnt = $db->delete($spec["databases"][$dbName]["tableName"], $search);
+						$cnt = $db->delete($spec[$dbName]["tableName"], $search);
 						break;
 					default:
-						$cnt = $db->deleteById($spec["databases"][$dbName]["tableName"], ["field" => $spec["databases"][$dbName]["keyName"], "value" => $id]);
+						$cnt = $db->deleteById($spec[$dbName]["tableName"], ["field" => $spec[$dbName]["keyName"], "value" => $id]);
 						break;
 				}
 
