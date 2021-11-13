@@ -86,8 +86,8 @@ class App
 		$appInfo["settings"] = $container["loader"]->loadSettings();
 		$appInfo["spec"] = $container["loader"]->loadSpecs();
 
-		// Load services
-		$container["loader"]->loadServices();
+		// Load managers
+		$container["loader"]->loadManagers();
 
 	}
 

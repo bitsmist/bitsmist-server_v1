@@ -133,7 +133,7 @@ class DefaultLoader extends PluginBase
 	/**
 	 * Load services.
 	 */
-	function loadServices()
+	function loadManagers()
 	{
 
 		$container = &$this->options["container"];
