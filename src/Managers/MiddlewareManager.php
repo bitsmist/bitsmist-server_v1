@@ -11,6 +11,7 @@
 
 namespace Bitsmist\v1\Managers;
 
+use Bitsmist\v1\Managers\PluginManager;
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -23,88 +24,11 @@ use Psr\Http\Message\ServerRequestInterface;
 /**
  * Middlware manager class.
  */
-class MiddlewareManager
+class MiddlewareManager extends PluginManager
 {
 
 	// -------------------------------------------------------------------------
-	//	Constants, Variables
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Middlewares.
-	 *
-	 * @var		array
-	 */
-	protected $middlewares = array();
-
-	/**
-	 * Container.
-	 *
-	 * @var		Container
-	 */
-	protected $container = null;
-
-	// -------------------------------------------------------------------------
-	//	Constructor, Destructor
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Constructor.
-	 *
-	 * @param	$container		Container.
-	 * @param	$settings		Middleware settings.
-	 */
-	//public function __construct(ContainerInterface $container, array $settings = null)
-	public function __construct($container, array $settings = null)
-	{
-
-		$this->container = $container;
-
-		if (is_array($settings["uses"])){
-			foreach ($settings["uses"] as $key => $value)
-			{
-				if (is_array($value))
-				{
-					$title = $key;
-					$options = $value;
-				}
-				else
-				{
-					$title = $value;
-					$options = null;
-				}
-
-				$this->add($title, $options);
-			}
-		}
-
-	}
-
-	// -------------------------------------------------------------------------
 	//	Public
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Create a middleware.
-	 *
-	 * @param	$options		Middleware options.
-	 *
-	 * @return	Created middleware.
-	 */
-	public function create(?array $options = null): MiddlewareBase
-	{
-
-		$className = $options["className"] ?? null;
-		$middleware = new $className($options);
-		if (method_exists($middleware, "setLogger"))
-		{
-			$middleware->setLogger($this->container["loggerManager"]);
-		}
-
-		return $middleware;
-
-	}
-
 	// -------------------------------------------------------------------------
 
 	/**
@@ -115,37 +39,7 @@ class MiddlewareManager
 	public function getMiddlewares(): array
 	{
 
-		return $this->middlewares;
-
-	}
-
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Add a middleware.
-	 *
-	 * @param	$title			Middleware name.
-	 * @param	$options		Middleware options.
-	 *
-	 * @return	Added middleware.
-	 */
-	public function add(string $title, ?array $options): MiddlewareBase
-	{
-
-		$setting = $this->container["appInfo"]["spec"][$title];
-		if ($options)
-		{
-			$setting = array_merge($setting, $options);
-		}
-
-		$middleware = $this->create($setting);
-
-		if ($middleware)
-		{
-			$this->middlewares[$title] = $middleware;
-		}
-
-		return $middleware;
+		return $this->plugins;
 
 	}
 
@@ -159,10 +53,10 @@ class MiddlewareManager
 	 *
 	 * @return	Response.
 	 */
-	public function process(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+	public function process(ServerRequestInterface $request, ResponseInterface $response): array
 	{
 
-		foreach ($this->middlewares as $middlewareName => $middleware)
+		foreach ($this->plugins as $middlewareName => $middleware)
 		{
 			$ret = null;
 
@@ -182,15 +76,7 @@ class MiddlewareManager
 			}
 		}
 
-		// Save request to container
-		unset($this->container["request"]);
-		$this->container["request"] = $request;
-
-		// Save response to container
-		unset($this->container["response"]);
-		$this->container["response"] = $response;
-
-		return $response;
+		return array($request, $response);
 
 	}
 
@@ -204,7 +90,7 @@ class MiddlewareManager
 	 *
 	 * @return	Response.
 	 */
-	public function __invoke(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+	public function __invoke(ServerRequestInterface $request, ResponseInterface $response): array
 	{
 
 		return $this->process($request, $response);

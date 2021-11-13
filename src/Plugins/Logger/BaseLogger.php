@@ -11,7 +11,8 @@
 
 namespace Bitsmist\v1\Plugins\Logger;
 
-use Psr\Log\AbstractLogger;
+use Bitsmist\v1\Plugins\Base\PluginBase;
+use Psr\Log\LoggerTrait;
 use Psr\Log\LogLevel;
 
 // -----------------------------------------------------------------------------
@@ -21,8 +22,10 @@ use Psr\Log\LogLevel;
 /**
  * Base Logger class.
  */
-class BaseLogger extends AbstractLogger
+class BaseLogger extends PluginBase
 {
+
+	use LoggerTrait;
 
 	// -------------------------------------------------------------------------
 	//	Constants, Variables
@@ -113,4 +116,3 @@ class BaseLogger extends AbstractLogger
 	}
 
 }
-

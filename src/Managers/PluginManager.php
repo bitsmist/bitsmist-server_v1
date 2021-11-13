@@ -42,6 +42,13 @@ class PluginManager
 	 */
 	protected $container = null;
 
+	/**
+	 * Options.
+	 *
+	 * @var		array
+	 */
+	protected $options = null;
+
 	// -------------------------------------------------------------------------
 	//	Constructor, Destructor
 	// -------------------------------------------------------------------------
@@ -50,29 +57,29 @@ class PluginManager
 	 * Constructor.
 	 *
 	 * @param	$container		Container.
-	 * @param	$settings		Middleware settings.
+	 * @param	$options		Options.
 	 */
-	//public function __construct(ContainerInterface $container, array $settings = null)
-	public function __construct($container, array $settings = null)
+	public function __construct($container, array $options = null)
 	{
 
 		$this->container = $container;
+		$this->options = $options;
 
-		if (is_array($settings["uses"])){
-			foreach ($settings["uses"] as $key => $value)
+		if (is_array($options["uses"])){
+			foreach ($options["uses"] as $key => $value)
 			{
 				if (is_array($value))
 				{
 					$title = $key;
-					$options = $value;
+					$pluginOptions = $value;
 				}
 				else
 				{
 					$title = $value;
-					$options = null;
+					$pluginOptions = null;
 				}
 
-				$this->add($title, $options);
+				$this->add($title, $pluginOptions);
 			}
 		}
 
@@ -92,8 +99,11 @@ class PluginManager
 	public function create(?array $options = null)
 	{
 
+		// Create a plugin
 		$className = $options["className"] ?? null;
 		$plugin = new $className($options);
+
+		// Set loggers
 		if (method_exists($plugin, "setLogger"))
 		{
 			$plugin->setLogger($this->container["loggerManager"]);
@@ -130,6 +140,7 @@ class PluginManager
 	public function add(string $title, ?array $options)
 	{
 
+		// Merge settings
 		$options["container"] = $this->container;
 		$setting = $this->container["appInfo"]["spec"][$title];
 		if ($options)
@@ -137,14 +148,9 @@ class PluginManager
 			$setting = array_merge($setting, $options);
 		}
 
-		$plugin = $this->create($setting);
+		$this->plugins[$title] = $this->create($setting);
 
-		if ($plugin)
-		{
-			$this->plugins[$title] = $plugin;
-		}
-
-		return $plugin;
+		return $this->plugins[$title];
 
 	}
 

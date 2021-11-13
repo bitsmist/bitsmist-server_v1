@@ -12,6 +12,8 @@
 namespace Bitsmist\v1\Plugins\Loader;
 
 use Bitsmist\v1\Exception\HttpException;
+use Bitsmist\v1\Managers\ControllerManager;
+use Bitsmist\v1\Managers\ErrorManager;
 use Bitsmist\v1\Managers\MiddlewareManager;
 use Bitsmist\v1\Managers\PluginManager;
 use Bitsmist\v1\Plugins\Base\PluginBase;
@@ -41,8 +43,7 @@ class DefaultLoader extends PluginBase
 	public function loadRequest(): ServerRequestInterface
 	{
 
-		$container = $this->options["container"];
-		$className = $container["settings"]["request"]["className"];
+		$className = $this->options["container"]["settings"]["request"]["className"];
 
 		$body = $_POST;
 		if (strtolower($_SERVER["REQUEST_METHOD"]) == "put")
@@ -72,8 +73,7 @@ class DefaultLoader extends PluginBase
 	public function loadResponse(): ResponseInterface
 	{
 
-		$container = $this->options["container"];
-		$className = $container["settings"]["response"]["className"];
+		$className = $this->options["container"]["settings"]["response"]["className"];
 
 		return new $className();
 
@@ -91,8 +91,7 @@ class DefaultLoader extends PluginBase
 	public function loadRoute(): ?array
 	{
 
-		$container = $this->options["container"];
-		$routes = $container["settings"]["router"]["routes"];
+		$routes = $this->options["container"]["settings"]["router"]["routes"];
 
 		$dispatcher = \FastRoute\simpleDispatcher(function(\FastRoute\RouteCollector $r) use ($routes) {
 			foreach ($routes as $routeName => $route)
@@ -137,52 +136,28 @@ class DefaultLoader extends PluginBase
 	function loadServices()
 	{
 
-		$container = $this->options["container"];
-
-		// Error handler manager
-		$container["exceptionManager"] = function($c)
-		{
-			$spec = $this->options["container"]["appInfo"]["spec"]["exceptionManager"];
-			$manager = new MiddlewareManager($c, $spec);
-
-			return $manager;
-		};
+		$container = &$this->options["container"];
+		$container["loggerManager"] = "";
 
 		// Logger manager
-		$container["loggerManager"] = function($c)
-		{
-			$spec = $this->options["container"]["appInfo"]["spec"]["loggerManager"];
-			$manager = new PluginManager($c, $spec);
+		$spec = $this->options["container"]["appInfo"]["spec"]["loggerManager"];
+		$container["loggerManager"] = new PluginManager($container, $spec);
 
-			return $manager;
-		};
+		// Error handler manager
+		$spec = $this->options["container"]["appInfo"]["spec"]["errorManager"];
+		$container["errorManager"] = new ErrorManager($container, $spec);
 
 		// Db manager
-		$container["dbManager"] = function($c)
-		{
-			$spec = $this->options["container"]["appInfo"]["spec"]["dbManager"];
-			$manager = new PluginManager($c, $spec);
-
-			return $manager;
-		};
+		$spec = $this->options["container"]["appInfo"]["spec"]["dbManager"];
+		$container["dbManager"] = new PluginManager($container, $spec);
 
 		// Controller manager
-		$container["controllerManager"] = function($c)
-		{
-			$spec = $this->options["container"]["appInfo"]["spec"]["controllerManager"];
-			$manager = new PluginManager($c, $spec);
-
-			return $manager;
-		};
+		$spec = $this->options["container"]["appInfo"]["spec"]["controllerManager"];
+		$container["controllerManager"] = new ControllerManager($container, $spec);
 
 		// Emitter manager
-		$container["emitterManager"] = function($c)
-		{
-			$spec = $this->options["container"]["appInfo"]["spec"]["emitterManager"];
-			$manager = new PluginManager($c, $spec);
-
-			return $manager;
-		};
+		$spec = $this->options["container"]["appInfo"]["spec"]["emitterManager"];
+		$container["emitterManager"] = new PluginManager($container, $spec);
 
 	}
 
@@ -216,8 +191,8 @@ class DefaultLoader extends PluginBase
 	public function loadSpecs(): ?array
 	{
 
-		$appInfo = $this->options["container"]["appInfo"];
-		$sysInfo = $this->options["container"]["sysInfo"];
+		$appInfo = &$this->options["container"]["appInfo"];
+		$sysInfo = &$this->options["container"]["sysInfo"];
 		$method = strtolower($this->options["container"]["request"]->getMethod());
 		$resource = strtolower($appInfo["args"]["resource"]);
 
@@ -251,13 +226,11 @@ class DefaultLoader extends PluginBase
 	public function loadHandler(?string $eventName = ""): ?callable
 	{
 
-		$request = $this->options["container"]["request"];;
-		$method = strtolower($request->getMethod());
+		$method = strtolower($this->options["container"]["request"]->getMethod());
 		$resource = strtolower($this->options["container"]["appInfo"]["args"]["resource"]);
-		$appInfo = $this->options["container"]["appInfo"];
 
 		$ret = null;
-		$fileName = $appInfo["rootDir"] . "handlers/" . $method . ($resource ? "_" : "") . $resource . ($eventName ? "_" : "") . $eventName . ".php";
+		$fileName = $this->options["container"]["appInfo"]["rootDir"] . "handlers/" . $method . ($resource ? "_" : "") . $resource . ($eventName ? "_" : "") . $eventName . ".php";
 		if (file_exists($fileName))
 		{
 			$ret  = require $fileName;
@@ -281,14 +254,12 @@ class DefaultLoader extends PluginBase
 	public function isHandlerExists(?string $eventName = ""): bool
 	{
 
-		$request = $this->options["container"]["request"];;
-		$method = strtolower($request->getMethod());
+		$method = strtolower($this->options["container"]["request"]->getMethod());
 		$resource = strtolower($this->options["container"]["appInfo"]["args"]["resource"]);
-		$appInfo = $this->options["container"]["appInfo"];
 
 		$ret = false;
 
-		$fileName = $appInfo["rootDir"] . "handlers/" . $method . ($resource ? "_" : "") . $resource . ($eventName ? "_" : "") . $eventName . ".php";
+		$fileName = $this->options["container"]["appInfo"]["rootDir"] . "handlers/" . $method . ($resource ? "_" : "") . $resource . ($eventName ? "_" : "") . $eventName . ".php";
 		if (is_readable($fileName))
 		{
 			$ret = true;
@@ -370,7 +341,7 @@ class DefaultLoader extends PluginBase
 	private function loadGlobalSettings(): array
 	{
 
-		$sysInfo = $this->options["container"]["sysInfo"];
+		$sysInfo = &$this->options["container"]["sysInfo"];
 
 		$sysSettings = array();
 		$sysSettingFile = $sysInfo["rootDir"] . "conf/v" . $sysInfo["version"] . "/settings.php";
@@ -397,7 +368,7 @@ class DefaultLoader extends PluginBase
 	private function loadLocalSettings(): array
 	{
 
-		$appInfo = $this->options["container"]["appInfo"];
+		$appInfo = &$this->options["container"]["appInfo"];
 
 		$appSettings = array();
 		$appSettingFile = $appInfo["rootDir"] . "conf/settings.php";

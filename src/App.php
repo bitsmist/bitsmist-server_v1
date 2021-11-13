@@ -11,10 +11,6 @@
 
 namespace Bitsmist\v1;
 
-use Pimple\Container;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
-
 // -----------------------------------------------------------------------------
 //	Class
 // -----------------------------------------------------------------------------
@@ -48,12 +44,9 @@ class App
 	public function __construct(array $settings)
 	{
 
-		// Init error handling
-		$this->initError();
-
 		// Init a container
-		$container = new Container();
-		$this->container = $container;
+		$container = array();
+		$this->container = &$container;
 		$container["app"] = $this;
 		$container["settings"] = $settings;
 		$container["appInfo"] = null;
@@ -62,10 +55,11 @@ class App
 		$container["response"] = null;
 
 		// Init a loader
-		$this->initLoader($container);
+		$className = $container["settings"]["loader"]["className"];
+		$container["loader"] = new $className(array("container"=>&$container));
 
 		// Load route info
-		$args = $this->container["loader"]->loadRoute();
+		$args = $container["loader"]->loadRoute();
 
 		// Init request & response
 		$container["request"] = $container["loader"]->loadRequest();
@@ -76,7 +70,7 @@ class App
 		$sysInfo["version"] = $settings["version"];
 		$sysInfo["rootDir"] = $settings["options"]["rootDir"];
 		$sysInfo["sitesDir"] = $settings["options"]["sitesDir"];
-		$container["sysInfo"] = $sysInfo;
+		$container["sysInfo"] = &$sysInfo;
 
 		// Init application information
 		$appInfo = array();
@@ -86,11 +80,11 @@ class App
 		$appInfo["lang"] = $args["appLang"] ?? "ja";
 		$appInfo["rootDir"] = $sysInfo["sitesDir"] . $appInfo["name"] . "/";
 		$appInfo["args"] = $args;
-		$container["appInfo"] = $appInfo;
+		$container["appInfo"] = &$appInfo;
+
+		// Load settings
 		$appInfo["settings"] = $container["loader"]->loadSettings();
 		$appInfo["spec"] = $container["loader"]->loadSpecs();
-		unset($container["appInfo"]);
-		$container["appInfo"] = $appInfo;
 
 		// Load services
 		$container["loader"]->loadServices();
@@ -110,12 +104,11 @@ class App
 		// Handle request
 		try
 		{
-			$ret = $this->container["controllerManager"]->handle($this->container["request"]);
-			$response = $ret[count($ret) - 1];
+			$response = $this->container["controllerManager"]->handle($this->container["request"], $this->container["response"]);
 		}
 		catch (\Throwable $e)
 		{
-			$response = $this->handleException($this->container["request"]->withAttribute("exception", $e), $this->container["response"]);
+			$response = $this->container["errorManager"]->handle($this->container["request"]->withAttribute("exception", $e), $this->container["response"]);
 		}
 
 		// Send response
@@ -125,94 +118,9 @@ class App
 		}
 		catch (\Throwable $e)
 		{
-			$response = $this->handleException($this->container["request"]->withAttribute("exception", $e), $this->container["response"]);
+			$response = $this->container["errorManager"]->handle($this->container["request"]->withAttribute("exception", $e), $this->container["response"]);
 		}
-
-	}
-
-	// -------------------------------------------------------------------------
-	//	Private
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Init error handling.
-	 */
-	private function initError()
-	{
-
-		// Convert an error to the exception
-		set_error_handler(function ($severity, $message, $file, $line) {
-			if (error_reporting() & $severity) {
-				throw new \ErrorException($message, 0, $severity, $file, $line);
-			}
-		});
-
-		// Handle an uncaught error
-		register_shutdown_function(function () {
-			if ($this->container["settings"]["options"]["showErrors"] ?? false)
-			{
-				$e = error_get_last();
-				if ($e)
-				{
-					$type = $e["type"] ?? null;
-					if( $type == E_ERROR || $type == E_PARSE || $type == E_CORE_ERROR || $type == E_COMPILE_ERROR || $type == E_USER_ERROR )
-					{
-						echo "<br>";
-						echo "Error type:\t {$e['type']}<br>";
-						echo "Error message:\t {$e['message']}<br>";
-						echo "Error file:\t {$e['file']}<br>";
-						echo "Error line:\t {$e['line']}<br>";
-					}
-				}
-			}
-		});
-
-	}
-
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Init a loader.
-	 *
-	 * @param	$container		Container.
-	 */
-	private function initLoader(Container $container)
-	{
-
-		$container["loader"] = function($c)
-		{
-			$options = array(
-				"container" => $c,
-			);
-			$className = $c["settings"]["loader"]["className"];
-
-			return new $className($options);
-		};
-
-	}
-
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Handle an exception.
-	 *
-	 * @param	$request		Request.
-	 * @param	$response		Response.
-	 *
-	 * @return	Response.
-	 */
-	private function handleException(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
-	{
-
-		if (count($this->container["exceptionManager"]->getMiddlewares()) == 0)
-		{
-			// No error handler available
-			throw $request->getAttribute("exception");
-		}
-
-		return $this->container["exceptionManager"]($request, $response);
 
 	}
 
 }
-
