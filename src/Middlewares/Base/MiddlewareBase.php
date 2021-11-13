@@ -85,11 +85,6 @@ abstract class MiddlewareBase
 	 * @return	Request or response.
 	 */
 	abstract public function __invoke(ServerRequestInterface $request, ResponseInterface $response);
-	//public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
-		/*
-	{
-	}
-		 */
 
 }
 
