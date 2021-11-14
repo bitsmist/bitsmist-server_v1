@@ -119,23 +119,28 @@ class DefaultLoader extends PluginBase
 
 		// Logger manager
 		$spec = $this->options["container"]["appInfo"]["spec"]["loggerManager"];
-		$container["loggerManager"] = new PluginManager($container, $spec);
+		$className = $spec["className"];
+		$container["loggerManager"] = new $className($container, $spec);
 
 		// Error handler manager
 		$spec = $this->options["container"]["appInfo"]["spec"]["errorManager"];
-		$container["errorManager"] = new ErrorManager($container, $spec);
+		$className = $spec["className"];
+		$container["errorManager"] = new $className($container, $spec);
 
 		// Db manager
 		$spec = $this->options["container"]["appInfo"]["spec"]["dbManager"];
-		$container["dbManager"] = new PluginManager($container, $spec);
+		$className = $spec["className"];
+		$container["dbManager"] = new $className($container, $spec);
 
 		// Controller manager
 		$spec = $this->options["container"]["appInfo"]["spec"]["controllerManager"];
-		$container["controllerManager"] = new ControllerManager($container, $spec);
+		$className = $spec["className"];
+		$container["controllerManager"] = new $className($container, $spec);
 
 		// Emitter manager
 		$spec = $this->options["container"]["appInfo"]["spec"]["emitterManager"];
-		$container["emitterManager"] = new PluginManager($container, $spec);
+		$className = $spec["className"];
+		$container["emitterManager"] = new $className($container, $spec);
 
 	}
 
