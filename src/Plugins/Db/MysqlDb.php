@@ -1,7 +1,7 @@
 <?php
 // =============================================================================
 /**
- * Bitsmist - PHP WebAPI Server Framework
+ * Bitsmist Server - PHP WebAPI Server Framework
  *
  * @copyright		Masaki Yasutake
  * @link			https://bitsmist.com/
@@ -11,13 +11,10 @@
 
 namespace Bitsmist\v1\Plugins\Db;
 
-// -----------------------------------------------------------------------------
-//	Class
-// -----------------------------------------------------------------------------
+// =============================================================================
+//	MySql database class
+// =============================================================================
 
-/**
- * MySql database class.
- */
 class MysqlDb extends PdoDb
 {
 
@@ -89,4 +86,3 @@ class MysqlDb extends PdoDb
 	}
 
 }
-

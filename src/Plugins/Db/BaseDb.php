@@ -1,7 +1,7 @@
 <?php
 // =============================================================================
 /**
- * Bitsmist - PHP WebAPI Server Framework
+ * Bitsmist Server - PHP WebAPI Server Framework
  *
  * @copyright		Masaki Yasutake
  * @link			https://bitsmist.com/
@@ -13,13 +13,10 @@ namespace Bitsmist\v1\Plugins\Db;
 
 use Bitsmist\v1\Plugins\Base\PluginBase;
 
-// -----------------------------------------------------------------------------
-//	Class
-// -----------------------------------------------------------------------------
+// =============================================================================
+//	Base Database class
+// =============================================================================
 
-/**
- * Base Database class.
- */
 class BaseDb extends PluginBase
 {
 
@@ -120,8 +117,6 @@ class BaseDb extends PluginBase
 	public function select($tableName, $fields, $keys, $orders = null, $limit = null, $offset = null)
 	{
 
-		$this->props["fields"] = $fields;
-
 		list($sql, $params) = $this->buildQuerySelect($tableName, $fields, $keys, $orders, $limit, $offset);
 		$cmd = $this->createCommand($sql);
 
@@ -142,8 +137,6 @@ class BaseDb extends PluginBase
 	 */
 	public function selectById($tableName, $fields, $id)
 	{
-
-		$this->props["fields"] = $fields;
 
 		list($sql, $params) = $this->buildQuerySelect($tableName, $fields, [["field" => $id["field"], "comparer" => "=", "value" => $id["value"]]]);
 		$cmd = $this->createCommand($sql);
@@ -316,7 +309,7 @@ class BaseDb extends PluginBase
     // -------------------------------------------------------------------------
 
 	/**
-	 * Build select query by native query string.
+	 * Build select query using native query string.
 	 *
 	 * @param       array       	$query				Native query string.
 	 * @param		array			$fields				Fields to retrieve.
@@ -766,4 +759,3 @@ class BaseDb extends PluginBase
 	}
 
 }
-

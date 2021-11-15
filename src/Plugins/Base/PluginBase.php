@@ -1,7 +1,7 @@
 <?php
 // =============================================================================
 /**
- * Bitsmist - PHP WebAPI Server Framework
+ * Bitsmist Server - PHP WebAPI Server Framework
  *
  * @copyright		Masaki Yasutake
  * @link			https://bitsmist.com/
@@ -11,13 +11,10 @@
 
 namespace Bitsmist\v1\Plugins\Base;
 
-// -----------------------------------------------------------------------------
-//	Class
-// -----------------------------------------------------------------------------
+// =============================================================================
+//	Plugin base class
+// =============================================================================
 
-/**
- * Plugin base class.
- */
 class PluginBase
 {
 
@@ -79,4 +76,3 @@ class PluginBase
 	}
 
 }
-
