@@ -1,7 +1,7 @@
 <?php
 // =============================================================================
 /**
- * Bitsmist - PHP WebAPI Server Framework
+ * Bitsmist Server - PHP WebAPI Server Framework
  *
  * @copyright		Masaki Yasutake
  * @link			https://bitsmist.com/
@@ -14,13 +14,10 @@ namespace Bitsmist\v1\Plugins\Db;
 use Bitsmist\v1\Exception\HttpException;
 use Bitsmist\v1\Plugins\Db\BaseDb;
 
-// -----------------------------------------------------------------------------
-//	Class
-// -----------------------------------------------------------------------------
+// =============================================================================
+//	Elasticsearch database class
+// =============================================================================
 
-/**
- * Elasticsearch database class.
- */
 class ElasticsearchDb extends BaseDb
 {
 
@@ -72,12 +69,8 @@ class ElasticsearchDb extends BaseDb
 
 		if ($this->props["connection"])
 		{
+			curl_close($this->props["connection"]);
 			$this->props["connection"] = null;
-
-			if ($this->props["connection"])
-			{
-				curl_close($this->props["connection"]);
-			}
 
 			$this->logger->debug("dsn = {dsn}", ["method"=>__METHOD__, "dsn"=>$this->props["dsn"]]);
 		}
@@ -88,8 +81,6 @@ class ElasticsearchDb extends BaseDb
 
 	public function select($tableName, $fields, $keys = null, $orders = null, $limit = null, $offset = null)
 	{
-
-		$this->props["fields"] = $fields;
 
 		list($query) = $this->buildQuerySelect($tableName, $fields, $keys, $orders, $limit, $offset);
 		$cmd = $this->createCommand($query);
@@ -107,8 +98,6 @@ class ElasticsearchDb extends BaseDb
 	public function selectById($tableName, $fields, $id)
 	{
 
-		$this->props["fields"] = $fields;
-
 		list($query) = $this->buildQuerySelect($tableName, $fields);
 		$cmd = $this->createCommand($query);
 		$cmd["method"] = "GET";
@@ -122,14 +111,13 @@ class ElasticsearchDb extends BaseDb
 
     // -------------------------------------------------------------------------
 
-	public function insert($tableName, $fields, $id = null)
+	public function insert($tableName, $fields)
 	{
 
 		list($query) = $this->buildQueryInsert($tableName, $fields);
 		$cmd = $this->createCommand($query);
 		$cmd["method"] = "POST";
 		$cmd["index"] = $tableName;
-		$cmd["id"] = $id;
 		$cmd["url"]  = $this->props["dsn"] . "/" . $cmd["index"] . "/_doc/";
 
 		return $this->execute($cmd);
@@ -220,10 +208,9 @@ class ElasticsearchDb extends BaseDb
 	public function getData($cmd, $params = null)
 	{
 
-		$data = array();
-
 		$this->execute($cmd);
 
+		$data = array();
 		$response = $this->props["lastResponse"];
 		if (is_array($response))
 		{
@@ -272,18 +259,17 @@ class ElasticsearchDb extends BaseDb
 	public function execute($cmd, $params = null)
 	{
 
-		// Init
-		$this->props["header"] = [
-			"Content-Type: application/json",
-		];
-
 		$this->logger->info("method = {httpmethod}, url = {url}", ["method"=>__METHOD__, "httpmethod"=>$cmd["method"], "url"=>$cmd["url"]]);
 
+		// Init
+		$this->props["headers"] = [
+			"Content-Type: application/json",
+		];
 		curl_setopt($this->props["connection"], CURLOPT_URL, $cmd["url"]);
 		curl_setopt($this->props["connection"], CURLOPT_CUSTOMREQUEST, $cmd["method"]);
 		curl_setopt($this->props["connection"], CURLOPT_SSL_VERIFYPEER, false);
 		curl_setopt($this->props["connection"], CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($this->props["connection"], CURLOPT_HTTPHEADER, $this->props["header"]);
+		curl_setopt($this->props["connection"], CURLOPT_HTTPHEADER, $this->props["headers"]);
 		if (($cmd["query"] ?? null) !== null)
 		{
 			curl_setopt($this->props["connection"], CURLOPT_POSTFIELDS, $cmd["query"]);
@@ -827,4 +813,3 @@ class ElasticsearchDb extends BaseDb
 	}
 
 }
-
