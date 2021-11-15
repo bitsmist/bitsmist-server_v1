@@ -1,7 +1,7 @@
 <?php
 // =============================================================================
 /**
- * Bitsmist - PHP WebAPI Server Framework
+ * Bitsmist Server - PHP WebAPI Server Framework
  *
  * @copyright		Masaki Yasutake
  * @link			https://bitsmist.com/
@@ -15,13 +15,10 @@ use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-// -----------------------------------------------------------------------------
-//	Class
-// -----------------------------------------------------------------------------
+// =============================================================================
+//	Echo exception handler class.
+// =============================================================================
 
-/**
- * Echo exception handler class.
- */
 class EchoExceptionHandler extends MiddlewareBase
 {
 
@@ -39,6 +36,7 @@ class EchoExceptionHandler extends MiddlewareBase
 		echo "Error file:\t {$exception->getFile()}<br>";
 		echo "Error lineno:\t {$exception->getLine()}<br>";
 		echo "Error trace:\t {$exception->getTraceAsString()}<br>";
+
 	}
 
 }

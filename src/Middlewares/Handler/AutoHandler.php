@@ -1,7 +1,7 @@
 <?php
 // =============================================================================
 /**
- * Bitsmist - PHP WebAPI Server Framework
+ * Bitsmist Server - PHP WebAPI Server Framework
  *
  * @copyright		Masaki Yasutake
  * @link			https://bitsmist.com/
@@ -17,13 +17,10 @@ use Bitsmist\v1\Middlewares\Handler\CustomHandler;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-// -----------------------------------------------------------------------------
-//	Class
-// -----------------------------------------------------------------------------
+// =============================================================================
+//	Request handler dispatcher class
+// =============================================================================
 
-/**
- * Request handler dispatcher class.
- */
 class AutoHandler extends MiddlewareBase
 {
 
@@ -34,19 +31,16 @@ class AutoHandler extends MiddlewareBase
 	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
 	{
 
-		$appInfo = $request->getAttribute("appInfo");
-		$method = strtolower($request->getMethod());
-		$resource = strtolower($request->getAttribute("appInfo")["args"]["resource"]);
-		$loader = $request->getAttribute("loader");
+		$spec = $request->getAttribute("appInfo")["spec"];
 
-		if ($loader->isHandlerExists())
+		if ($request->getAttribute("loader")->isHandlerExists())
 		{
-			$className = $appInfo["spec"][$this->options["handlers"]["custom"]]["className"];
+			$className = $spec[$this->options["handlers"]["custom"]]["className"];
 			$options = null;
 		}
 		else
 		{
-			$className = $appInfo["spec"][$this->options["handlers"]["default"]]["className"];
+			$className = $spec[$this->options["handlers"]["default"]]["className"];
 			$options = null;
 		}
 
@@ -61,4 +55,3 @@ class AutoHandler extends MiddlewareBase
 	}
 
 }
-

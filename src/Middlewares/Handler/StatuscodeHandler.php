@@ -1,7 +1,7 @@
 <?php
 // =============================================================================
 /**
- * Bitsmist - PHP WebAPI Server Framework
+ * Bitsmist Server - PHP WebAPI Server Framework
  *
  * @copyright		Masaki Yasutake
  * @link			https://bitsmist.com/
@@ -15,13 +15,10 @@ use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-// -----------------------------------------------------------------------------
-//	Class
-// -----------------------------------------------------------------------------
+// =============================================================================
+//	Status code handler class
+// =============================================================================
 
-/**
- * Status code handler class.
- */
 class StatuscodeHandler extends MiddlewareBase
 {
 
@@ -32,10 +29,9 @@ class StatuscodeHandler extends MiddlewareBase
 	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
 	{
 
-		$method = strtolower($request->getMethod());
 		$resultCode = $request->getAttribute("resultCode");
 
-		switch ($method)
+		switch (strtolower($request->getMethod()))
 		{
 			case "post":
 				if ($resultCode == 200)

@@ -1,7 +1,7 @@
 <?php
 // =============================================================================
 /**
- * Bitsmist - PHP WebAPI Server Framework
+ * Bitsmist Server - PHP WebAPI Server Framework
  *
  * @copyright		Masaki Yasutake
  * @link			https://bitsmist.com/
@@ -15,13 +15,10 @@ use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-// -----------------------------------------------------------------------------
-//	Class
-// -----------------------------------------------------------------------------
+// =============================================================================
+//	Pagination handler class
+// =============================================================================
 
-/**
- * Pagination handler class.
- */
 class PaginationHandler extends MiddlewareBase
 {
 
@@ -33,8 +30,7 @@ class PaginationHandler extends MiddlewareBase
 	{
 
 		$method = strtolower($request->getMethod());
-		$gets = $request->getAttribute("queryParams");
-		$totalCount = $request->getAttribute("totalCount");
+		$gets = $request->getQueryParams();
 		$limit = 0;
 		$offset = 0;
 		$pagination = null;
@@ -45,7 +41,7 @@ class PaginationHandler extends MiddlewareBase
 			if($limit)
 			{
 				$offset = $gets["_offset"] ?? 0;
-				list($page, $pageMax) = $this->getPagination($totalCount, $limit, $offset);
+				list($page, $pageMax) = $this->getPagination($request->getAttribute("totalCount"), $limit, $offset);
 				$pagination = array("limit" => $limit, "offset" => $offset, "pageCurrent" => $page, "pageLast" => $pageMax);
 			}
 		}
@@ -88,4 +84,3 @@ class PaginationHandler extends MiddlewareBase
 	}
 
 }
-

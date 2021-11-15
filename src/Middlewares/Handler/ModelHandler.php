@@ -1,7 +1,7 @@
 <?php
 // =============================================================================
 /**
- * Bitsmist - PHP WebAPI Server Framework
+ * Bitsmist Server - PHP WebAPI Server Framework
  *
  * @copyright		Masaki Yasutake
  * @link			https://bitsmist.com/
@@ -16,13 +16,10 @@ use Bitsmist\v1\Util\ModelUtil;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-// -----------------------------------------------------------------------------
-//	Class
-// -----------------------------------------------------------------------------
+// =============================================================================
+//	Model based request handler class
+// =============================================================================
 
-/**
- * Model based request handler class.
- */
 class ModelHandler extends MiddlewareBase
 {
 
@@ -33,8 +30,7 @@ class ModelHandler extends MiddlewareBase
 	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
 	{
 
-		$spec = $request->getAttribute("appInfo")["spec"];
-		$options = $spec["options"] ?? array();
+		$options = $request->getAttribute("appInfo")["spec"]["options"] ?? array();
 		$method = strtolower($request->getMethod());
 		$data = null;
 
@@ -42,21 +38,23 @@ class ModelHandler extends MiddlewareBase
 		$methodName = $method . "Items";
 		$data = $model->$methodName($request, $response);
 
+		/*
 		// Retry with another offset when offset is too big.
 		if (array_key_exists("retryOffset", $options))
 		{
 			if ($method == "get")
 			{
-				$gets = $request->getAttribute("queryParams");
+				$gets = $request->getQueryParams();
 				$offset = $gets["_offset"] ?? 0;
 				if ($offset > $model->totalCount)
 				{
 					$gets["_offset"] = $options["retryOffset"];
-					$request = $request->withAttribute("queryParams", $gets);
+					$request = $request->withQueryParams("queryParams", $gets);
 					$data = $model->$methodName($request, $response);
 				}
 			}
 		}
+		 */
 
 		$request = $request->withAttribute("data", $data);
 		$request = $request->withAttribute("resultCount", $model->resultCount);

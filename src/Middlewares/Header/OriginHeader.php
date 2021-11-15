@@ -1,7 +1,7 @@
 <?php
 // =============================================================================
 /**
- * Bitsmist - PHP WebAPI Server Framework
+ * Bitsmist Server - PHP WebAPI Server Framework
  *
  * @copyright		Masaki Yasutake
  * @link			https://bitsmist.com/
@@ -15,13 +15,10 @@ use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-// -----------------------------------------------------------------------------
-//	Class
-// -----------------------------------------------------------------------------
+// =============================================================================
+//	Origin header class
+// =============================================================================
 
-/**
- * Origin header class.
- */
 class OriginHeader extends MiddlewareBase
 {
 
@@ -35,10 +32,8 @@ class OriginHeader extends MiddlewareBase
 		$origins = $request->getAttribute("appInfo")["spec"]["options"]["allowedOrigins"] ?? null;
 		$headers = $request->getHeaders();
 
-		//if (array_key_exists("HTTP_ORIGIN", $headers))
 		if ($origins && array_key_exists("origin", $headers))
 		{
-			//$allowedOrigin = $this->getAllowedOrigin($headers["HTTP_ORIGIN"][0], $origins);
 			$allowedOrigin = $this->getAllowedOrigin($headers["origin"][0], $origins);
 			if ($allowedOrigin)
 			{

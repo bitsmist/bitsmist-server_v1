@@ -1,7 +1,7 @@
 <?php
 // =============================================================================
 /**
- * Bitsmist - PHP WebAPI Server Framework
+ * Bitsmist Server - PHP WebAPI Server Framework
  *
  * @copyright		Masaki Yasutake
  * @link			https://bitsmist.com/
@@ -16,13 +16,10 @@ use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-// -----------------------------------------------------------------------------
-//	Class
-// -----------------------------------------------------------------------------
+// =============================================================================
+//	Query validator class
+// =============================================================================
 
-/**
- * Query validator class.
- */
 class QueryValidator extends MiddlewareBase
 {
 
@@ -33,9 +30,8 @@ class QueryValidator extends MiddlewareBase
 	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
 	{
 
-		$spec = $request->getAttribute("appInfo")["spec"];
-		$params = $spec["parameters"] ?? array();
-		$gets = $request->getAttribute("queryParams");
+		$params = $request->getAttribute("appInfo")["spec"]["options"]["parameters"] ?? array();
+		$gets = $request->getQueryParams();
 
 		foreach ($params as $param => $spec)
 		{

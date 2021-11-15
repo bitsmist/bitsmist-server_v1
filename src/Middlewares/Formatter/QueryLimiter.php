@@ -1,7 +1,7 @@
 <?php
 // =============================================================================
 /**
- * Bitsmist - PHP WebAPI Server Framework
+ * Bitsmist Server - PHP WebAPI Server Framework
  *
  * @copyright		Masaki Yasutake
  * @link			https://bitsmist.com/
@@ -16,13 +16,10 @@ use Bitsmist\v1\Util\FormatterUtil;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-// -----------------------------------------------------------------------------
-//	Class
-// -----------------------------------------------------------------------------
+// =============================================================================
+//	Query limiter class
+// =============================================================================
 
-/**
- * Query limiter class.
- */
 class QueryLimiter extends MiddlewareBase
 {
 
@@ -35,7 +32,7 @@ class QueryLimiter extends MiddlewareBase
 
 		$spec = $request->getAttribute("appInfo")["spec"];
 		$options = $spec["options"] ?? array();
-		$gets = $request->getAttribute("queryParams");
+		$gets = $request->getQueryParams();
 
 		// Limit
 		if (array_key_exists("maxLimit", $options))
@@ -57,7 +54,7 @@ class QueryLimiter extends MiddlewareBase
 			}
 		}
 
-		return $request->withAttribute("queryParams", $gets);
+		return $request->withQueryParams($gets);
 
 	 }
 

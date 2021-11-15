@@ -1,7 +1,7 @@
 <?php
 // =============================================================================
 /**
- * Bitsmist - PHP WebAPI Server Framework
+ * Bitsmist Server - PHP WebAPI Server Framework
  *
  * @copyright		Masaki Yasutake
  * @link			https://bitsmist.com/
@@ -16,13 +16,10 @@ use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-// -----------------------------------------------------------------------------
-//	Class
-// -----------------------------------------------------------------------------
+// =============================================================================
+//	White list based security checker class
+// =============================================================================
 
-/**
- * White list based security checker class.
- */
 class WhitelistSecurity extends MiddlewareBase
 {
 
@@ -33,17 +30,16 @@ class WhitelistSecurity extends MiddlewareBase
 	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
 	{
 
-		$spec = $request->getAttribute("appInfo")["spec"];
 		$method = strtolower($request->getMethod());
 		$resource = $request->getAttribute("appInfo")["args"]["resource"];
-		$gets = $request->getAttribute("queryParams");
-		$posts = $request->getParsedBody();
-		$whitelist = $spec["options"]["parameters"];
+		$whitelist = $request->getAttribute("appInfo")["spec"]["options"]["parameters"];
 
 		// Check gets
+		$gets = $request->getQueryParams();
 		$this->checkWhitelist($gets, $whitelist, $method, $resource);
 
 		// Check posts
+		$posts = $request->getParsedBody();
 		if (isset($posts["items"]))
 		{
 			foreach ($posts["items"] as $item)

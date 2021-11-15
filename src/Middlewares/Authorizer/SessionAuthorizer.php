@@ -1,7 +1,7 @@
 <?php
 // =============================================================================
 /**
- * Bitsmist - PHP WebAPI Server Framework
+ * Bitsmist Server - PHP WebAPI Server Framework
  *
  * @copyright		Masaki Yasutake
  * @link			https://bitsmist.com/
@@ -16,13 +16,10 @@ use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-// -----------------------------------------------------------------------------
-//	Class
-// -----------------------------------------------------------------------------
+// =============================================================================
+//	Session authorizer class
+// =============================================================================
 
-/**
- * Session authorizer class.
- */
 class SessionAuthorizer extends MiddlewareBase
 {
 
@@ -34,17 +31,22 @@ class SessionAuthorizer extends MiddlewareBase
 	{
 
 		$isAuthorized = false;
-		if ( isset($_SESSION["USER"]) )
+
+		// Check a session varaiable existence to determine whether user is logged in.
+		// This session variable is set in LoginAuthenticator.
+		if (isset($_SESSION["USER"]))
 		{
 			$isAuthorized = true;
 		}
 
 		if (!$isAuthorized)
 		{
-			$method = $request->getMethod();
-			$resource = $request->getAttribute("appInfo")["args"]["resource"];
+			$this->logger->alert("Not authorized: method = {httpmethod}, resource = {resource}", [
+				"method"=>__METHOD__,
+				"httpmethod"=>$request->getMethod(),
+				"resource"=>$request->getAttribute("appInfo")["args"]["resource"]
+			]);
 
-			$this->logger->alert("Not authorized: method = {httpmethod}, resource = {resource}", ["method"=>__METHOD__, "httpmethod"=>$method, "resource"=>$resource]);
 			throw new HttpException(HttpException::ERRNO_PARAMETER_NOTAUTHORIZED, HttpException::ERRMSG_PARAMETER_NOTAUTHORIZED);
 		}
 

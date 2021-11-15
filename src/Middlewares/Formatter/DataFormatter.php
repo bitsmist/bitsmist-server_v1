@@ -1,7 +1,7 @@
 <?php
 // =============================================================================
 /**
- * Bitsmist - PHP WebAPI Server Framework
+ * Bitsmist Server - PHP WebAPI Server Framework
  *
  * @copyright		Masaki Yasutake
  * @link			https://bitsmist.com/
@@ -16,13 +16,10 @@ use Bitsmist\v1\Util\FormatterUtil;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-// -----------------------------------------------------------------------------
-//	Class
-// -----------------------------------------------------------------------------
+// =============================================================================
+//	Data formatter class
+// =============================================================================
 
-/**
- * Data formatter class.
- */
 class DataFormatter extends MiddlewareBase
 {
 
@@ -34,9 +31,9 @@ class DataFormatter extends MiddlewareBase
 	{
 
 		$spec = $request->getAttribute("appInfo")["spec"];
-		$fields = $spec["fields"] ?? array();
-		$params = $spec["parameters"] ?? array();
-		$gets = $request->getAttribute("queryParams");
+		$fields = $spec["options"]["fields"] ?? array();
+		$params = $spec["options"]["parameters"] ?? array();
+		$gets = $request->getQueryParams();
 		$data = $request->getAttribute("data");
 
 		if ($data)

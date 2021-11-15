@@ -1,7 +1,7 @@
 <?php
 // =============================================================================
 /**
- * Bitsmist - PHP WebAPI Server Framework
+ * Bitsmist Server - PHP WebAPI Server Framework
  *
  * @copyright		Masaki Yasutake
  * @link			https://bitsmist.com/
@@ -16,13 +16,10 @@ use Closure;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-// -----------------------------------------------------------------------------
-//	Class
-// -----------------------------------------------------------------------------
+// =============================================================================
+//	Custom request handler class
+// =============================================================================
 
-/**
- * Custom request handler class.
- */
 class CustomHandler extends MiddlewareBase
 {
 
@@ -33,11 +30,10 @@ class CustomHandler extends MiddlewareBase
 	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
 	{
 
-		$eventName = ($this->options && array_key_exists("event", $this->options) ? $this->options["event"] : "");
-		$loader = $request->getAttribute("loader");
-		$handler = $loader->loadHandler($eventName);
-
+		$eventName = $this->options["event"] ?? "";
+		$handler = $request->getAttribute("loader")->loadHandler($eventName);
 		$ret = null;
+
 		if ($handler)
 		{
 			$func = Closure::bind($handler, $this, get_class($this));
@@ -49,4 +45,3 @@ class CustomHandler extends MiddlewareBase
 	}
 
 }
-

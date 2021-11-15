@@ -1,7 +1,7 @@
 <?php
 // =============================================================================
 /**
- * Bitsmist - PHP WebAPI Server Framework
+ * Bitsmist Server - PHP WebAPI Server Framework
  *
  * @copyright		Masaki Yasutake
  * @link			https://bitsmist.com/
@@ -15,13 +15,10 @@ use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-// -----------------------------------------------------------------------------
-//	Class
-// -----------------------------------------------------------------------------
+// =============================================================================
+//	Disconnect db class
+// =============================================================================
 
-/**
- * Disconnect db class.
- */
 class DisconnectDb extends MiddlewareBase
 {
 
@@ -32,8 +29,7 @@ class DisconnectDb extends MiddlewareBase
 	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
 	{
 
-		$databases = $request->getAttribute("databases");
-		$databases->close();
+		$request->getAttribute("databases")->close();
 
 	}
 

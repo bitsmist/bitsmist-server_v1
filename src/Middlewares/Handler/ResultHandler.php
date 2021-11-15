@@ -1,7 +1,7 @@
 <?php
 // =============================================================================
 /**
- * Bitsmist - PHP WebAPI Server Framework
+ * Bitsmist Server - PHP WebAPI Server Framework
  *
  * @copyright		Masaki Yasutake
  * @link			https://bitsmist.com/
@@ -16,13 +16,10 @@ use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-// -----------------------------------------------------------------------------
-//	Class
-// -----------------------------------------------------------------------------
+// =============================================================================
+//	Result builder class
+// =============================================================================
 
-/**
- * Result builder class.
- */
 class ResultHandler extends MiddlewareBase
 {
 
@@ -33,14 +30,14 @@ class ResultHandler extends MiddlewareBase
 	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
 	{
 
-		$data = $request->getAttribute("data");
-		$resultCount = $request->getAttribute("resultCount");
-		$totalCount = $request->getAttribute("totalCount");
-		$pagination = $request->getAttribute("pagination");
-		$resultCode = $request->getAttribute("resultCode");
-		$resultMessage = $request->getAttribute("resultMessage");
-
-		$result = $this->buildResult($resultCode, $resultMessage, $resultCount, $totalCount, $data, $pagination);
+		$result = $this->buildResult(
+			$request->getAttribute("resultCode"),
+			$request->getAttribute("resultMessage"),
+			$request->getAttribute("resultCount"),
+			$request->getAttribute("totalCount"),
+			$request->getAttribute("data"),
+			$request->getAttribute("pagination"),
+		);
 
 		return $request->withAttribute("result", $result);
 
@@ -89,4 +86,3 @@ class ResultHandler extends MiddlewareBase
 	}
 
 }
-

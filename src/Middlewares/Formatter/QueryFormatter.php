@@ -1,7 +1,7 @@
 <?php
 // =============================================================================
 /**
- * Bitsmist - PHP WebAPI Server Framework
+ * Bitsmist Server - PHP WebAPI Server Framework
  *
  * @copyright		Masaki Yasutake
  * @link			https://bitsmist.com/
@@ -16,13 +16,10 @@ use Bitsmist\v1\Util\FormatterUtil;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-// -----------------------------------------------------------------------------
-//	Class
-// -----------------------------------------------------------------------------
+// =============================================================================
+//	Query formatter class
+// =============================================================================
 
-/**
- * Query formatter class.
- */
 class QueryFormatter extends MiddlewareBase
 {
 
@@ -34,13 +31,13 @@ class QueryFormatter extends MiddlewareBase
 	{
 
 		$spec = $request->getAttribute("appInfo")["spec"];
-		$params = $spec["parameters"] ?? array();
-		$gets = $request->getAttribute("queryParams");
+		$params = $spec["options"]["parameters"] ?? array();
+		$gets = $request->getQueryParams();
 
 		foreach ($params as $param => $spec)
 		{
-			$type = $spec["fieldType"] ?? null;
-			$format = $spec["format"] ?? null;
+			$type = $spec["options"]["fieldType"] ?? null;
+			$format = $spec["options"]["format"] ?? null;
 			$value = $gets[$param] ?? null;
 			if ($type && $format && $value !== null)
 			{
@@ -48,7 +45,7 @@ class QueryFormatter extends MiddlewareBase
 			}
 		}
 
-		return $request->withAttribute("queryParams", $gets);
+		return $request->withQueryParams($gets);
 
 	 }
 

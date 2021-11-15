@@ -1,7 +1,7 @@
 <?php
 // =============================================================================
 /**
- * Bitsmist - PHP WebAPI Server Framework
+ * Bitsmist Server - PHP WebAPI Server Framework
  *
  * @copyright		Masaki Yasutake
  * @link			https://bitsmist.com/
@@ -16,13 +16,10 @@ use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-// -----------------------------------------------------------------------------
-//	Class
-// -----------------------------------------------------------------------------
+// =============================================================================
+//	Spec file security checker class.
+// =============================================================================
 
-/**
- * Spec file security checker class.
- */
 class SpecSecurity extends MiddlewareBase
 {
 
@@ -39,7 +36,13 @@ class SpecSecurity extends MiddlewareBase
 
 		if (!$spec["lastSpecFile"] || $spec["lastSpecFile"] != ($method . "_" . $resource))
 		{
-			$this->logger->alert("No handler: lastSpecFile = {lastSpecFile}, method = {httpmethod}, resource = {resource}", ["method"=>__METHOD__, "lastSpecFile"=>$spec["lastSpecFile"], "httpmethod"=>$method, "resource"=>$resource]);
+			$this->logger->alert("No handler: lastSpecFile = {lastSpecFile}, method = {httpmethod}, resource = {resource}", [
+				"method" => __METHOD__,
+				"lastSpecFile" => $spec["lastSpecFile"],
+				"httpmethod" => $method,
+				"resource" => $resource]
+			);
+
 			throw new HttpException(HttpException::ERRNO_PARAMETER_INVALIDRESOURCE, HttpException::ERRMSG_PARAMETER_INVALIDRESOURCE);
 		}
 

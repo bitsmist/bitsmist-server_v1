@@ -1,7 +1,7 @@
 <?php
 // =============================================================================
 /**
- * Bitsmist - PHP WebAPI Server Framework
+ * Bitsmist Server - PHP WebAPI Server Framework
  *
  * @copyright		Masaki Yasutake
  * @link			https://bitsmist.com/
@@ -15,13 +15,10 @@ use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-// -----------------------------------------------------------------------------
-//	Class
-// -----------------------------------------------------------------------------
+// =============================================================================
+//	Db session class
+// =============================================================================
 
-/**
- * Db session class.
- */
 class DbSession extends MiddlewareBase
 {
 
@@ -31,8 +28,6 @@ class DbSession extends MiddlewareBase
 
 	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
 	{
-
-
 	}
 
 }

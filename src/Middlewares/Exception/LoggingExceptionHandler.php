@@ -1,7 +1,7 @@
 <?php
 // =============================================================================
 /**
- * Bitsmist - PHP WebAPI Server Framework
+ * Bitsmist Server - PHP WebAPI Server Framework
  *
  * @copyright		Masaki Yasutake
  * @link			https://bitsmist.com/
@@ -16,13 +16,10 @@ use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-// -----------------------------------------------------------------------------
-//	Class
-// -----------------------------------------------------------------------------
+// =============================================================================
+//	Logging exception handler class
+// =============================================================================
 
-/**
- * Logging exception handler class.
- */
 class LoggingExceptionHandler extends MiddlewareBase
 {
 
@@ -50,6 +47,7 @@ class LoggingExceptionHandler extends MiddlewareBase
 			$this->add($exception->getTraceAsString());
 			break;
 		}
+
 		$this->dumpLog();
 
 	}
