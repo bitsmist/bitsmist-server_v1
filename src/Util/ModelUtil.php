@@ -58,7 +58,7 @@ class ModelUtil
 	{
 
 		$id = $request->getAttribute("appInfo")["args"]["id"];
-		$gets = $request->getAttribute("queryParams");
+		$gets = $request->getQueryParams();
 		$dbs = $request->getAttribute("databases")->getPlugins();
 		$spec = $request->getAttribute("appInfo")["spec"];
 		$fields = $spec["options"]["fields"] ?? "*";
@@ -175,7 +175,7 @@ class ModelUtil
 	{
 
 		$id = $request->getAttribute("appInfo")["args"]["id"];
-		$gets = $request->getAttribute("queryParams");
+		$gets = $request->getQueryParams();
 		$posts = $request->getParsedBody();
 		$spec = $request->getAttribute("appInfo")["spec"];
 		$fields = $spec["options"]["fields"] ?? "*";
@@ -230,7 +230,7 @@ class ModelUtil
 	{
 
 		$id = $request->getAttribute("appInfo")["args"]["id"];
-		$gets = $request->getAttribute("queryParams");
+		$gets = $request->getQueryParams();
 		$spec = $request->getAttribute("appInfo")["spec"];
 		$searches = $spec["options"]["searches"] ?? null;
 
