@@ -1,7 +1,7 @@
 <?php
 // =============================================================================
 /**
- * Bitsmist - PHP WebAPI Server Framework
+ * Bitsmist Server - PHP WebAPI Server Framework
  *
  * @copyright		Masaki Yasutake
  * @link			https://bitsmist.com/
@@ -13,13 +13,10 @@ namespace Bitsmist\v1\Util;
 
 use Bitsmist\v1\Plugins\Base\PluginBase;
 
-// -----------------------------------------------------------------------------
-//	Class
-// -----------------------------------------------------------------------------
+// =============================================================================
+//	Formatter utility class
+// =============================================================================
 
-/**
- * Formatter utility class.
- */
 class FormatterUtil extends PluginBase
 {
 

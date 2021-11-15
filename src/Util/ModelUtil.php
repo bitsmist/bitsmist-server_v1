@@ -14,13 +14,10 @@ namespace Bitsmist\v1\Util;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-// -----------------------------------------------------------------------------
-//	Class
-// -----------------------------------------------------------------------------
+// =============================================================================
+//	Database model utility class
+// =============================================================================
 
-/**
- * Application model class.
- */
 class ModelUtil
 {
 
@@ -351,4 +348,3 @@ class ModelUtil
 	}
 
 }
-
