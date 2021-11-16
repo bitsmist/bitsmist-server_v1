@@ -9,14 +9,13 @@
  */
 // =============================================================================
 
-namespace Bitsmist\v1\Plugins\Loader;
+namespace Bitsmist\v1\Loader;
 
 use Bitsmist\v1\Exception\HttpException;
 use Bitsmist\v1\Managers\ControllerManager;
 use Bitsmist\v1\Managers\ErrorManager;
 use Bitsmist\v1\Managers\MiddlewareManager;
 use Bitsmist\v1\Managers\PluginManager;
-use Bitsmist\v1\Plugins\Base\PluginBase;
 use Exception;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -28,7 +27,8 @@ use Psr\Http\Message\ServerRequestInterface;
 /**
  * Loader class.
  */
-class DefaultLoader extends PluginBase
+//class DefaultLoader extends PluginBase
+class DefaultLoader
 {
 
 	protected $services = null;
@@ -112,7 +112,44 @@ class DefaultLoader extends PluginBase
 
 	}
 
-    // -------------------------------------------------------------------------
+	public function getService($serviceName)
+	{
+
+		return $this->services[$serviceName];
+
+	}
+
+	public function getRequest()
+	{
+
+		return $this->request;
+
+	}
+
+	public function getResponse()
+	{
+
+		return $this->response;
+
+	}
+
+	public function getSysInfo()
+	{
+
+		return $this->sysInfo;
+
+	}
+
+	public function getAppInfo()
+	{
+
+		return $this->appInfo;
+
+	}
+
+	// -------------------------------------------------------------------------
+	//	Private
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Create a response object.
@@ -191,41 +228,6 @@ class DefaultLoader extends PluginBase
 		$options = $spec["emitterManager"];
 		$className = $options["className"];
 		$this->services["emitterManager"] = new $className($this, $options);
-
-	}
-
-	public function getService($serviceName)
-	{
-
-		return $this->services[$serviceName];
-
-	}
-
-	public function getRequest()
-	{
-
-		return $this->request;
-
-	}
-
-	public function getResponse()
-	{
-
-		return $this->response;
-
-	}
-
-	public function getSysInfo()
-	{
-
-		return $this->sysInfo;
-
-	}
-
-	public function getAppInfo()
-	{
-
-		return $this->appInfo;
 
 	}
 
