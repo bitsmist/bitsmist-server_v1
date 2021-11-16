@@ -11,16 +11,10 @@
 
 namespace Bitsmist\v1\Managers;
 
-use Bitsmist\v1\Plugins\Base\PluginBase;
-use Psr\Container\ContainerInterface;
+// =============================================================================
+//	Plugin manager class
+// =============================================================================
 
-// -----------------------------------------------------------------------------
-//	Class
-// -----------------------------------------------------------------------------
-
-/**
- * Plugin manager class.
- */
 class PluginManager
 {
 
@@ -76,8 +70,11 @@ class PluginManager
 				else
 				{
 					$title = $value;
-					$pluginOptions = null;
+					$pluginOptions = array();
 				}
+
+				$pluginOptions["logger"] = $this->container["loggerManager"];
+				$pluginOptions["loader"] = $this->container["loader"];
 
 				$this->add($title, $pluginOptions);
 			}
@@ -87,32 +84,6 @@ class PluginManager
 
 	// -------------------------------------------------------------------------
 	//	Public
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Create a plugin.
-	 *
-	 * @param	$options		Plugin options.
-	 *
-	 * @return	Created plugin.
-	 */
-	public function create(?array $options = null)
-	{
-
-		// Create a plugin
-		$className = $options["className"] ?? null;
-		$plugin = new $className($options);
-
-		// Set loggers
-		if (method_exists($plugin, "setLogger"))
-		{
-			$plugin->setLogger($this->container["loggerManager"]);
-		}
-
-		return $plugin;
-
-	}
-
 	// -------------------------------------------------------------------------
 
 	/**
@@ -141,14 +112,12 @@ class PluginManager
 	{
 
 		// Merge settings
-		$options["container"] = $this->container;
-		$setting = $this->container["appInfo"]["spec"][$title];
-		if ($options)
-		{
-			$setting = array_merge($setting, $options);
-		}
+		$options = array_merge($this->container["appInfo"]["spec"][$title], $options);
 
-		$this->plugins[$title] = $this->create($setting);
+		// Create an instance
+		$className = $options["className"] ?? null;
+		$plugin = new $className($options);
+		$this->plugins[$title] = $plugin;
 
 		return $this->plugins[$title];
 
@@ -179,4 +148,3 @@ class PluginManager
 	}
 
 }
-

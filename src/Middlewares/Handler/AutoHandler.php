@@ -33,7 +33,7 @@ class AutoHandler extends MiddlewareBase
 
 		$spec = $request->getAttribute("appInfo")["spec"];
 
-		if ($request->getAttribute("loader")->isHandlerExists())
+		if ($this->loader->isHandlerExists())
 		{
 			$className = $spec[$this->options["handlers"]["custom"]]["className"];
 			$options = null;
@@ -45,10 +45,6 @@ class AutoHandler extends MiddlewareBase
 		}
 
 		$middleware = new $className($options);
-		if (method_exists($middleware, "setLogger"))
-		{
-			$middleware->setLogger($this->logger);
-		}
 
 		return $middleware($request, $response);;
 

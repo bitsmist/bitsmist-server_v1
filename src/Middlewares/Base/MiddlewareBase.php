@@ -26,6 +26,13 @@ abstract class MiddlewareBase
 	// -------------------------------------------------------------------------
 
 	/**
+	 * Loader.
+	 *
+	 * @var		Loader
+	 */
+	protected $loader = null;
+
+	/**
 	 * Logger.
 	 *
 	 * @var		Logger
@@ -52,25 +59,13 @@ abstract class MiddlewareBase
 	{
 
 		$this->options = $options;
+		$this->loader = $options["loader"] ?? null;
+		$this->logger = $options["logger"] ?? null;
 
 	}
 
 	// -------------------------------------------------------------------------
 	//	Public
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Set logger.
-	 *
-	 * @param	$logger			Logger.
-	 */
-	public function setLogger($logger)
-	{
-
-		$this->logger = $logger;
-
-	}
-
 	// -------------------------------------------------------------------------
 
 	/**

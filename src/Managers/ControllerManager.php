@@ -13,18 +13,14 @@ namespace Bitsmist\v1\Managers;
 
 use Bitsmist\v1\Exception\HttpException;
 use Bitsmist\v1\Managers\MiddlewareManager;
-use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-// -----------------------------------------------------------------------------
-//	Class
-// -----------------------------------------------------------------------------
+// =============================================================================
+//	Controller manager class
+// =============================================================================
 
-/**
- * Controller manager class.
- */
 class ControllerManager
 {
 
@@ -77,9 +73,12 @@ class ControllerManager
 			$specs = $options["events"][$eventName]["uses"] ?? array();
 			foreach ($specs as $middlewareName => $options)
 			{
-				$setting = $this->container["appInfo"]["spec"][$middlewareName];
-				$setting = $this->container["loader"]->mergeArray($setting, $options);
-				$this->handlers[$eventName]->add($middlewareName, $setting);
+				$middlewareOptions = $this->container["appInfo"]["spec"][$middlewareName];
+				$middlewareOptions = $this->container["loader"]->mergeArray($middlewareOptions, $options);
+				$middlewareOptions["logger"] = $this->container["loggerManager"];
+				$middlewareOptions["loader"] = $this->container["loader"];
+
+				$this->handlers[$eventName]->add($middlewareName, $middlewareOptions);
 			}
 		}
 
@@ -103,12 +102,9 @@ class ControllerManager
 		ini_set("session.cookie_httponly", TRUE);
 
 		$request = $request->withAttribute("appInfo", $this->container["appInfo"]);
-		$request = $request->withAttribute("loader", $this->container["loader"]);
 		$request = $request->withAttribute("databases", $this->container["dbManager"]);
-		$request = $request->withAttribute("loggers", $this->container["loggerManager"]);
 		$request = $request->withAttribute("resultCode", HttpException::ERRNO_NONE);
 		$request = $request->withAttribute("resultMessage", HttpException::ERRMSG_NONE);
-		$request = $request->withAttribute("queryParams", $request->getQueryParams());
 
 		foreach ($this->handlers as $eventName => $manager)
 		{

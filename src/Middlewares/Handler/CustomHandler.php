@@ -31,7 +31,7 @@ class CustomHandler extends MiddlewareBase
 	{
 
 		$eventName = $this->options["event"] ?? "";
-		$handler = $request->getAttribute("loader")->loadHandler($eventName);
+		$handler = $this->loader->loadHandler($eventName);
 		$ret = null;
 
 		if ($handler)

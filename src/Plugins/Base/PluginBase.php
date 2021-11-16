@@ -30,6 +30,13 @@ class PluginBase
 	protected $props = array();
 
 	/**
+	 * Loader.
+	 *
+	 * @var		Loader
+	 */
+	protected $loader = null;
+
+	/**
 	 * Logger.
 	 *
 	 * @var		Logger
@@ -56,22 +63,8 @@ class PluginBase
 	{
 
 		$this->options = $options;
-
-	}
-
-	// -------------------------------------------------------------------------
-	//	Public
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Set logger.
-	 *
-	 * @param	$logger			Logger.
-	 */
-	public function setLogger($logger)
-	{
-
-		$this->logger = $logger;
+		$this->loader = $options["loader"] ?? null;
+		$this->logger = $options["logger"] ?? null;
 
 	}
 

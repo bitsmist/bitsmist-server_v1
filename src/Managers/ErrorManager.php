@@ -17,13 +17,10 @@ use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-// -----------------------------------------------------------------------------
-//	Class
-// -----------------------------------------------------------------------------
+// =============================================================================
+//	Error manager class.
+// =============================================================================
 
-/**
- * Error manager class.
- */
 class ErrorManager extends MiddlewareManager
 {
 

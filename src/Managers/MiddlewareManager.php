@@ -11,19 +11,13 @@
 
 namespace Bitsmist\v1\Managers;
 
-use Bitsmist\v1\Managers\PluginManager;
-use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
-use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-// -----------------------------------------------------------------------------
-//	Class
-// -----------------------------------------------------------------------------
+// =============================================================================
+//	Middlware manager class
+// =============================================================================
 
-/**
- * Middlware manager class.
- */
 class MiddlewareManager extends PluginManager
 {
 
@@ -98,4 +92,3 @@ class MiddlewareManager extends PluginManager
 	}
 
 }
-
