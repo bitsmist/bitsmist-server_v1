@@ -36,17 +36,16 @@ class AutoHandler extends MiddlewareBase
 		if ($this->loader->isHandlerExists())
 		{
 			$className = $spec[$this->options["handlers"]["custom"]]["className"];
-			$options = null;
+			$options = array();
 		}
 		else
 		{
 			$className = $spec[$this->options["handlers"]["default"]]["className"];
-			$options = null;
+			$options = array();
 		}
+		$middleware = new $className($this->loader, $options);
 
-		$middleware = new $className($options);
-
-		return $middleware($request, $response);;
+		return $middleware($request, $response);
 
 	}
 

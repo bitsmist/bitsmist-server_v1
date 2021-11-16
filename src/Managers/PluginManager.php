@@ -73,9 +73,6 @@ class PluginManager
 					$pluginOptions = array();
 				}
 
-				$pluginOptions["loader"] = $this->loader;
-				$pluginOptions["logger"] = $this->loader->getService("loggerManager");
-
 				$this->add($title, $pluginOptions);
 			}
 		}
@@ -116,8 +113,7 @@ class PluginManager
 
 		// Create an instance
 		$className = $options["className"] ?? null;
-		$plugin = new $className($options);
-		$this->plugins[$title] = $plugin;
+		$this->plugins[$title] = new $className($this->loader, $options);
 
 		return $this->plugins[$title];
 

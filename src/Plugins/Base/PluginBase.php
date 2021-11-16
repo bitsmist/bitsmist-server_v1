@@ -23,13 +23,6 @@ class PluginBase
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Properties.
-	 *
-	 * @var		array
-	 */
-	protected $props = array();
-
-	/**
 	 * Loader.
 	 *
 	 * @var		Loader
@@ -50,6 +43,13 @@ class PluginBase
 	 */
 	protected $options = null;
 
+	/**
+	 * Properties.
+	 *
+	 * @var		array
+	 */
+	protected $props = array();
+
 	// -------------------------------------------------------------------------
 	//	Constructor, Destructor
 	// -------------------------------------------------------------------------
@@ -57,14 +57,15 @@ class PluginBase
 	/**
 	 * Constructor.
 	 *
+	 * @param	$loader			Loader.
 	 * @param	options			Plugin options.
 	 */
-	public function __construct(?array $options)
+	public function __construct($loader, ?array $options)
 	{
 
+		$this->loader = $loader;
+		$this->logger = $this->loader->getService("loggerManager");
 		$this->options = $options;
-		$this->loader = $options["loader"] ?? null;
-		$this->logger = $options["logger"] ?? null;
 
 	}
 

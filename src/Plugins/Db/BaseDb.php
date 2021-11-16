@@ -24,15 +24,10 @@ class BaseDb extends PluginBase
 	//	Constructor, Destructor
 	// -------------------------------------------------------------------------
 
-	/**
-	 * Constructor.
-	 *
-	 * @param		int				$dbTypeName				Database type name.
-	 */
-	public function __construct($options)
+	public function __construct($loader, ?array $options)
 	{
 
-		parent::__construct($options);
+		parent::__construct($loader, $options);
 
 		$this->props["dsn"] = $options["dsn"] ?? null;
 		$this->props["user"] = $options["user"] ?? null;

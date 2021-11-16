@@ -53,14 +53,15 @@ abstract class MiddlewareBase
 	/**
 	 * Constructor.
 	 *
+	 * @param	$loader			Loader.
 	 * @param	options			Middleware options.
 	 */
-	public function __construct(?array $options = array())
+	public function __construct($loader, ?array $options)
 	{
 
+		$this->loader = $loader;
+		$this->logger = $this->loader->getService("loggerManager");
 		$this->options = $options;
-		$this->loader = $options["loader"] ?? null;
-		$this->logger = $options["logger"] ?? null;
 
 	}
 
@@ -79,4 +80,3 @@ abstract class MiddlewareBase
 	abstract public function __invoke(ServerRequestInterface $request, ResponseInterface $response);
 
 }
-

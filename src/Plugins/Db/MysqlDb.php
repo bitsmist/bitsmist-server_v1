@@ -22,10 +22,11 @@ class MysqlDb extends PdoDb
     //  Constructor, Destructor
     // -------------------------------------------------------------------------
 
-    public function __construct($options)
+	public function __construct($loader, ?array $options)
     {
 
-		parent::__construct($options);
+		parent::__construct($loader, $options);
+
         $this->props["dbType"] = "MYSQL";
 
 	}
