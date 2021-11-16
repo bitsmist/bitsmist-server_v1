@@ -13,7 +13,6 @@ namespace Bitsmist\v1\Managers;
 
 use Bitsmist\v1\Exception\HttpException;
 use Bitsmist\v1\Managers\MiddlewareManager;
-use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -29,18 +28,11 @@ class ControllerManager
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Container.
+	 * Loader.
 	 *
-	 * @var		Container
+	 * @var		Loader
 	 */
-	private $container = null;
-
-	/**
-	 * Middleware managers.
-	 *
-	 * @var		array
-	 */
-	private $handlers = array();
+	private $loader = null;
 
 	/**
 	 * Options.
@@ -49,6 +41,13 @@ class ControllerManager
 	 */
 	protected $options = null;
 
+	/**
+	 * Middleware managers.
+	 *
+	 * @var		array
+	 */
+	private $handlers = array();
+
 	// -------------------------------------------------------------------------
 	//	Constructor
 	// -------------------------------------------------------------------------
@@ -56,27 +55,27 @@ class ControllerManager
 	/**
 	 * Constructor.
 	 *
-	 * @param	$container		Container.
+	 * @param	$loader			Loader.
 	 * @param	$options		Options.
 	 */
-	public function __construct($container, array $options = null)
+	public function __construct($loader, array $options = null)
 	{
 
-		$this->container = $container;
+		$this->loader = $loader;
 		$this->options = $options;
 
 		// Load event handlers
 		foreach ($options["events"] as $eventName => $spec)
 		{
-			$this->handlers[$eventName] = new MiddlewareManager($this->container, $spec);
+			$this->handlers[$eventName] = new MiddlewareManager($this->loader, $spec);
 
 			$specs = $options["events"][$eventName]["uses"] ?? array();
 			foreach ($specs as $middlewareName => $options)
 			{
-				$middlewareOptions = $this->container["appInfo"]["spec"][$middlewareName];
-				$middlewareOptions = $this->container["loader"]->mergeArray($middlewareOptions, $options);
-				$middlewareOptions["logger"] = $this->container["loggerManager"];
-				$middlewareOptions["loader"] = $this->container["loader"];
+				$middlewareOptions = $this->loader->getAppInfo()["spec"][$middlewareName];
+				$middlewareOptions = $this->loader->mergeArray($middlewareOptions, $options);
+				$middlewareOptions["loader"] = $this->loader;
+				$middlewareOptions["logger"] = $this->loader->getService("loggerManager");
 
 				$this->handlers[$eventName]->add($middlewareName, $middlewareOptions);
 			}
@@ -101,8 +100,8 @@ class ControllerManager
 
 		ini_set("session.cookie_httponly", TRUE);
 
-		$request = $request->withAttribute("appInfo", $this->container["appInfo"]);
-		$request = $request->withAttribute("databases", $this->container["dbManager"]);
+		$request = $request->withAttribute("appInfo", $this->loader->getAppInfo());
+		$request = $request->withAttribute("databases", $this->loader->getService("dbManager"));
 		$request = $request->withAttribute("resultCode", HttpException::ERRNO_NONE);
 		$request = $request->withAttribute("resultMessage", HttpException::ERRMSG_NONE);
 

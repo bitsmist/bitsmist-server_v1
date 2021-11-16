@@ -23,11 +23,11 @@ class App
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Container.
+	 * Loader.
 	 *
-	 * @var		Container
+	 * @var		Loader
 	 */
-	private $container = null;
+	private $loader = null;
 
 	// -------------------------------------------------------------------------
 	//	Constructor, Destructor
@@ -41,50 +41,10 @@ class App
 	public function __construct(array $settings)
 	{
 
-		// Init a container
-		$container = array();
-		$this->container = &$container;
-		$container["app"] = $this;
-		$container["settings"] = $settings;
-		$container["appInfo"] = null;
-		$container["sysInfo"] = null;
-		$container["request"] = null;
-		$container["response"] = null;
-
 		// Init a loader
-		$className = $container["settings"]["loader"]["className"];
-		$container["loader"] = new $className(array("container"=>&$container));
-
-		// Load route info
-		$args = $container["loader"]->loadRoute();
-
-		// Init request & response
-		$container["request"] = $container["loader"]->loadRequest();
-		$container["response"] = $container["loader"]->loadResponse();
-
-		// Init system information
-		$sysInfo = array();
-		$sysInfo["version"] = $settings["version"];
-		$sysInfo["rootDir"] = $settings["options"]["rootDir"];
-		$sysInfo["sitesDir"] = $settings["options"]["sitesDir"];
-		$container["sysInfo"] = &$sysInfo;
-
-		// Init application information
-		$appInfo = array();
-		$appInfo["domain"] = $args["appDomain"] ?? $_SERVER["HTTP_HOST"];
-		$appInfo["name"] = $args["appName"] ?? $appInfo["domain"];
-		$appInfo["version"] = $args["appVersion"] ?? 1;
-		$appInfo["lang"] = $args["appLang"] ?? "ja";
-		$appInfo["rootDir"] = $sysInfo["sitesDir"] . $appInfo["name"] . "/";
-		$appInfo["args"] = $args;
-		$container["appInfo"] = &$appInfo;
-
-		// Load settings
-		$appInfo["settings"] = $container["loader"]->loadSettings();
-		$appInfo["spec"] = $container["loader"]->loadSpecs();
-
-		// Load managers
-		$container["loader"]->loadManagers();
+		$options = $settings["loader"];
+		$className = $options["className"];
+		$this->loader = new $className($settings);
 
 	}
 
@@ -101,21 +61,21 @@ class App
 		// Handle request
 		try
 		{
-			$response = $this->container["controllerManager"]->handle($this->container["request"], $this->container["response"]);
+			$response = $this->loader->getService("controllerManager")->handle($this->loader->getRequest(), $this->loader->getResponse());
 		}
 		catch (\Throwable $e)
 		{
-			$response = $this->container["errorManager"]->handle($this->container["request"]->withAttribute("exception", $e), $this->container["response"]);
+			$response = $this->loader->getService("errorManager")->handle($this->loader->getRequest()->withAttribute("exception", $e), $this->loader->getResponse());
 		}
 
 		// Send response
 		try
 		{
-			$this->container["emitterManager"]->emit($response);
+			$this->loader->getService("emitterManager")->emit($response);
 		}
 		catch (\Throwable $e)
 		{
-			$response = $this->container["errorManager"]->handle($this->container["request"]->withAttribute("exception", $e), $this->container["response"]);
+			$response = $this->loader->getService("errorManager")->handle($this->loader->getRequest()->withAttribute("exception", $e), $this->loader->getResponse());
 		}
 
 	}

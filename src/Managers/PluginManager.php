@@ -23,18 +23,11 @@ class PluginManager
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Plugins.
+	 * Loader.
 	 *
-	 * @var		array
+	 * @var		Loader
 	 */
-	protected $plugins = array();
-
-	/**
-	 * Container.
-	 *
-	 * @var		Container
-	 */
-	protected $container = null;
+	private $loader = null;
 
 	/**
 	 * Options.
@@ -43,6 +36,13 @@ class PluginManager
 	 */
 	protected $options = null;
 
+	/**
+	 * Plugins.
+	 *
+	 * @var		array
+	 */
+	protected $plugins = array();
+
 	// -------------------------------------------------------------------------
 	//	Constructor, Destructor
 	// -------------------------------------------------------------------------
@@ -50,13 +50,13 @@ class PluginManager
 	/**
 	 * Constructor.
 	 *
-	 * @param	$container		Container.
+	 * @param	$loader			Loader.
 	 * @param	$options		Options.
 	 */
-	public function __construct($container, array $options = null)
+	public function __construct($loader, array $options = null)
 	{
 
-		$this->container = $container;
+		$this->loader = $loader;
 		$this->options = $options;
 
 		if (is_array($options["uses"])){
@@ -73,8 +73,8 @@ class PluginManager
 					$pluginOptions = array();
 				}
 
-				$pluginOptions["logger"] = $this->container["loggerManager"];
-				$pluginOptions["loader"] = $this->container["loader"];
+				$pluginOptions["loader"] = $this->loader;
+				$pluginOptions["logger"] = $this->loader->getService("loggerManager");
 
 				$this->add($title, $pluginOptions);
 			}
@@ -112,7 +112,7 @@ class PluginManager
 	{
 
 		// Merge settings
-		$options = array_merge($this->container["appInfo"]["spec"][$title], $options);
+		$options = array_merge($this->loader->getAppInfo()["spec"][$title], $options);
 
 		// Create an instance
 		$className = $options["className"] ?? null;

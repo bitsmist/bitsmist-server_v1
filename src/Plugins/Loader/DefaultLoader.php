@@ -31,6 +31,55 @@ use Psr\Http\Message\ServerRequestInterface;
 class DefaultLoader extends PluginBase
 {
 
+	protected $services = null;
+	protected $request = null;
+	protected $response = null;
+	protected $appInfo = null;
+	protected $sysInfo = null;
+
+	// -------------------------------------------------------------------------
+	//	Constructor, Destructor
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Constructor.
+	 *
+	 * @param	$container		Container.
+	 * @param	$options		Options.
+	 */
+	public function __construct($settings)
+	{
+
+		// Init system info
+		$sysInfo = array();
+		$this->sysInfo = &$sysInfo;
+		$sysInfo["version"] = $settings["version"];
+		$sysInfo["rootDir"] = $settings["options"]["rootDir"];
+		$sysInfo["sitesDir"] = $settings["options"]["sitesDir"];
+
+		// Init request & response
+		$this->request = $this->loadRequest($settings["request"]);
+		$this->response = $this->loadResponse($settings["response"]);
+
+		// Init route info
+		$args = $this->loadRoute($settings["router"]);
+
+		// Init application information
+		$appInfo = array();
+		$this->appInfo = &$appInfo;
+		$appInfo["domain"] = $args["appDomain"] ?? $_SERVER["HTTP_HOST"];
+		$appInfo["name"] = $args["appName"] ?? $this->appInfo["domain"];
+		$appInfo["version"] = $args["appVersion"] ?? 1;
+		$appInfo["lang"] = $args["appLang"] ?? "ja";
+		$appInfo["rootDir"] = $this->sysInfo["sitesDir"] . $appInfo["name"] . "/";
+		$appInfo["args"] = $args;
+		$appInfo["settings"] = $this->loadSettings();
+		$appInfo["spec"] = $this->loadSpecs();
+
+		$this->loadManagers();
+
+	}
+
 	// -------------------------------------------------------------------------
 	//	Public
 	// -------------------------------------------------------------------------
@@ -40,10 +89,10 @@ class DefaultLoader extends PluginBase
 	 *
 	 * @return	Request.
 	 */
-	public function loadRequest(): ServerRequestInterface
+	public function loadRequest($options): ServerRequestInterface
 	{
 
-		$className = $this->options["container"]["settings"]["request"]["className"];
+		$className = $options["className"];
 
 		$body = $_POST;
 		if (strtolower($_SERVER["REQUEST_METHOD"]) == "put")
@@ -70,10 +119,10 @@ class DefaultLoader extends PluginBase
 	 *
 	 * @return	Response.
 	 */
-	public function loadResponse(): ResponseInterface
+	public function loadResponse($options): ResponseInterface
 	{
 
-		$className = $this->options["container"]["settings"]["response"]["className"];
+		$className = $options["className"];
 
 		return new $className();
 
@@ -88,11 +137,11 @@ class DefaultLoader extends PluginBase
 	 *
 	 * @throws	HttpException
 	 */
-	public function loadRoute(): ?array
+	public function loadRoute($options): ?array
 	{
 
-		$className = $this->options["container"]["settings"]["router"]["className"] ?? "nikic\FastRoute";
-		$routes = $this->options["container"]["settings"]["router"]["routes"];
+		$className = $options["className"] ?? "nikic\FastRoute";
+		$routes = $options["routes"];
 
 		$ret = null;
 		switch ($className)
@@ -114,33 +163,69 @@ class DefaultLoader extends PluginBase
 	public function loadManagers()
 	{
 
-		$container = &$this->options["container"];
-		$container["loggerManager"] = "";
+		$spec = $this->appInfo["spec"];
+
+		$this->services = array();
 
 		// Logger manager
-		$spec = $this->options["container"]["appInfo"]["spec"]["loggerManager"];
-		$className = $spec["className"];
-		$container["loggerManager"] = new $className($container, $spec);
+		$options = $spec["loggerManager"];
+		$className = $options["className"];
+		$this->services["loggerManager"] = new $className($this, $options);
 
 		// Error handler manager
-		$spec = $this->options["container"]["appInfo"]["spec"]["errorManager"];
-		$className = $spec["className"];
-		$container["errorManager"] = new $className($container, $spec);
+		$options = $spec["errorManager"];
+		$className = $options["className"];
+		$this->services["errorManager"] = new $className($this, $options);
 
 		// Db manager
-		$spec = $this->options["container"]["appInfo"]["spec"]["dbManager"];
-		$className = $spec["className"];
-		$container["dbManager"] = new $className($container, $spec);
+		$options = $spec["dbManager"];
+		$className = $options["className"];
+		$this->services["dbManager"] = new $className($this, $options);
 
 		// Controller manager
-		$spec = $this->options["container"]["appInfo"]["spec"]["controllerManager"];
-		$className = $spec["className"];
-		$container["controllerManager"] = new $className($container, $spec);
+		$options = $spec["controllerManager"];
+		$className = $options["className"];
+		$this->services["controllerManager"] = new $className($this, $options);
 
 		// Emitter manager
-		$spec = $this->options["container"]["appInfo"]["spec"]["emitterManager"];
-		$className = $spec["className"];
-		$container["emitterManager"] = new $className($container, $spec);
+		$options = $spec["emitterManager"];
+		$className = $options["className"];
+		$this->services["emitterManager"] = new $className($this, $options);
+
+	}
+
+	public function getService($serviceName)
+	{
+
+		return $this->services[$serviceName];
+
+	}
+
+	public function getRequest()
+	{
+
+		return $this->request;
+
+	}
+
+	public function getResponse()
+	{
+
+		return $this->response;
+
+	}
+
+	public function getSysInfo()
+	{
+
+		return $this->sysInfo;
+
+	}
+
+	public function getAppInfo()
+	{
+
+		return $this->appInfo;
 
 	}
 
@@ -174,24 +259,22 @@ class DefaultLoader extends PluginBase
 	public function loadSpecs(): ?array
 	{
 
-		$appInfo = &$this->options["container"]["appInfo"];
-		$sysInfo = &$this->options["container"]["sysInfo"];
-		$method = strtolower($this->options["container"]["request"]->getMethod());
-		$resource = strtolower($appInfo["args"]["resource"]);
+		$method = strtolower($this->request->getMethod());
+		$resource = strtolower($this->appInfo["args"]["resource"]);
 
 		$spec = array();
 
-		$spec = $this->loadGlobalSpec($sysInfo, $spec, "common");
-		$spec = $this->loadLocalSpec($appInfo, $spec, "common");
+		$spec = $this->loadGlobalSpec($this->sysInfo, $spec, "common");
+		$spec = $this->loadLocalSpec($this->appInfo, $spec, "common");
 
-		$spec = $this->loadGlobalSpec($sysInfo, $spec, $method);
-		$spec = $this->loadLocalSpec($appInfo, $spec, $method);
+		$spec = $this->loadGlobalSpec($this->sysInfo, $spec, $method);
+		$spec = $this->loadLocalSpec($this->appInfo, $spec, $method);
 
-		$spec = $this->loadGlobalSpec($sysInfo, $spec, $resource);
-		$spec = $this->loadLocalSpec($appInfo, $spec, $resource);
+		$spec = $this->loadGlobalSpec($this->sysInfo, $spec, $resource);
+		$spec = $this->loadLocalSpec($this->appInfo, $spec, $resource);
 
-		$spec = $this->loadGlobalSpec($sysInfo, $spec, $method, $resource);
-		$spec = $this->loadLocalSpec($appInfo, $spec, $method, $resource);
+		$spec = $this->loadGlobalSpec($this->sysInfo, $spec, $method, $resource);
+		$spec = $this->loadLocalSpec($this->appInfo, $spec, $method, $resource);
 
 		return $spec;
 
@@ -209,11 +292,11 @@ class DefaultLoader extends PluginBase
 	public function loadHandler(?string $eventName = ""): ?callable
 	{
 
-		$method = strtolower($this->options["container"]["request"]->getMethod());
-		$resource = strtolower($this->options["container"]["appInfo"]["args"]["resource"]);
+		$method = strtolower($this->request->getMethod());
+		$resource = strtolower($this->appInfo["args"]["resource"]);
 
 		$ret = null;
-		$fileName = $this->options["container"]["appInfo"]["rootDir"] . "handlers/" . $method . ($resource ? "_" : "") . $resource . ($eventName ? "_" : "") . $eventName . ".php";
+		$fileName = $this->appInfo["rootDir"] . "handlers/" . $method . ($resource ? "_" : "") . $resource . ($eventName ? "_" : "") . $eventName . ".php";
 		if (file_exists($fileName))
 		{
 			$ret  = require $fileName;
@@ -237,12 +320,12 @@ class DefaultLoader extends PluginBase
 	public function isHandlerExists(?string $eventName = ""): bool
 	{
 
-		$method = strtolower($this->options["container"]["request"]->getMethod());
-		$resource = strtolower($this->options["container"]["appInfo"]["args"]["resource"]);
+		$method = strtolower($this->request->getMethod());
+		$resource = strtolower($this->appInfo["args"]["resource"]);
 
 		$ret = false;
 
-		$fileName = $this->options["container"]["appInfo"]["rootDir"] . "handlers/" . $method . ($resource ? "_" : "") . $resource . ($eventName ? "_" : "") . $eventName . ".php";
+		$fileName = $this->appInfo["rootDir"] . "handlers/" . $method . ($resource ? "_" : "") . $resource . ($eventName ? "_" : "") . $eventName . ".php";
 		if (is_readable($fileName))
 		{
 			$ret = true;
@@ -324,10 +407,8 @@ class DefaultLoader extends PluginBase
 	private function loadGlobalSettings(): array
 	{
 
-		$sysInfo = &$this->options["container"]["sysInfo"];
-
 		$sysSettings = array();
-		$sysSettingFile = $sysInfo["rootDir"] . "conf/v" . $sysInfo["version"] . "/settings.php";
+		$sysSettingFile = $this->sysInfo["rootDir"] . "conf/v" . $this->sysInfo["version"] . "/settings.php";
 		if (is_readable($sysSettingFile))
 		{
 			$sysSettings = require $sysSettingFile;
@@ -351,10 +432,8 @@ class DefaultLoader extends PluginBase
 	private function loadLocalSettings(): array
 	{
 
-		$appInfo = &$this->options["container"]["appInfo"];
-
 		$appSettings = array();
-		$appSettingFile = $appInfo["rootDir"] . "conf/settings.php";
+		$appSettingFile = $this->appInfo["rootDir"] . "conf/settings.php";
 		if (is_readable($appSettingFile))
 		{
 			$appSettings = require $appSettingFile;
@@ -479,4 +558,3 @@ class DefaultLoader extends PluginBase
 	}
 
 }
-

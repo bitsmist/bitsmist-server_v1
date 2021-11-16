@@ -12,8 +12,6 @@
 namespace Bitsmist\v1\Managers;
 
 use Bitsmist\v1\Managers\MiddlewareManager;
-use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
-use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -31,14 +29,14 @@ class ErrorManager extends MiddlewareManager
 	/**
 	 * Constructor.
 	 *
-	 * @param	$container		Container.
+	 * @param	$loader			Loader.
 	 * @param	$options		Options.
 	 */
-	public function __construct($container, array $options = null)
+	public function __construct($loader, array $options = null)
 	{
 
 		// super
-		parent::__construct($container, $options);
+		parent::__construct($loader, $options);
 
 		// Init error handling
 		$this->initError();
