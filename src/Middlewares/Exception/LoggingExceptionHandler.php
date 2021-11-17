@@ -102,14 +102,11 @@ class LoggingExceptionHandler extends MiddlewareBase
 	private function dumpLog()
 	{
 
-		if ($this->logger)
+		for ($i = 0; $i < count($this->messages); $i++)
 		{
-			for ($i = 0; $i < count($this->messages); $i++)
-			{
-				$this->logger->error("Exception: {message}", ["message"=>$this->messages[$i]]);
-			}
-			$this->clear();
+			$this->loader->getService("loggerManager")->error("Exception: {message}", ["message"=>$this->messages[$i]]);
 		}
+		$this->clear();
 
 	}
 

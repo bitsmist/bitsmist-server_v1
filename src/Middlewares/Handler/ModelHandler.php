@@ -30,11 +30,11 @@ class ModelHandler extends MiddlewareBase
 	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
 	{
 
-		$options = $request->getAttribute("appInfo")["spec"]["options"] ?? array();
+		$options = $this->loader->getAppInfo("spec")["options"] ?? array();
 		$method = strtolower($request->getMethod());
 		$data = null;
 
-		$model = new ModelUtil();
+		$model = new ModelUtil($this->loader);
 		$methodName = $method . "Items";
 		$data = $model->$methodName($request, $response);
 

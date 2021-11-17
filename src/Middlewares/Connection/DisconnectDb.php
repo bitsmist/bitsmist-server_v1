@@ -29,7 +29,7 @@ class DisconnectDb extends MiddlewareBase
 	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
 	{
 
-		$request->getAttribute("databases")->close();
+		$this->loader->getService("dbManager")->close();
 
 	}
 

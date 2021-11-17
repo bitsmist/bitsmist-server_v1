@@ -30,7 +30,7 @@ class QueryValidator extends MiddlewareBase
 	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
 	{
 
-		$params = $request->getAttribute("appInfo")["spec"]["options"]["parameters"] ?? array();
+		$params = $this->loader->getAppInfo("spec")["options"]["parameters"] ?? array();
 		$gets = $request->getQueryParams();
 
 		foreach ($params as $param => $spec)

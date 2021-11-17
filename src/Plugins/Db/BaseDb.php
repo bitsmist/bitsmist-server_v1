@@ -21,6 +21,17 @@ class BaseDb extends PluginBase
 {
 
 	// -------------------------------------------------------------------------
+	//	Constants, Variables
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Logger.
+	 *
+	 * @var		Logger
+	 */
+	protected $logger = null;
+
+	// -------------------------------------------------------------------------
 	//	Constructor, Destructor
 	// -------------------------------------------------------------------------
 
@@ -28,6 +39,8 @@ class BaseDb extends PluginBase
 	{
 
 		parent::__construct($loader, $options);
+
+		$this->logger = $this->loader->getService("loggerManager");
 
 		$this->props["dsn"] = $options["dsn"] ?? null;
 		$this->props["user"] = $options["user"] ?? null;

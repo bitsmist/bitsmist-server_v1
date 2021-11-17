@@ -31,12 +31,12 @@ class SpecSecurity extends MiddlewareBase
 	{
 
 		$method = strtolower($request->getMethod());
-		$resource = strtolower($request->getAttribute("appInfo")["args"]["resource"]);
-		$spec = $request->getAttribute("appInfo")["spec"];
+		$resource = strtolower($this->loader->getRouteInfo()["args"]["resource"]);
+		$spec = $this->loader->getAppInfo("spec");
 
 		if (!$spec["lastSpecFile"] || $spec["lastSpecFile"] != ($method . "_" . $resource))
 		{
-			$this->logger->alert("No handler: lastSpecFile = {lastSpecFile}, method = {httpmethod}, resource = {resource}", [
+			$this->loader->getService("loggerManager")->alert("No handler: lastSpecFile = {lastSpecFile}, method = {httpmethod}, resource = {resource}", [
 				"method" => __METHOD__,
 				"lastSpecFile" => $spec["lastSpecFile"],
 				"httpmethod" => $method,

@@ -35,7 +35,7 @@ class LoginAuthenticator extends MiddlewareBase
 		$totalCount = 0;
 
 		// Get user data
-		$model = new ModelUtil();
+		$model = new ModelUtil($this->loader);
 		$data = $model->getItems($request, $response);
 		$resultCount = $model->resultCount;
 		$totalCount = $model->totalCount;
@@ -43,7 +43,7 @@ class LoginAuthenticator extends MiddlewareBase
 		if ($resultCount == 1)
 		{
 			// Found
-			$spec = $request->getAttribute("appInfo")["spec"];
+			$spec = $this->loader->getAppInfo("spec");
 			$user_id = $spec["options"]["userId"] ?? "";
 			$user_name = $spec["options"]["userName"] ?? "";
 
@@ -55,12 +55,12 @@ class LoginAuthenticator extends MiddlewareBase
 				"DATA" => $data[0],
 			];
 
-			$this->logger->notice("User logged in. user={user}", ["method"=>__METHOD__, "user"=>implode(",",$data[0])]);
+			$this->loader->getService("loggerManager")->notice("User logged in. user={user}", ["method"=>__METHOD__, "user"=>implode(",",$data[0])]);
 		}
 		else
 		{
 			// Not found
-			$this->logger->warning("User not found or password not match. gets={user}", [
+			$this->loader->getService("loggerManager")->warning("User not found or password not match. gets={user}", [
 				"method"=>__METHOD__,
 				"user"=>implode(",", $request->getQueryParams())
 			]);

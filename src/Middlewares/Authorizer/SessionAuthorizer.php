@@ -41,10 +41,10 @@ class SessionAuthorizer extends MiddlewareBase
 
 		if (!$isAuthorized)
 		{
-			$this->logger->alert("Not authorized: method = {httpmethod}, resource = {resource}", [
+			$this->loader->getService("loggerManager")->alert("Not authorized: method = {httpmethod}, resource = {resource}", [
 				"method"=>__METHOD__,
 				"httpmethod"=>$request->getMethod(),
-				"resource"=>$request->getAttribute("appInfo")["args"]["resource"]
+				"resource"=>$this->loader->getRouteInfo("args")["resource"]
 			]);
 
 			throw new HttpException(HttpException::ERRNO_PARAMETER_NOTAUTHORIZED, HttpException::ERRMSG_PARAMETER_NOTAUTHORIZED);

@@ -31,7 +31,7 @@ class AutoHandler extends MiddlewareBase
 	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
 	{
 
-		$spec = $request->getAttribute("appInfo")["spec"];
+		$spec = $this->loader->getAppInfo("spec");
 
 		if ($this->loader->isHandlerExists())
 		{

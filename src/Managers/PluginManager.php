@@ -109,7 +109,7 @@ class PluginManager
 	{
 
 		// Merge settings
-		$options = array_merge($this->loader->getAppInfo()["spec"][$title], $options);
+		$options = array_merge($this->loader->getAppInfo("spec")[$title], $options);
 
 		// Create an instance
 		$className = $options["className"] ?? null;

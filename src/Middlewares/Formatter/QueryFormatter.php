@@ -30,7 +30,7 @@ class QueryFormatter extends MiddlewareBase
 	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
 	{
 
-		$spec = $request->getAttribute("appInfo")["spec"];
+		$spec = $this->loader->getAppInfo("spec");
 		$params = $spec["options"]["parameters"] ?? array();
 		$gets = $request->getQueryParams();
 

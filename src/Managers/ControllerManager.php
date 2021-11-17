@@ -72,7 +72,7 @@ class ControllerManager
 			$specs = $options["events"][$eventName]["uses"] ?? array();
 			foreach ($specs as $middlewareName => $options)
 			{
-				$middlewareOptions = $this->loader->getAppInfo()["spec"][$middlewareName];
+				$middlewareOptions = $this->loader->getAppInfo("spec")[$middlewareName];
 				$middlewareOptions = $this->loader->mergeArray($middlewareOptions, $options);
 				$middlewareOptions["loader"] = $this->loader;
 				$middlewareOptions["logger"] = $this->loader->getService("loggerManager");
@@ -100,8 +100,6 @@ class ControllerManager
 
 		ini_set("session.cookie_httponly", TRUE);
 
-		$request = $request->withAttribute("appInfo", $this->loader->getAppInfo());
-		$request = $request->withAttribute("databases", $this->loader->getService("dbManager"));
 		$request = $request->withAttribute("resultCode", HttpException::ERRNO_NONE);
 		$request = $request->withAttribute("resultMessage", HttpException::ERRMSG_NONE);
 

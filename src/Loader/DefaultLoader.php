@@ -67,6 +67,14 @@ class DefaultLoader
 	 */
 	protected $sysInfo = null;
 
+	/**
+	 * Route info.
+	 *
+	 * @var		Route info
+	 */
+	protected $routeInfo = null;
+
+
 	// -------------------------------------------------------------------------
 	//	Constructor, Destructor
 	// -------------------------------------------------------------------------
@@ -74,8 +82,7 @@ class DefaultLoader
 	/**
 	 * Constructor.
 	 *
-	 * @param	$container		Container.
-	 * @param	$options		Options.
+	 * @param	$settings		Settings.
 	 */
 	public function __construct($settings)
 	{
@@ -89,7 +96,7 @@ class DefaultLoader
 		$sysInfo["settings"] = $settings;
 
 		// Init route info
-		$args = $this->loadRoute($settings["router"]);
+		$this->routeInfo = $this->loadRoute($settings["router"]);
 
 		// Init application info
 		$appInfo = array();
@@ -99,7 +106,6 @@ class DefaultLoader
 		$appInfo["version"] = $args["appVersion"] ?? 1;
 		$appInfo["lang"] = $args["appLang"] ?? "ja";
 		$appInfo["rootDir"] = $this->sysInfo["sitesDir"] . $appInfo["name"] . "/";
-		$appInfo["args"] = $args;
 		$appInfo["settings"] = $this->loadSettings();
 		$appInfo["spec"] = $this->loadSpecs();
 
@@ -163,12 +169,14 @@ class DefaultLoader
 	/**
   	 * Return system info.
 	 *
+	 * @param	$sectionName	Section name.
+	 *
 	 * @return	System info.
      */
-	public function getSysInfo()
+	public function getSysInfo(string $sectionName)
 	{
 
-		return $this->sysInfo;
+		return $this->sysInfo[$sectionName];
 
 	}
 
@@ -177,12 +185,30 @@ class DefaultLoader
 	/**
   	 * Return application info.
 	 *
+	 * @param	$sectionName	Section name.
+	 *
 	 * @return	Application info.
      */
-	public function getAppInfo()
+	public function getAppInfo(string $sectionName)
 	{
 
-		return $this->appInfo;
+		return $this->appInfo[$sectionName];
+
+	}
+
+	// -------------------------------------------------------------------------
+
+	/**
+  	 * Return route info.
+	 *
+	 * @param	$sectionName	Section name.
+	 *
+	 * @return	Route info.
+     */
+	public function getRouteInfo(string $sectionName)
+	{
+
+		return $this->routeInfo[$sectionName];
 
 	}
 
@@ -199,7 +225,7 @@ class DefaultLoader
 	{
 
 		$method = strtolower($_SERVER["REQUEST_METHOD"]);
-		$resource = strtolower($this->appInfo["args"]["resource"]);
+		$resource = strtolower($this->routeInfo["args"]["resource"]);
 
 		$ret = null;
 		$fileName = $this->appInfo["rootDir"] . "handlers/" . $method . ($resource ? "_" : "") . $resource . ($eventName ? "_" : "") . $eventName . ".php";
@@ -227,7 +253,7 @@ class DefaultLoader
 	{
 
 		$method = strtolower($_SERVER["REQUEST_METHOD"]);
-		$resource = strtolower($this->appInfo["args"]["resource"]);
+		$resource = strtolower($this->routeInfo["args"]["resource"]);
 
 		$ret = false;
 
@@ -428,7 +454,7 @@ class DefaultLoader
 		$sysBaseDir = $this->sysInfo["rootDir"] . "specs/v" . $this->sysInfo["version"] . "/";
 		$appBaseDir = $this->appInfo["rootDir"] . "specs/";
 		$method = strtolower($_SERVER["REQUEST_METHOD"]);
-		$resource = strtolower($this->appInfo["args"]["resource"]);
+		$resource = strtolower($this->routeInfo["args"]["resource"]);
 
 		$spec1_1 = $this->loadSettingFile($sysBaseDir . "common.php");
 		$spec1_2 = $this->loadSettingFile($appBaseDir . "common.php");
@@ -527,7 +553,10 @@ class DefaultLoader
 			break;
 		}
 
-		return $args;
+		return array(
+			"name" => $routeName,
+			"args" => $args,
+		);
 
 	}
 

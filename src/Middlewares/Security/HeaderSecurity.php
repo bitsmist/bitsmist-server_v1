@@ -34,13 +34,13 @@ class HeaderSecurity extends MiddlewareBase
 	{
 
 		$headers = $request->getHeaders();
-		$origins = $request->getAttribute("appInfo")["spec"]["options"]["allowedOrigins"];
-		$spec = $request->getAttribute("appInfo")["spec"];
+		$spec = $this->loader->getAppInfo("spec");
+		$origins = $spec["options"]["allowedOrigins"];
 
 		// check host
 		if ($headers["host"][0] != $_SERVER["SERVER_NAME"])
 		{
-			$this->logger->alert("Invalid host: host = {host}", ["method"=>__METHOD__, "host"=>$headers["host"][0]]);
+			$this->loader->getService("loggerManager")->logger->alert("Invalid host: host = {host}", ["method"=>__METHOD__, "host"=>$headers["host"][0]]);
 			throw new HttpException(HttpException::ERRNO_PARAMETER, HttpException::ERRMSG_PARAMETER);
 		}
 
@@ -49,7 +49,7 @@ class HeaderSecurity extends MiddlewareBase
 		{
 			if (!isset($headers["origin"][0]))
 			{
-				$this->logger->alert("Invalid origin: no origin", ["method"=>__METHOD__]);
+				$this->loader->getService("loggerManager")->alert("Invalid origin: no origin", ["method"=>__METHOD__]);
 				throw new HttpException(HttpException::ERRNO_PARAMETER, HttpException::ERRMSG_PARAMETER);
 			}
 		}
@@ -57,7 +57,7 @@ class HeaderSecurity extends MiddlewareBase
 		// check origin is valid
 		if (isset($headers["origin"][0]) && !in_array($headers["origin"][0], $origins))
 		{
-			$this->logger->alert("Invalid origin: origin = {origin}", ["method"=>__METHOD__, "origin"=>($headers["origin"][0]??"")]);
+			$this->loader->getService("loggerManager")->alert("Invalid origin: origin = {origin}", ["method"=>__METHOD__, "origin"=>($headers["origin"][0]??"")]);
 			throw new HttpException(HttpException::ERRNO_PARAMETER, HttpException::ERRMSG_PARAMETER);
 		}
 

@@ -26,6 +26,13 @@ class ModelUtil
 	// -------------------------------------------------------------------------
 
 	/**
+	 * Loader.
+	 *
+	 * @var		Loader
+	 */
+	protected $loader = null;
+
+	/**
 	 * Returned records count.
 	 *
 	 * @var		Container
@@ -38,6 +45,23 @@ class ModelUtil
 	 * @var		Container
 	 */
 	public $totalCount = 0;
+
+	// -------------------------------------------------------------------------
+	//	Constructor, Destructor
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Constructor.
+	 *
+	 * @param	$loader			Loader.
+	 */
+	public function __construct($loader)
+	{
+
+		$this->loader = $loader;
+
+	}
+
 
 	// -------------------------------------------------------------------------
 	//	Public
@@ -54,10 +78,10 @@ class ModelUtil
 	public function getItems(ServerRequestInterface $request, ResponseInterface $response): ?array
 	{
 
-		$id = $request->getAttribute("appInfo")["args"]["id"];
+		$id = $this->loader->getRouteInfo("args")["id"];
 		$gets = $request->getQueryParams();
-		$dbs = $request->getAttribute("databases")->getPlugins();
-		$spec = $request->getAttribute("appInfo")["spec"];
+		$dbs = $this->loader->getService("dbManager")->getPlugins();
+		$spec = $this->loader->getAppInfo("spec");
 		$fields = $spec["options"]["fields"] ?? "*";
 		$searches = $spec["options"]["searches"] ?? null;
 		$orders = $spec["options"]["orders"] ?? null;
@@ -114,9 +138,9 @@ class ModelUtil
 	public function postItems(ServerRequestInterface $request, ResponseInterface $response): ?array
 	{
 
-		$id = $request->getAttribute("appInfo")["args"]["id"] ?? null;
+		$id = $this->loader->getRouteInfo("args")["id"] ?? null;
 		$posts = $request->getParsedBody();
-		$spec = $request->getAttribute("appInfo")["spec"];
+		$spec = $this->loader->getAppInfo("spec");
 		$fields = $spec["options"]["fields"] ?? "*";
 
 		$data = null;
@@ -171,10 +195,10 @@ class ModelUtil
 	public function putItems(ServerRequestInterface $request, ResponseInterface $response): ?array
 	{
 
-		$id = $request->getAttribute("appInfo")["args"]["id"];
+		$id = $this->loader->getRouteInfo("args")["id"];
 		$gets = $request->getQueryParams();
 		$posts = $request->getParsedBody();
-		$spec = $request->getAttribute("appInfo")["spec"];
+		$spec = $this->loader->getAppInfo("spec");
 		$fields = $spec["options"]["fields"] ?? "*";
 		$searches = $spec["options"]["searches"] ?? null;
 
@@ -226,9 +250,9 @@ class ModelUtil
 	public function deleteItems(ServerRequestInterface $request, ResponseInterface $response): ?array
 	{
 
-		$id = $request->getAttribute("appInfo")["args"]["id"];
+		$id = $this->loader->getRouteInfo("args")["id"];
 		$gets = $request->getQueryParams();
-		$spec = $request->getAttribute("appInfo")["spec"];
+		$spec = $this->loader->getAppInfo("spec");
 		$searches = $spec["options"]["searches"] ?? null;
 
 		$data = null;

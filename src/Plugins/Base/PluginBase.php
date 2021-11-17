@@ -30,13 +30,6 @@ class PluginBase
 	protected $loader = null;
 
 	/**
-	 * Logger.
-	 *
-	 * @var		Logger
-	 */
-	protected $logger = null;
-
-	/**
 	 * Options.
 	 *
 	 * @var		array
@@ -64,7 +57,6 @@ class PluginBase
 	{
 
 		$this->loader = $loader;
-		$this->logger = $this->loader->getService("loggerManager");
 		$this->options = $options;
 
 	}

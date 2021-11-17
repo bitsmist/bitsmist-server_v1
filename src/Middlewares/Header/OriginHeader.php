@@ -29,7 +29,7 @@ class OriginHeader extends MiddlewareBase
 	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
 	{
 
-		$origins = $request->getAttribute("appInfo")["spec"]["options"]["allowedOrigins"] ?? null;
+		$origins = $this->loader->getAppInfo("spec")["options"]["allowedOrigins"] ?? null;
 		$headers = $request->getHeaders();
 
 		if ($origins && array_key_exists("origin", $headers))
