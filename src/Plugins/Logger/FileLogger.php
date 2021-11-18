@@ -72,4 +72,3 @@ class FileLogger extends BaseLogger
 	}
 
 }
-
