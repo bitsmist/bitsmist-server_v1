@@ -35,14 +35,14 @@ class ModelUtil
 	/**
 	 * Returned records count.
 	 *
-	 * @var		Container
+	 * @var		Returned record count
 	 */
 	public $resultCount = 0;
 
 	/**
 	 * Total records count.
 	 *
-	 * @var		Container
+	 * @var		Total record count
 	 */
 	public $totalCount = 0;
 
@@ -61,7 +61,6 @@ class ModelUtil
 		$this->loader = $loader;
 
 	}
-
 
 	// -------------------------------------------------------------------------
 	//	Public
