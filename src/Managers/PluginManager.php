@@ -27,7 +27,7 @@ class PluginManager
 	 *
 	 * @var		Loader
 	 */
-	private $loader = null;
+	protected $loader = null;
 
 	/**
 	 * Options.
@@ -59,22 +59,20 @@ class PluginManager
 		$this->loader = $loader;
 		$this->options = $options;
 
-		if (is_array($options["uses"])){
-			foreach ($options["uses"] as $key => $value)
+		foreach ($options["uses"] as $key => $value)
+		{
+			if (is_array($value))
 			{
-				if (is_array($value))
-				{
-					$title = $key;
-					$pluginOptions = $value;
-				}
-				else
-				{
-					$title = $value;
-					$pluginOptions = array();
-				}
-
-				$this->add($title, $pluginOptions);
+				$title = $key;
+				$pluginOptions = $value;
 			}
+			else
+			{
+				$title = $value;
+				$pluginOptions = null;
+			}
+
+			$this->add($title, $pluginOptions);
 		}
 
 	}
@@ -109,7 +107,7 @@ class PluginManager
 	{
 
 		// Merge settings
-		$options = array_merge($this->loader->getAppInfo("spec")[$title], $options);
+		$options = array_merge($this->loader->getAppInfo("spec")[$title] ?? array(), $options ?? array());
 
 		// Create an instance
 		$className = $options["className"] ?? null;

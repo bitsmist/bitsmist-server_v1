@@ -69,13 +69,10 @@ class ControllerManager
 		{
 			$this->handlers[$eventName] = new MiddlewareManager($this->loader, $spec);
 
-			$specs = $options["events"][$eventName]["uses"] ?? array();
-			foreach ($specs as $middlewareName => $options)
+			$specs = $options["events"][$eventName]["uses"];
+			foreach ($specs as $middlewareName => $middlewareOptions)
 			{
-				$middlewareOptions = $this->loader->getAppInfo("spec")[$middlewareName];
-				$middlewareOptions = $this->loader->mergeArray($middlewareOptions, $options);
-				$middlewareOptions["loader"] = $this->loader;
-				$middlewareOptions["logger"] = $this->loader->getService("loggerManager");
+				$middlewareOptions = $this->loader->mergeArray($this->loader->getAppInfo("spec")[$middlewareName] ?? array(), $middlewareOptions ?? array());
 
 				$this->handlers[$eventName]->add($middlewareName, $middlewareOptions);
 			}

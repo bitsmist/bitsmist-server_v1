@@ -228,7 +228,7 @@ class DefaultLoader
 		$resource = strtolower($this->routeInfo["args"]["resource"]);
 
 		$ret = null;
-		$fileName = $this->appInfo["rootDir"] . "handlers/" . $method . ($resource ? "_" : "") . $resource . ($eventName ? "_" : "") . $eventName . ".php";
+		$fileName = $this->appInfo["rootDir"] . "handlers/" . $method . "_" . $resource . ($eventName ? "_" : "") . $eventName . ".php";
 		if (file_exists($fileName))
 		{
 			$ret  = require $fileName;
@@ -257,7 +257,7 @@ class DefaultLoader
 
 		$ret = false;
 
-		$fileName = $this->appInfo["rootDir"] . "handlers/" . $method . ($resource ? "_" : "") . $resource . ($eventName ? "_" : "") . $eventName . ".php";
+		$fileName = $this->appInfo["rootDir"] . "handlers/" . $method . "_" . $resource . ($eventName ? "_" : "") . $eventName . ".php";
 		if (is_readable($fileName))
 		{
 			$ret = true;
