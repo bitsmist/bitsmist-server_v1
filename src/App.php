@@ -42,8 +42,8 @@ class App
 	{
 
 		// Init a loader
-		$options = $settings["loader"];
-		$className = $options["className"];
+		$options = $settings["loader"]; //@@@
+		$className = $options["className"]; //@@@
 		$this->loader = new $className($settings);
 
 	}
@@ -58,24 +58,28 @@ class App
 	public function run()
 	{
 
+		$response = null;
+		$exception = null;
+
 		// Handle request
 		try
 		{
-			$response = $this->loader->getService("controllerManager")->handle($this->loader->getRequest(), $this->loader->getResponse());
+			$a = 1/0;
+			$response = $this->loader->getService("controllerManager")->handle($this->loader->getRequest(), $this->loader->getResponse()); //@@@
 		}
 		catch (\Throwable $e)
 		{
-			$response = $this->loader->getService("errorManager")->handle($this->loader->getRequest()->withAttribute("exception", $e), $this->loader->getResponse());
+			$exception = $e;
+			$response = $this->loader->getService("errorManager")->handle($this->loader->getRequest()->withAttribute("exception", $e), $this->loader->getResponse()); //@@@
 		}
 
 		// Send response
-		try
+		$this->loader->getService("emitterManager")->emit($response); //@@@
+
+		// Re-throw the exception during middleware handling to show errors on screen
+		if ($exception)
 		{
-			$this->loader->getService("emitterManager")->emit($response);
-		}
-		catch (\Throwable $e)
-		{
-			$response = $this->loader->getService("errorManager")->handle($this->loader->getRequest()->withAttribute("exception", $e), $this->loader->getResponse());
+			throw $exception;
 		}
 
 	}

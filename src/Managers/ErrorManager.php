@@ -90,24 +90,26 @@ class ErrorManager extends MiddlewareManager
 
 		// Handle an uncaught error
 		register_shutdown_function(function () {
-			if ($this->container["settings"]["options"]["showErrors"] ?? false)
+			$e = error_get_last();
+			if ($e)
 			{
-				$e = error_get_last();
-				if ($e)
+				$type = $e["type"] ?? null;
+				if( $type == E_ERROR || $type == E_PARSE || $type == E_CORE_ERROR || $type == E_COMPILE_ERROR || $type == E_USER_ERROR )
 				{
-					$type = $e["type"] ?? null;
-					if( $type == E_ERROR || $type == E_PARSE || $type == E_CORE_ERROR || $type == E_COMPILE_ERROR || $type == E_USER_ERROR )
+					if ($this->loader->getSysInfo("settings")["options"]["showErrors"] ?? false) //@@@
+					{
+						$msg = $e["message"];
+						echo "\n\n";
+						echo "Error type:\t {$e['type']}\n";
+						echo "Error message:\t {$msg}\n";
+						echo "Error file:\t {$e['file']}\n";
+						echo "Error line:\t {$e['line']}\n";
+					}
+					if ($this->loader->getSysInfo("settings")["options"]["showErrorsInHTML"] ?? false) //@@@
 					{
 						$msg = str_replace('Stack trace:', '<br>Stack trace:', $e['message']);
 						$msg = str_replace('#', '<br>#', $msg);
-						/*
-						echo "<br>";
-						echo "Error type:\t {$e['type']}<br>";
-						echo "Error message:\t {$msg}<br>";
-						echo "Error file:\t {$e['file']}<br>";
-						echo "Error line:\t {$e['line']}<br>";
-						*/
-						echo "<table>";
+						echo "<br><br><table>";
 						echo "<tr><td>Error type</td><td>{$e['type']}</td></tr>";
 						echo "<tr><td style='vertical-align:top'>Error message</td><td>{$msg}</td></tr>";
 						echo "<tr><td>Error file</td><td>{$e['file']}</td></tr>";
