@@ -52,12 +52,7 @@ class MiddlewareManager extends PluginManager
 
 		foreach ($this->plugins as $middlewareName => $middleware)
 		{
-			$ret = null;
-
-			if (is_callable($middleware))
-			{
-				$ret = $middleware($request, $response);
-			}
+			$ret = $middleware($request, $response);
 
 			if ($ret instanceof \Psr\Http\Message\RequestInterface)
 			{
