@@ -232,7 +232,6 @@ class PdoDb extends BaseDb
 
 		$this->logger->debug("query = {query}", ["method"=>__METHOD__, "query"=>$sql]);
 
-
 		return array($sql, $params);
 
 	}
