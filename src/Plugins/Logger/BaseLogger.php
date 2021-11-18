@@ -70,7 +70,7 @@ class BaseLogger extends PluginBase
 
 		parent::__construct($loader, $options);
 
-		$this->level = $options["level"];
+		$this->level = $options["level"] ?? "info";
 		$this->fileName = $options["baseDir"] . basename($options["fileName"]);
 
 	}
