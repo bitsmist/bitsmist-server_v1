@@ -23,6 +23,13 @@ class App
 	// -------------------------------------------------------------------------
 
 	/**
+	 * Global settings.
+	 *
+	 * @var		Global settings
+	 */
+	private $settings = null;
+
+	/**
 	 * Loader.
 	 *
 	 * @var		Loader
@@ -41,9 +48,14 @@ class App
 	public function __construct(array $settings)
 	{
 
+		$this->settings = $settings;
+
+		// Init error handling
+		$this->initError();
+
 		// Init a loader
-		$options = $settings["loader"]; //@@@
-		$className = $options["className"]; //@@@
+		$options = $settings["loader"];
+		$className = $options["className"];
 		$this->loader = new $className($settings);
 
 	}
@@ -64,23 +76,73 @@ class App
 		// Handle request
 		try
 		{
-			$a = 1/0;
-			$response = $this->loader->getService("controllerManager")->handle($this->loader->getRequest(), $this->loader->getResponse()); //@@@
+			$response = $this->loader->getService("controllerManager")->handle($this->loader->getRequest(), $this->loader->getResponse());
 		}
 		catch (\Throwable $e)
 		{
 			$exception = $e;
-			$response = $this->loader->getService("errorManager")->handle($this->loader->getRequest()->withAttribute("exception", $e), $this->loader->getResponse()); //@@@
+			$response = $this->loader->getService("errorManager")->handle($this->loader->getRequest()->withAttribute("exception", $e), $this->loader->getResponse());
 		}
 
 		// Send response
-		$this->loader->getService("emitterManager")->emit($response); //@@@
+		$this->loader->getService("emitterManager")->emit($response);
 
-		// Re-throw the exception during middleware handling to show errors on screen
+		// Re-throw the exception during middleware handling to return error messages
 		if ($exception)
 		{
 			throw $exception;
 		}
+
+	}
+
+	// -------------------------------------------------------------------------
+	//	Private
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Init error handling.
+	 */
+	private function initError()
+	{
+
+		// Convert an error to the exception
+		set_error_handler(function ($severity, $message, $file, $line) {
+			if (error_reporting() & $severity) {
+				throw new \ErrorException($message, 0, $severity, $file, $line);
+			}
+		});
+
+		// Handle an uncaught error
+		register_shutdown_function(function () {
+			$e = error_get_last();
+			if ($e)
+			{
+				$type = $e["type"] ?? null;
+				if( $type == E_ERROR || $type == E_PARSE || $type == E_CORE_ERROR || $type == E_COMPILE_ERROR || $type == E_USER_ERROR )
+				{
+					if ($this->settings["options"]["showErrors"] ?? false)
+					{
+						$msg = $e["message"];
+						echo "\n\n";
+						echo "Error type:\t {$e['type']}\n";
+						echo "Error message:\t {$msg}\n";
+						echo "Error file:\t {$e['file']}\n";
+						echo "Error line:\t {$e['line']}\n";
+					}
+					if ($this->settings["options"]["showErrorsInHTML"] ?? false)
+					{
+						$msg = str_replace('Stack trace:', '<br>Stack trace:', $e['message']);
+						$msg = str_replace('#', '<br>#', $msg);
+						echo "<br><br><table>";
+						echo "<tr><td>Error type</td><td>{$e['type']}</td></tr>";
+						echo "<tr><td style='vertical-align:top'>Error message</td><td>{$msg}</td></tr>";
+						echo "<tr><td>Error file</td><td>{$e['file']}</td></tr>";
+						echo "<tr><td>Error line</td><td>{$e['line']}</td></tr>";
+						echo "</table>";
+					}
+				}
+			}
+		});
 
 	}
 
