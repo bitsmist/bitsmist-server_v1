@@ -239,16 +239,13 @@ class ElasticsearchDb extends BaseDb
 
 		$result = 0;
 
-		if ($this->props["lastResponse"])
+		if (is_array($this->props["lastResponse"]["hits"]["total"]))
 		{
-			if (is_array($this->props["lastResponse"]["hits"]["total"]))
-			{
-				$result = $this->props["lastResponse"]["hits"]["total"]["value"];
-			}
-			else
-			{
-				$result = $this->props["lastResponse"]["hits"]["total"];
-			}
+			$result = $this->props["lastResponse"]["hits"]["total"]["value"];
+		}
+		else
+		{
+			$result = $this->props["lastResponse"]["hits"]["total"];
 		}
 
 		return $result;
@@ -289,7 +286,7 @@ class ElasticsearchDb extends BaseDb
 
 		// Response check
 		$response = json_decode($ret, true);
-		$this->props["lastResponse"] = $response;
+		$this->props["lastResponse"] = &$response;
 		if (is_array($response))
 		{
 			if (array_key_exists("error", $response))
@@ -519,6 +516,7 @@ class ElasticsearchDb extends BaseDb
 	{
 
 		$fieldList = "*";
+
 		if (is_array($fields))
 		{
 			$fieldList = [];
@@ -538,6 +536,7 @@ class ElasticsearchDb extends BaseDb
 	{
 
 		$sort = [];
+
 		if ($orders)
 		{
 			foreach ($orders as $key => $value)
