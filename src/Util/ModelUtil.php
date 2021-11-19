@@ -143,7 +143,7 @@ class ModelUtil
 		$fields = $spec["options"]["fields"] ?? "*";
 
 		$data = null;
-		$dbs = $request->getAttribute("databases")->getPlugins();
+		$dbs = $this->loader->getService("dbManager")->getPlugins();
 		foreach ($dbs as $dbName => $db)
 		{
 			// beginTrans()
@@ -202,7 +202,7 @@ class ModelUtil
 		$searches = $spec["options"]["searches"] ?? null;
 
 		$data = null;
-		$dbs = $request->getAttribute("databases")->getPlugins();
+		$dbs = $this->loader->getService("dbManager")->getPlugins();
 		foreach ($dbs as $dbName => $db)
 		{
 			// beginTrans();
@@ -255,7 +255,7 @@ class ModelUtil
 		$searches = $spec["options"]["searches"] ?? null;
 
 		$data = null;
-		$dbs = $request->getAttribute("databases")->getPlugins();
+		$dbs = $this->loader->getService("dbManager")->getPlugins();
 		foreach ($dbs as $dbName => $db)
 		{
 			// beginTrans();
