@@ -45,12 +45,26 @@ class PdoDb extends BaseDb
 			"dsn = {dsn}, user = {user}, password = {password}", ["method"=>__METHOD__, "dsn"=>$this->props["dsn"], "user"=>$this->props["user"], "password"=>substr($this->props["password"], 0, 1) . "*******"]
 		);
 
-		$this->props["connection"] = new PDO($this->props["dsn"], $this->props["user"], $this->props["password"], [
+		// Default options
+		$options = [
 			PDO::ATTR_ERRMODE				=> PDO::ERRMODE_EXCEPTION,
 			PDO::ATTR_DEFAULT_FETCH_MODE	=> PDO::FETCH_ASSOC,
 			PDO::ATTR_EMULATE_PREPARES		=> false,
 			PDO::ATTR_PERSISTENT			=> true,
-		]);
+		];
+
+		// Custom options
+		if ($this->options["pdoOptions"] ?? null)
+		{
+			foreach ($this->options["pdoOptions"] as $key => $value)
+			{
+				$value = ( is_string($value) && substr($value, 0, 5) == "PDO::" ? constant($value) : $value);
+				$options[constant($key)] = $value;
+			}
+		}
+
+		// Connect to database
+		$this->props["connection"] = new PDO($this->props["dsn"], $this->props["user"], $this->props["password"], $options);
 
 		return $this->props["connection"];
 
