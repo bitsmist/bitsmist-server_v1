@@ -95,8 +95,6 @@ class ControllerManager
 	public function handle(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
 	{
 
-		ini_set("session.cookie_httponly", TRUE);
-
 		$request = $request->withAttribute("resultCode", HttpException::ERRNO_NONE);
 		$request = $request->withAttribute("resultMessage", HttpException::ERRMSG_NONE);
 

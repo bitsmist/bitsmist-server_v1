@@ -50,6 +50,9 @@ class App
 
 		$this->settings = $settings;
 
+		// Set php.ini from settings
+		$this->setIni($settings["phpOptions"] ?? null);
+
 		// Init error handling
 		$this->initError();
 
@@ -57,6 +60,9 @@ class App
 		$options = $settings["loader"];
 		$className = $options["className"];
 		$this->loader = new $className($settings);
+
+		// Set php.ini from spec
+		$this->setIni($this->loader->getAppInfo("spec")["phpOptions"] ?? null);
 
 	}
 
@@ -87,7 +93,7 @@ class App
 			}
 			catch (\Throwable $e)
 			{
-				throw $exeption ?? $e;
+				throw $exception; // Throw an original exception
 			}
 		}
 
@@ -98,6 +104,28 @@ class App
 		if ($exception)
 		{
 			throw $exception;
+		}
+
+	}
+
+	// -------------------------------------------------------------------------
+	//	Protected
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Set php.ini.
+	 *
+	 * @param	$options		Options.
+	 */
+	protected function setIni(?array $options)
+	{
+
+		if ($options)
+		{
+			foreach ($options as $key => $value)
+			{
+				ini_set($key, $value);
+			}
 		}
 
 	}
