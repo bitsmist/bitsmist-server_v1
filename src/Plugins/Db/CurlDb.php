@@ -251,7 +251,7 @@ abstract class CurlDb extends BaseDb
 		}
 
 		// Custom
-		if ($this->options["curlOptions"])
+		if ($this->options["curlOptions"] ?? null)
 		{
 			foreach ($this->options["curlOptions"] as $key => $value)
 			{
