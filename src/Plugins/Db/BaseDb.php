@@ -306,7 +306,7 @@ class BaseDb extends PluginBase
 	/**
 	 * Execute the database command.
 	 *
-	 * @param		string			$cmd				Database command object.
+	 * @param		object			$cmd				Database command object.
 	 *
 	 * @return		int									Record count.
 	 */
