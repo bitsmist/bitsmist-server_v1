@@ -11,14 +11,13 @@
 
 namespace Bitsmist\v1\Plugins\Db;
 
-use Bitsmist\v1\Exception\HttpException;
-use Bitsmist\v1\Plugins\Db\BaseDb;
+use Bitsmist\v1\Plugins\Db\CurlDb;
 
 // =============================================================================
 //	Elasticsearch database class
 // =============================================================================
 
-class ElasticsearchDb extends BaseDb
+class ElasticsearchDb extends CurlDb
 {
 
 	// -------------------------------------------------------------------------
@@ -48,163 +47,6 @@ class ElasticsearchDb extends BaseDb
 	// -------------------------------------------------------------------------
 	//	Public
 	// -------------------------------------------------------------------------
-
-	public function open($setting = null)
-	{
-
-		$this->props["lastResponse"] = null;
-		$this->props["connection"] = curl_init();
-
-		$this->logger->debug(
-			"dsn = {dsn}, user = {user}, password = {password}", ["method"=>__METHOD__, "dsn"=>$this->props["dsn"], "user"=>$this->props["user"], "password"=>substr($this->props["password"], 0, 1) . "*******"]
-		);
-
-		return $this->props["connection"];
-
-	}
-
-    // -------------------------------------------------------------------------
-
-	public function close()
-	{
-
-		if ($this->props["connection"])
-		{
-			curl_close($this->props["connection"]);
-			$this->props["connection"] = null;
-
-			$this->logger->debug("dsn = {dsn}", ["method"=>__METHOD__, "dsn"=>$this->props["dsn"]]);
-		}
-
-	}
-
-	// -------------------------------------------------------------------------
-
-	public function select($tableName, $fields, $keys = null, $orders = null, $limit = null, $offset = null)
-	{
-
-		list($query) = $this->buildQuerySelect($tableName, $fields, $keys, $orders, $limit, $offset);
-		$cmd = $this->createCommand($query);
-		$cmd["method"] = "GET";
-		$cmd["index"] = $tableName;
-		$cmd["command"] = "_search";
-		$cmd["url"]  = $this->props["dsn"] . "/" . $cmd["index"] . "/" . $cmd["command"];
-
-		return $this->getData($cmd);
-
-	}
-
-	// -------------------------------------------------------------------------
-
-	public function selectById($tableName, $fields, $id)
-	{
-
-		list($query) = $this->buildQuerySelect($tableName, $fields);
-		$cmd = $this->createCommand($query);
-		$cmd["method"] = "GET";
-		$cmd["index"] = $tableName;
-		$cmd["id"] = $id["value"];
-		$cmd["url"] = $this->props["dsn"] . "/" . $cmd["index"] . "/_doc/" . $cmd["id"];
-
-		return $this->getData($cmd);
-
-	}
-
-    // -------------------------------------------------------------------------
-
-	public function insert($tableName, $fields)
-	{
-
-		list($query) = $this->buildQueryInsert($tableName, $fields);
-		$cmd = $this->createCommand($query);
-		$cmd["method"] = "POST";
-		$cmd["index"] = $tableName;
-		$cmd["url"]  = $this->props["dsn"] . "/" . $cmd["index"] . "/_doc/";
-
-		return $this->execute($cmd);
-
-	}
-
-    // -------------------------------------------------------------------------
-
-	public function insertWithId($tableName, $fields, $id)
-	{
-
-		list($query) = $this->buildQueryInsert($tableName, $fields);
-		$cmd = $this->createCommand($query);
-		$cmd["method"] = "POST";
-		$cmd["index"] = $tableName;
-		$cmd["id"] = $id;
-		$cmd["url"] = $this->props["dsn"] . "/" . $cmd["index"] . "/_doc/" . $cmd["id"];
-
-		return $this->execute($cmd);
-
-	}
-
-	// -------------------------------------------------------------------------
-
-	public function update($tableName, $fields, $keys = null)
-	{
-
-		list($query) = $this->buildQueryUpdate($tableName, $fields, $keys);
-		$cmd = $this->createCommand($query);
-		$cmd["method"] = "POST";
-		$cmd["index"] = $tableName;
-		$cmd["command"] = "_update_by_query";
-		$cmd["url"]  = $this->props["dsn"] . "/" . $cmd["index"] . "/" . $cmd["command"];
-
-		return $this->execute($cmd);
-
-	}
-
-	// -------------------------------------------------------------------------
-
-	public function updateById($tableName, $fields, $id)
-	{
-
-		list($query) = $this->buildQueryUpdateById($tableName, $fields, $id);
-		$cmd = $this->createCommand($query);
-		$cmd["method"] = "PUT";
-		$cmd["index"] = $tableName;
-		$cmd["id"] = $id["value"];
-		$cmd["url"] = $this->props["dsn"] . "/" . $cmd["index"] . "/_doc/" . $cmd["id"];
-
-		return $this->execute($cmd);
-
-	}
-
-	// -------------------------------------------------------------------------
-
-	public function delete($tableName, $keys)
-	{
-
-		list($query) = $this->buildQueryDelete($tableName, $keys);
-		$cmd = $this->createCommand($query);
-		$cmd["method"] = "POST";
-		$cmd["index"] = $tableName;
-		$cmd["command"] = "_delete_by_query";
-		$cmd["url"]  = $this->props["dsn"] . "/" . $cmd["index"] . "/" . $cmd["command"];
-
-		return $this->execute($cmd);
-
-	}
-
-	// -------------------------------------------------------------------------
-
-	public function deleteById($tableName, $id)
-	{
-
-		$cmd = array();
-		$cmd["method"] = "DELETE";
-		$cmd["index"] = $tableName;
-		$cmd["id"] = $id["value"];
-		$cmd["url"] = $this->props["dsn"] . "/" . $cmd["index"] . "/_doc/" . $cmd["id"];
-
-		return $this->execute($cmd);
-
-	}
-
-    // -------------------------------------------------------------------------
 
 	public function getData($cmd, $params = null)
 	{
@@ -254,50 +96,101 @@ class ElasticsearchDb extends BaseDb
 
     // -------------------------------------------------------------------------
 
-	public function execute($cmd, $params = null)
+	public function buildQuery($query, $fields = "*", $keys = null, $order = null, $limit = null, $offset = null)
+	{
+	}
+
+    // -------------------------------------------------------------------------
+
+	public function createCommand($query = null)
 	{
 
-		$this->logger->info("method = {httpmethod}, url = {url}", ["method"=>__METHOD__, "httpmethod"=>$cmd["method"], "url"=>$cmd["url"]]);
+		$cmd = array();
 
-		// Init
-		$this->props["headers"] = [
-			"Content-Type: application/json",
-		];
-		curl_setopt($this->props["connection"], CURLOPT_URL, $cmd["url"]);
-		curl_setopt($this->props["connection"], CURLOPT_CUSTOMREQUEST, $cmd["method"]);
-		curl_setopt($this->props["connection"], CURLOPT_SSL_VERIFYPEER, false);
-		curl_setopt($this->props["connection"], CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($this->props["connection"], CURLOPT_HTTPHEADER, $this->props["headers"]);
-		if (($cmd["query"] ?? null) !== null)
+		if ($query !== null)
 		{
-			curl_setopt($this->props["connection"], CURLOPT_POSTFIELDS, $cmd["query"]);
-			$this->logger->info("query = {query}", ["method"=>__METHOD__, "query"=>$cmd["query"]]);
+			$cmd["query"] = json_encode($query);
 		}
-		curl_setopt($this->props["connection"], CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
 
-		// Exec
-		$ret = curl_exec($this->props["connection"]);
-		if (!$ret)
-		{
-			$this->logger->error("curl_exec() failed: {message}", ["method"=>__METHOD__, "message"=>curl_error($this->props["connection"])]);
-			throw new HttpException(HttpException::ERRNO_EXCEPTION, HttpException::ERRMSG_EXCEPTION);
-		}
-		$this->logger->debug("ret = {ret}",["method"=>__METHOD__, "ret"=>$ret]);
+		return $cmd;
 
-		// Response check
-		$response = json_decode($ret, true);
-		$this->props["lastResponse"] = &$response;
-		if (is_array($response))
+	}
+
+	// -------------------------------------------------------------------------
+	//	Protected
+	// -------------------------------------------------------------------------
+
+	protected function buildUrl($cmd)
+	{
+
+		$type = "_doc";
+		$command = "";
+		if (!isset($cmd["id"]))
 		{
-			if (array_key_exists("error", $response))
+			switch ($cmd["method"])
 			{
-				$this->logger->error("Elasticsearch returned an error: type = {type}, reason = {reason}", ["method"=>__METHOD__, "type"=>$response["error"]["root_cause"][0]["type"], "reason"=>$response["error"]["root_cause"][0]["reason"]]);
-				throw new HttpException(HttpException::ERRNO_EXCEPTION, HttpException::ERRMSG_EXCEPTION);
+			case "GET" :
+				$command = "_search";
+				$type = "";
+				break;
+			case "PUT" :
+				$command = "_update_by_query";
+				break;
+			case "DELETE" :
+				$command = "_delete_by_query";
+				break;
 			}
 		}
 
-		// Result count
+		$url = $this->props["dsn"] . "/" . $cmd["tableName"] .
+			($type ? "/" . $type : "") .
+			(isset($cmd["id"]) ? "/" . $cmd["id"] : "" ) .
+			($command ? "/" . $command : "");
+
+		return $url;
+
+	}
+
+	// -------------------------------------------------------------------------
+
+	protected function convertResponse($cmd, $response)
+	{
+
+		return json_decode($response, true);
+
+	}
+
+	// -------------------------------------------------------------------------
+
+	protected function checkResponse($cmd, $response)
+	{
+
+		if (!is_array($response) || array_key_exists("error", $response))
+		{
+			$type = $response["error"]["root_cause"][0]["type"] ?? "";
+			$reason = $response["error"]["root_cause"][0]["reason"] ?? $response["error"] ?? "";
+
+			$this->logger->error("Elasticsearch returned an error: type = {type}, reason = {reason}", [
+				"method"=>__METHOD__,
+				"type"=>$type,
+				"reason"=>$reason
+			]);
+
+			throw new \RuntimeException("Elasticsearch returned an error. " .
+				"type=" . $type .
+				", reason=" . $reason
+			);
+		}
+
+	}
+
+	// -------------------------------------------------------------------------
+
+	protected function getResultCount($cmd, $response)
+	{
+
 		$cnt = 0;
+
 		switch ($cmd["method"])
 		{
 		case "POST":
@@ -324,30 +217,6 @@ class ElasticsearchDb extends BaseDb
 
 	}
 
-    // -------------------------------------------------------------------------
-
-	public function buildQuery($query, $fields = "*", $keys = null, $order = null, $limit = null, $offset = null)
-	{
-	}
-
-    // -------------------------------------------------------------------------
-
-	public function createCommand($query = null)
-	{
-
-		$cmd = array();
-
-		if ($query !== null)
-		{
-			$cmd["query"] = json_encode($query);
-		}
-
-		return $cmd;
-
-	}
-
-	// -------------------------------------------------------------------------
-	//	Protected
 	// -------------------------------------------------------------------------
 
 	protected function buildQuerySelect($tableName, $fields = "*", $keys = null, $orders = null, $limit = null, $offset = null)
