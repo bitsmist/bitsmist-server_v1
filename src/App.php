@@ -81,7 +81,14 @@ class App
 		catch (\Throwable $e)
 		{
 			$exception = $e;
-			$response = $this->loader->getService("errorManager")->handle($this->loader->getRequest()->withAttribute("exception", $e), $this->loader->getResponse());
+			try
+			{
+				$response = $this->loader->getService("errorManager")->handle($this->loader->getRequest()->withAttribute("exception", $e), $this->loader->getResponse());
+			}
+			catch (\Throwable $e)
+			{
+				throw $exeption ?? $e;
+			}
 		}
 
 		// Send response
