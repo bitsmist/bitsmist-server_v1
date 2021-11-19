@@ -239,22 +239,25 @@ abstract class CurlDb extends BaseDb
 	protected function initCurl($cmd)
 	{
 
-		$headers = [
-			"Content-Type: application/json",
-		];
-
+		// Common
 		curl_setopt($this->props["connection"], CURLOPT_URL, $cmd["url"]);
 		curl_setopt($this->props["connection"], CURLOPT_CUSTOMREQUEST, $cmd["method"]);
-		curl_setopt($this->props["connection"], CURLOPT_SSL_VERIFYPEER, false);
-		curl_setopt($this->props["connection"], CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($this->props["connection"], CURLOPT_HTTPHEADER, $headers);
-		curl_setopt($this->props["connection"], CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
 
 		// Body
 		if (($cmd["query"] ?? null) !== null)
 		{
 			curl_setopt($this->props["connection"], CURLOPT_POSTFIELDS, $cmd["query"]);
 			$this->logger->info("query = {query}", ["method"=>__METHOD__, "query"=>$cmd["query"]]);
+		}
+
+		// Custom
+		if ($this->options["curlOptions"])
+		{
+			foreach ($this->options["curlOptions"] as $key => $value)
+			{
+				$value = ( is_string($value) && substr($value, 0, 5) == "CURL_" ? constant($value) : $value);
+				curl_setopt($this->props["connection"], constant($key), $value);
+			}
 		}
 
 	}
