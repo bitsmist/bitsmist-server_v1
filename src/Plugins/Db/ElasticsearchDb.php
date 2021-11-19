@@ -120,6 +120,22 @@ class ElasticsearchDb extends CurlDb
 	//	Protected
 	// -------------------------------------------------------------------------
 
+	protected function initCurl($cmd)
+	{
+
+		// Super
+		parent::initCurl($cmd);
+
+		// Set options
+		curl_setopt($this->props["connection"], CURLOPT_HTTPHEADER, [
+			"Content-Type: application/json",
+		]);
+		curl_setopt($this->props["connection"], CURLOPT_RETURNTRANSFER, true);
+
+	}
+
+	// -------------------------------------------------------------------------
+
 	protected function buildUrl($cmd)
 	{
 
