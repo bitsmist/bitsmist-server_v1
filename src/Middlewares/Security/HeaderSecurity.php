@@ -35,16 +35,18 @@ class HeaderSecurity extends MiddlewareBase
 
 		$headers = $request->getHeaders();
 		$spec = $this->loader->getAppInfo("spec");
-		$origins = $spec["options"]["allowedOrigins"];
 
 		// check host
 		if ($headers["host"][0] != $_SERVER["SERVER_NAME"])
 		{
-			$this->loader->getService("loggerManager")->logger->alert("Invalid host: host = {host}", ["method"=>__METHOD__, "host"=>$headers["host"][0]]);
+			$this->loader->getService("loggerManager")->logger->alert("Invalid host: host = {host}", [
+				"method"=>__METHOD__,
+				"host"=>$headers["host"][0]
+			]);
 			throw new HttpException(HttpException::ERRNO_PARAMETER, HttpException::ERRMSG_PARAMETER);
 		}
 
-		// check origin is set
+		// check if origin is set
 		if ($spec["options"]["needOrigin"] ?? false)
 		{
 			if (!isset($headers["origin"][0]))
@@ -54,19 +56,42 @@ class HeaderSecurity extends MiddlewareBase
 			}
 		}
 
-		// check origin is valid
-		if (isset($headers["origin"][0]) && !in_array($headers["origin"][0], $origins))
+		// check if origin is in allowed origins list
+		if (isset($headers["origin"][0]) && !in_array($headers["origin"][0], $spec["options"]["allowedOrigins"]))
 		{
-			$this->loader->getService("loggerManager")->alert("Invalid origin: origin = {origin}", ["method"=>__METHOD__, "origin"=>($headers["origin"][0]??"")]);
+			$this->loader->getService("loggerManager")->alert("Invalid origin: origin = {origin}", [
+				"method"=>__METHOD__,
+				"origin"=>($headers["origin"][0] ?? "")
+			]);
 			throw new HttpException(HttpException::ERRNO_PARAMETER, HttpException::ERRMSG_PARAMETER);
 		}
 
-		// Check if x-from header exists when needPreflight option is true
-		if ($spec["options"]["needPreflight"] ?? true)
+		// Check if required header exists
+		if ($spec["options"]["requiredHeaders"] ?? false)
 		{
-			if (!isset($headers["x-from"][0]))
+			foreach ($spec["options"]["requiredHeaders"] as $headerName)
 			{
-				$this->logger->alert("Invalid x-from: x-from = null", ["method"=>__METHOD__]);
+				if (!isset($headers[strtolower($headerName)][0]))
+				{
+					$this->loader->getService("loggerManager")->alert("Required header doesn't exist: headerName = {headerName}", [
+						"method"=>__METHOD__,
+						"headerName"=>$headerName,
+					]);
+					throw new HttpException(HttpException::ERRNO_PARAMETER, HttpException::ERRMSG_PARAMETER);
+				}
+			}
+		}
+
+		// Check if header exists when needPreflight option is true
+		if ($spec["options"]["needPreflight"] ?? false)
+		{
+			$headerName = (is_string($spec["options"]["needPreflight"]) ? $spec["options"]["needPreflight"] : "X-From");
+			if (!isset($headers[strtolower($headerName)][0]))
+			{
+				$this->loader->getService("loggerManager")->alert("Required header for preflight doesn't exist: headerName = {headerName}", [
+					"method"=>__METHOD__,
+					"headerName"=>$headerName,
+				]);
 				throw new HttpException(HttpException::ERRNO_PARAMETER, HttpException::ERRMSG_PARAMETER);
 			}
 		}
