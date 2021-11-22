@@ -30,10 +30,14 @@ class JsonRenderer extends MiddlewareBase
 	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
 	{
 
-		$response->getBody()->write(json_encode($request->getAttribute("result")));
-		$response = $response->withHeader('Content-Type', 'application/json');
+		if ($request->getAttribute("result"))
+		{
+			$response->getBody()->write(json_encode($request->getAttribute("result")));
+			$response = $response->withHeader('Content-Type', 'application/json');
 
-		return $response;
+			return $response;
+		}
+
 
 	}
 
