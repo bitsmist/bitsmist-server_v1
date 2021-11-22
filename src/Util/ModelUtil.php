@@ -84,18 +84,22 @@ class ModelUtil
 		$fields = $spec["options"]["fields"] ?? "*";
 		$searches = $spec["options"]["searches"] ?? null;
 		$orders = $spec["options"]["orders"] ?? null;
+		$limitParamName = $spec["options"]["modelOptions"]["params"]["limit"] ?? "_limit";
+		$offsetParamName = $spec["options"]["modelOptions"]["params"]["offset"] ?? "_offset";
+		$orderParamName = $spec["options"]["modelOptions"]["params"]["order"] ?? "_order";
+		$listIdName = $spec["options"]["modelOptions"]["params"]["list"] ?? "list";
 
 		$search = $searches[($gets["_search"] ?? "default")] ?? null;
-		$limit = $gets["_limit"] ?? null;
-		$offset = $gets["_offset"] ?? null;
-		$order = $orders[($gets["_order"] ?? "default")] ?? null;
+		$limit = $gets[$limitParamName] ?? null;
+		$offset = $gets[$offsetParamName] ?? null;
+		$order = $orders[($gets[$orderParamName] ?? "default")] ?? null;
 
 		$data = null;
 		foreach ($dbs as $dbName => $db)
 		{
 			switch ($id)
 			{
-			case "list":
+			case $listIdName:
 				$search = $this->buildSearchKeys($search, $gets);
 
 				// Get data
@@ -141,6 +145,7 @@ class ModelUtil
 		$posts = $request->getParsedBody();
 		$spec = $this->loader->getAppInfo("spec");
 		$fields = $spec["options"]["fields"] ?? "*";
+		$newIdName = $spec["options"]["modelOptions"]["params"]["new"] ?? "new";
 
 		$data = null;
 		$dbs = $this->loader->getService("dbManager")->getPlugins();
@@ -155,7 +160,7 @@ class ModelUtil
 				{
 					switch ($id)
 					{
-					case "new":
+					case $newIdName:
 					case null:
 						$item = $this->buildFields($fields, $posts["items"][$i]);
 						$cnt += $db->insert($spec[$dbName]["tableName"], $item);
@@ -173,7 +178,7 @@ class ModelUtil
 			catch (Exception $e)
 			{
 				// rollbackTrans();
-				throw new Exception($e);
+				throw $e;
 			}
 		}
 
@@ -200,6 +205,7 @@ class ModelUtil
 		$spec = $this->loader->getAppInfo("spec");
 		$fields = $spec["options"]["fields"] ?? "*";
 		$searches = $spec["options"]["searches"] ?? null;
+		$listIdName = $spec["options"]["modelOptions"]["params"]["list"] ?? "list";
 
 		$data = null;
 		$dbs = $this->loader->getService("dbManager")->getPlugins();
@@ -211,7 +217,7 @@ class ModelUtil
 			{
 				switch ($id)
 				{
-				case "list":
+				case $listIdName:
 					$item = $this->buildFields($fields, $posts["items"][0]);
 					$search = $searches[($gets["_search"] ?? "default")] ?? null;
 					$search = $this->buildSearchKeys($search, $gets);
@@ -228,7 +234,7 @@ class ModelUtil
 			catch (Exception $e)
 			{
 				// rollbackTrans();
-				throw new Exception($e);
+				throw $e;
 			}
 		}
 
@@ -253,6 +259,7 @@ class ModelUtil
 		$gets = $request->getQueryParams();
 		$spec = $this->loader->getAppInfo("spec");
 		$searches = $spec["options"]["searches"] ?? null;
+		$listIdName = $spec["options"]["modelOptions"]["params"]["list"] ?? "list";
 
 		$data = null;
 		$dbs = $this->loader->getService("dbManager")->getPlugins();
@@ -264,7 +271,7 @@ class ModelUtil
 			{
 				switch ($id)
 				{
-					case "list":
+					case $listIdName:
 						$search = $searches[($gets["_search"] ?? "default")] ?? null;
 						$search = $this->buildSearchKeys($search, $gets);
 						$cnt = $db->delete($spec[$dbName]["tableName"], $search);
@@ -279,7 +286,7 @@ class ModelUtil
 			catch (Exception $e)
 			{
 				// rollbackTrans();
-				throw new Exception($e);
+				throw $e;
 			}
 		}
 
