@@ -30,21 +30,25 @@ class WhitelistSecurity extends MiddlewareBase
 	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
 	{
 
-		$method = strtolower($request->getMethod());
-		$resource = $this->loader->getRouteInfo("args")["resource"];
-		$whitelist = $this->loader->getAppInfo("spec")["options"]["parameters"];
+		$whitelist = $this->loader->getAppInfo("spec")["options"]["parameters"] ?? null;
 
-		// Check gets
-		$gets = $request->getQueryParams();
-		$this->checkWhitelist($gets, $whitelist, $method, $resource);
-
-		// Check posts
-		$posts = $request->getParsedBody();
-		if (isset($posts["items"]))
+		if ($whitelist)
 		{
-			foreach ($posts["items"] as $item)
+			$method = strtolower($request->getMethod());
+			$resource = $this->loader->getRouteInfo("args")["resource"];
+
+			// Check gets
+			$gets = $request->getQueryParams();
+			$this->checkWhitelist($gets, $whitelist, $method, $resource);
+
+			// Check posts
+			$posts = $request->getParsedBody();
+			if (isset($posts["items"]))
 			{
-				$this->checkWhitelist($item, $whitelist, $method, $resource);
+				foreach ($posts["items"] as $item)
+				{
+					$this->checkWhitelist($item, $whitelist, $method, $resource);
+				}
 			}
 		}
 
