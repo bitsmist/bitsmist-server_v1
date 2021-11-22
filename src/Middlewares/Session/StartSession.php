@@ -33,14 +33,14 @@ class StartSession extends MiddlewareBase
 		if (session_status() != PHP_SESSION_ACTIVE)
 		{
 			// Set session name
-			$sessionName = $this->loader->getAppInfo("spec")["options"]["session"]["name"] ?? null;
+			$sessionName = $this->loader->getAppInfo("spec")["options"]["sessionOptions"]["name"] ?? null;
 			if ($sessionName)
 			{
 				session_name($sessionName);
 			}
 
 			// Set cookie options
-			$cookieOptions = $this->loader->getAppInfo("spec")["options"]["session"]["cookieOptions"] ?? null;
+			$cookieOptions = $this->loader->getAppInfo("spec")["options"]["sessionOptions"]["cookieOptions"] ?? null;
 			if ($cookieOptions)
 			{
 				$currentOptions = session_get_cookie_params();
@@ -61,6 +61,8 @@ class StartSession extends MiddlewareBase
 					session_set_cookie_params($newOptions);
 				}
 			}
+
+			//session_set_save_handler($mysql_sesshandler, true);
 
 			// Start session
 			session_start();
