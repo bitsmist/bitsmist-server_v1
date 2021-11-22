@@ -44,16 +44,21 @@ class LoginAuthenticator extends MiddlewareBase
 		{
 			// Found
 			$spec = $this->loader->getAppInfo("spec");
-			$user_id = $spec["options"]["userId"] ?? "";
-			$user_name = $spec["options"]["userName"] ?? "";
+			$rootName = $spec["options"]["sessionOptions"]["name"] ?? "";
+			$root = &$_SESSION;
+			if ($rootName)
+			{
+				$_SESSION[$rootName] = array();
+				$root = &$_SESSION[$rootName];
+			}
 
-			session_start();
+			// Store info from DB to session variables.
+			foreach ($data[0] as $key => $value)
+			{
+				$root[$key] = $value;
+			}
+
 			session_regenerate_id(TRUE);
-			$_SESSION["USER"] = [
-				"ID" => $data[0][$user_id],
-				"NAME" => $data[0][$user_name],
-				"DATA" => $data[0],
-			];
 
 			$this->loader->getService("loggerManager")->notice("User logged in. user={user}", ["method"=>__METHOD__, "user"=>implode(",",$data[0])]);
 		}
