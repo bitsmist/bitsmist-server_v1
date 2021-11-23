@@ -1,7 +1,7 @@
 <?php
 // =============================================================================
 /**
- * Bitsmist - PHP WebAPI Server Framework
+ * Bitsmist Server - PHP WebAPI Server Framework
  *
  * @copyright		Masaki Yasutake
  * @link			https://bitsmist.com/
@@ -9,16 +9,18 @@
  */
 // =============================================================================
 
-namespace Bitsmist\v1\Util;
+namespace Bitsmist\v1\Middlewares\Handler;
 
+use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
+use Bitsmist\v1\Util\ModelUtil;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 // =============================================================================
-//	Database model utility class
+//	Database handler class
 // =============================================================================
 
-class ModelUtil
+class DBHandler extends MiddlewareBase
 {
 
 	// -------------------------------------------------------------------------
@@ -47,23 +49,26 @@ class ModelUtil
 	public $totalCount = 0;
 
 	// -------------------------------------------------------------------------
-	//	Constructor, Destructor
+	//	Public
 	// -------------------------------------------------------------------------
 
-	/**
-	 * Constructor.
-	 *
-	 * @param	$loader			Loader.
-	 */
-	public function __construct($loader)
+	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
 	{
 
-		$this->loader = $loader;
+		// Handle database
+		$methodName = strtolower($request->getMethod()) . "Items";
+		$data = $this->$methodName($request, $response);
+
+		$request = $request->withAttribute("data", $data);
+		$request = $request->withAttribute("resultCount", $this->resultCount);
+		$request = $request->withAttribute("totalCount", $this->totalCount);
+
+		return $request;
 
 	}
 
 	// -------------------------------------------------------------------------
-	//	Public
+	//	Protected
 	// -------------------------------------------------------------------------
 
 	/**
@@ -81,13 +86,13 @@ class ModelUtil
 		$gets = $request->getQueryParams();
 		$dbs = $this->loader->getService("dbManager")->getPlugins();
 		$spec = $this->loader->getAppInfo("spec");
-		$fields = $spec["options"]["fields"] ?? "*";
-		$searches = $spec["options"]["searches"] ?? null;
-		$orders = $spec["options"]["orders"] ?? null;
-		$limitParamName = $spec["options"]["modelOptions"]["params"]["limit"] ?? "_limit";
-		$offsetParamName = $spec["options"]["modelOptions"]["params"]["offset"] ?? "_offset";
-		$orderParamName = $spec["options"]["modelOptions"]["params"]["order"] ?? "_order";
-		$listIdName = $spec["options"]["modelOptions"]["params"]["list"] ?? "list";
+		$fields = $this->options["fields"] ?? "*";
+		$searches = $this->options["searches"] ?? null;
+		$orders = $this->options["orders"] ?? null;
+		$limitParamName = $this->options["specialParameters"]["limit"] ?? "_limit";
+		$offsetParamName = $this->options["specialParameters"]["offset"] ?? "_offset";
+		$orderParamName = $this->options["specialParameters"]["order"] ?? "_order";
+		$listIdName = $this->options["specialParameters"]["list"] ?? "list";
 
 		$search = $searches[($gets["_search"] ?? "default")] ?? null;
 		$limit = $gets[$limitParamName] ?? null;
@@ -144,8 +149,8 @@ class ModelUtil
 		$id = $this->loader->getRouteInfo("args")["id"] ?? null;
 		$posts = $request->getParsedBody();
 		$spec = $this->loader->getAppInfo("spec");
-		$fields = $spec["options"]["fields"] ?? "*";
-		$newIdName = $spec["options"]["modelOptions"]["params"]["new"] ?? "new";
+		$fields = $this->options["fields"] ?? "*";
+		$newIdName = $this->options["specialParameters"]["new"] ?? "new";
 
 		$data = null;
 		$dbs = $this->loader->getService("dbManager")->getPlugins();
@@ -203,9 +208,9 @@ class ModelUtil
 		$gets = $request->getQueryParams();
 		$posts = $request->getParsedBody();
 		$spec = $this->loader->getAppInfo("spec");
-		$fields = $spec["options"]["fields"] ?? "*";
-		$searches = $spec["options"]["searches"] ?? null;
-		$listIdName = $spec["options"]["modelOptions"]["params"]["list"] ?? "list";
+		$fields = $this->options["fields"] ?? "*";
+		$searches = $this->options["searches"] ?? null;
+		$listIdName = $this->options["specialParameters"]["list"] ?? "list";
 
 		$data = null;
 		$dbs = $this->loader->getService("dbManager")->getPlugins();
@@ -258,8 +263,8 @@ class ModelUtil
 		$id = $this->loader->getRouteInfo("args")["id"];
 		$gets = $request->getQueryParams();
 		$spec = $this->loader->getAppInfo("spec");
-		$searches = $spec["options"]["searches"] ?? null;
-		$listIdName = $spec["options"]["modelOptions"]["params"]["list"] ?? "list";
+		$searches = $this->options["searches"] ?? null;
+		$listIdName = $this->options["specialParameters"]["list"] ?? "list";
 
 		$data = null;
 		$dbs = $this->loader->getService("dbManager")->getPlugins();
