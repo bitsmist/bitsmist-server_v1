@@ -30,8 +30,7 @@ class QueryLimiter extends MiddlewareBase
 	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
 	{
 
-		$spec = $this->loader->getAppInfo("spec");
-		$options = $spec["options"] ?? array();
+		$options = $this->options ?? array();
 		$gets = $request->getQueryParams();
 
 		// Limit
