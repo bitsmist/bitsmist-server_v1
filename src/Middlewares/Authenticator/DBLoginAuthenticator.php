@@ -17,10 +17,10 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 // =============================================================================
-//	Login authenticator class
+//	DB Login authenticator class
 // =============================================================================
 
-class LoginAuthenticator extends MiddlewareBase
+class DBLoginAuthenticator extends MiddlewareBase
 {
 
 	// -------------------------------------------------------------------------
