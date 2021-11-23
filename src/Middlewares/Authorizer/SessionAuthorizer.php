@@ -35,7 +35,7 @@ class SessionAuthorizer extends MiddlewareBase
 		// Check a session varaiable existence to determine whether user is logged in.
 		// This session variable is set in LoginAuthenticator.
 		$spec = $this->loader->getAppInfo("spec");
-		$rootName = $spec["options"]["sessionOptions"]["name"] ?? "";
+		$rootName = $spec["options"]["session"]["name"] ?? "";
 		if (isset($_SESSION[$rootName]))
 		{
 			$isAuthorized = true;
