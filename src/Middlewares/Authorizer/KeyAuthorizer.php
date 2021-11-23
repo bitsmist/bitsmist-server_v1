@@ -39,7 +39,7 @@ class KeyAuthorizer extends MiddlewareBase
 
 		if (!$isAuthorized)
 		{
-			$this->loader->getService("loggerManager")->alert("Not authorized: method = {httpmethod}, resource = {resource}", [
+			$this->loader->getService("logger")->alert("Not authorized: method = {httpmethod}, resource = {resource}", [
 				"method"=>__METHOD__,
 				"httpmethod"=>$request->getMethod(),
 				"resource"=>$this->loader->getRouteInfo("args")["resource"];

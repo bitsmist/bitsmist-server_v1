@@ -84,7 +84,7 @@ class DBHandler extends MiddlewareBase
 
 		$id = $this->loader->getRouteInfo("args")["id"];
 		$gets = $request->getQueryParams();
-		$dbs = $this->loader->getService("dbManager")->getPlugins();
+		$dbs = $this->loader->getService("db")->getPlugins();
 		$spec = $this->loader->getAppInfo("spec");
 		$fields = $this->options["fields"] ?? "*";
 		$searches = $this->options["searches"] ?? null;
@@ -153,7 +153,7 @@ class DBHandler extends MiddlewareBase
 		$newIdName = $this->options["specialParameters"]["new"] ?? "new";
 
 		$data = null;
-		$dbs = $this->loader->getService("dbManager")->getPlugins();
+		$dbs = $this->loader->getService("db")->getPlugins();
 		foreach ($dbs as $dbName => $db)
 		{
 			// beginTrans()
@@ -213,7 +213,7 @@ class DBHandler extends MiddlewareBase
 		$listIdName = $this->options["specialParameters"]["list"] ?? "list";
 
 		$data = null;
-		$dbs = $this->loader->getService("dbManager")->getPlugins();
+		$dbs = $this->loader->getService("db")->getPlugins();
 		foreach ($dbs as $dbName => $db)
 		{
 			// beginTrans();
@@ -267,7 +267,7 @@ class DBHandler extends MiddlewareBase
 		$listIdName = $this->options["specialParameters"]["list"] ?? "list";
 
 		$data = null;
-		$dbs = $this->loader->getService("dbManager")->getPlugins();
+		$dbs = $this->loader->getService("db")->getPlugins();
 		foreach ($dbs as $dbName => $db)
 		{
 			// beginTrans();

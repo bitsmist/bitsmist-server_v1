@@ -29,7 +29,7 @@ class ConnectDb extends MiddlewareBase
 	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
 	{
 
-		$this->loader->getService("dbManager")->open();
+		$this->loader->getService("db")->open();
 
 	}
 

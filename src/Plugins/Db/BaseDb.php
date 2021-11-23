@@ -40,7 +40,7 @@ class BaseDb extends PluginBase
 
 		parent::__construct($loader, $options);
 
-		$this->logger = $this->loader->getService("loggerManager");
+		$this->logger = $this->loader->getService("logger");
 
 		$this->props["dsn"] = $options["dsn"] ?? null;
 		$this->props["user"] = $options["user"] ?? null;

@@ -64,12 +64,12 @@ class DBLoginAuthenticator extends MiddlewareBase
 
 			session_regenerate_id(TRUE);
 
-			$this->loader->getService("loggerManager")->notice("User logged in. user={user}", ["method"=>__METHOD__, "user"=>implode(",",$data[0])]);
+			$this->loader->getService("logger")->notice("User logged in. user={user}", ["method"=>__METHOD__, "user"=>implode(",",$data[0])]);
 		}
 		else
 		{
 			// Not found
-			$this->loader->getService("loggerManager")->warning("User not found or password not match. gets={user}", [
+			$this->loader->getService("logger")->warning("User not found or password not match. gets={user}", [
 				"method"=>__METHOD__,
 				"user"=>implode(",", $request->getQueryParams())
 			]);

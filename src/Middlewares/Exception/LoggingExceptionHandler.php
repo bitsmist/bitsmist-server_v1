@@ -104,7 +104,7 @@ class LoggingExceptionHandler extends MiddlewareBase
 
 		for ($i = 0; $i < count($this->messages); $i++)
 		{
-			$this->loader->getService("loggerManager")->error("Exception: {message}", ["message"=>$this->messages[$i]]);
+			$this->loader->getService("logger")->error("Exception: {message}", ["message"=>$this->messages[$i]]);
 		}
 		$this->clear();
 

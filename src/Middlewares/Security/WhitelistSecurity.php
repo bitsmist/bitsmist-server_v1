@@ -74,7 +74,7 @@ class WhitelistSecurity extends MiddlewareBase
 		{
 			if (!isset($whitelist[$key]))
 			{
-				$this->loader->getService("loggerManager")->alert("Invaild parameter: parameter = {key}, value = {value}, method = {method}, resource = {resource}", ["method"=>__METHOD__, "key"=>$key, "value"=>$value, "method"=>$method, "resource"=>$resource]);
+				$this->loader->getService("logger")->alert("Invaild parameter: parameter = {key}, value = {value}, method = {method}, resource = {resource}", ["method"=>__METHOD__, "key"=>$key, "value"=>$value, "method"=>$method, "resource"=>$resource]);
 				throw new HttpException(HttpException::ERRNO_PARAMETER, HttpException::ERRMSG_PARAMETER);
 			}
 
@@ -86,7 +86,7 @@ class WhitelistSecurity extends MiddlewareBase
 				{
 					if (!Validator::validate($value, $checkList[$i]))
 					{
-						$this->loader->getService("loggerManager")->alert("Validation error: parameter = {key}, value = {value}, method = {method}, resource = {resource}", ["method"=>__METHOD__, "key"=>$key, "value"=>$value, "method"=>$method, "resource"=>$resource]);
+						$this->loader->getService("logger")->alert("Validation error: parameter = {key}, value = {value}, method = {method}, resource = {resource}", ["method"=>__METHOD__, "key"=>$key, "value"=>$value, "method"=>$method, "resource"=>$resource]);
 						throw new HttpException(HttpException::ERRNO_PARAMETER, HttpException::ERRMSG_PARAMETER);
 					}
 				}

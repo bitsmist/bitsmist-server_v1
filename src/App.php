@@ -82,14 +82,14 @@ class App
 		// Handle request
 		try
 		{
-			$response = $this->loader->getService("controllerManager")->handle($this->loader->getRequest(), $this->loader->getResponse());
+			$response = $this->loader->getService("controller")->handle($this->loader->getRequest(), $this->loader->getResponse());
 		}
 		catch (\Throwable $e)
 		{
 			$exception = $e;
 			try
 			{
-				$response = $this->loader->getService("errorManager")->handle($this->loader->getRequest()->withAttribute("exception", $e), $this->loader->getResponse());
+				$response = $this->loader->getService("errorController")->handle($this->loader->getRequest()->withAttribute("exception", $e), $this->loader->getResponse());
 			}
 			catch (\Throwable $e)
 			{
@@ -98,7 +98,7 @@ class App
 		}
 
 		// Send response
-		$this->loader->getService("emitterManager")->emit($response);
+		$this->loader->getService("emitter")->emit($response);
 
 		// Re-throw the exception during middleware handling to return error messages
 		if ($exception)
