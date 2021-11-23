@@ -59,20 +59,23 @@ class PluginManager
 		$this->loader = $loader;
 		$this->options = $options;
 
-		foreach ($options["uses"] as $key => $value)
+		if ($options["uses"] ?? null)
 		{
-			if (is_array($value))
+			foreach ($options["uses"] as $key => $value)
 			{
-				$title = $key;
-				$pluginOptions = $value;
-			}
-			else
-			{
-				$title = $value;
-				$pluginOptions = null;
-			}
+				if (is_array($value))
+				{
+					$title = $key;
+					$pluginOptions = $value;
+				}
+				else
+				{
+					$title = $value;
+					$pluginOptions = null;
+				}
 
-			$this->add($title, $pluginOptions);
+				$this->add($title, $pluginOptions);
+			}
 		}
 
 	}
