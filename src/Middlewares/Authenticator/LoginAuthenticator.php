@@ -12,7 +12,7 @@
 namespace Bitsmist\v1\Middlewares\Authenticator;
 
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
-use Bitsmist\v1\Util\ModelUtil;
+use Bitsmist\v1\Middlewares\Handler\DBHandler;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -34,17 +34,21 @@ class LoginAuthenticator extends MiddlewareBase
 		$resultCount = 0;
 		$totalCount = 0;
 
+		// Create DBHandler
+		$middlewareName = $this->options["dbHandlerName"];
+		$options = $this->loader->getAppInfo("spec")[$middlewareName];
+		$db = new DBHandler($this->loader, $options);
+
 		// Get user data
-		$model = new ModelUtil($this->loader);
-		$data = $model->getItems($request, $response);
-		$resultCount = $model->resultCount;
-		$totalCount = $model->totalCount;
+		$data = $db->getItems($request, $response);
+		$resultCount = $db->resultCount;
+		$totalCount = $db->totalCount;
 
 		if ($resultCount == 1)
 		{
 			// Found
 			$spec = $this->loader->getAppInfo("spec");
-			$rootName = $spec["options"]["sessionOptions"]["name"] ?? "";
+			$rootName = $spec["options"]["session"]["name"] ?? "";
 			$root = &$_SESSION;
 			if ($rootName)
 			{

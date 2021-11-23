@@ -12,7 +12,7 @@
 namespace Bitsmist\v1\Middlewares\Handler;
 
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
-use Bitsmist\v1\Middlewares\Handler\ModelHandler;
+use Bitsmist\v1\Middlewares\Handler\DBHandler;
 use Bitsmist\v1\Middlewares\Handler\CustomHandler;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -35,13 +35,15 @@ class AutoHandler extends MiddlewareBase
 
 		if ($this->loader->isHandlerExists())
 		{
-			$className = $spec[$this->options["handlers"]["custom"]]["className"];
-			$options = array();
+			$middlewareName = $this->options["handlers"]["custom"];
+			$className = $spec[$middlewareName]["className"];
+			$options = $spec[$middlewareName];
 		}
 		else
 		{
-			$className = $spec[$this->options["handlers"]["default"]]["className"];
-			$options = array();
+			$middlewareName = $this->options["handlers"]["default"];
+			$className = $spec[$middlewareName]["className"];
+			$options = $spec[$middlewareName];
 		}
 		$middleware = new $className($this->loader, $options);
 
