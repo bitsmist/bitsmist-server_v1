@@ -12,10 +12,6 @@
 namespace Bitsmist\v1\Loader;
 
 use Bitsmist\v1\Exception\HttpException;
-use Bitsmist\v1\Managers\ControllerManager;
-use Bitsmist\v1\Managers\ErrorManager;
-use Bitsmist\v1\Managers\MiddlewareManager;
-use Bitsmist\v1\Managers\PluginManager;
 use Exception;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
