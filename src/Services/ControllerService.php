@@ -9,18 +9,18 @@
  */
 // =============================================================================
 
-namespace Bitsmist\v1\Managers;
+namespace Bitsmist\v1\Services;
 
 use Bitsmist\v1\Exception\HttpException;
-use Bitsmist\v1\Managers\MiddlewareManager;
+use Bitsmist\v1\Services\MiddlewareService;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 // =============================================================================
-//	Controller manager class
+//	Controller service class
 // =============================================================================
 
-class ControllerManager
+class ControllerService
 {
 
 	// -------------------------------------------------------------------------
@@ -42,7 +42,7 @@ class ControllerManager
 	protected $options = null;
 
 	/**
-	 * Middleware managers.
+	 * Middleware services.
 	 *
 	 * @var		array
 	 */
@@ -67,7 +67,7 @@ class ControllerManager
 		// Load event handlers
 		foreach ($options["events"] as $eventName => $spec)
 		{
-			$this->handlers[$eventName] = new MiddlewareManager($this->loader, $spec);
+			$this->handlers[$eventName] = new MiddlewareService($this->loader, $spec);
 		}
 
 	}
@@ -90,9 +90,9 @@ class ControllerManager
 		$request = $request->withAttribute("resultCode", HttpException::ERRNO_NONE);
 		$request = $request->withAttribute("resultMessage", HttpException::ERRMSG_NONE);
 
-		foreach ($this->handlers as $eventName => $manager)
+		foreach ($this->handlers as $eventName => $service)
 		{
-			list($request, $response) = $manager->process($request, $response);
+			list($request, $response) = $service->process($request, $response);
 		}
 
 		return $response;

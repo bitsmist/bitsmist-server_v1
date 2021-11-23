@@ -9,17 +9,17 @@
  */
 // =============================================================================
 
-namespace Bitsmist\v1\Managers;
+namespace Bitsmist\v1\Services;
 
-use Bitsmist\v1\Managers\MiddlewareManager;
+use Bitsmist\v1\Services\MiddlewareService;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 // =============================================================================
-//	Error manager class.
+//	Error controller class.
 // =============================================================================
 
-class ErrorManager extends MiddlewareManager
+class ErrorControllerService extends MiddlewareService
 {
 
 	// -------------------------------------------------------------------------

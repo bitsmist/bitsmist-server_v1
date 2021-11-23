@@ -9,16 +9,16 @@
  */
 // =============================================================================
 
-namespace Bitsmist\v1\Managers;
+namespace Bitsmist\v1\Services;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 // =============================================================================
-//	Middlware manager class
+//	Middlware service class
 // =============================================================================
 
-class MiddlewareManager extends PluginManager
+class MiddlewareService extends PluginService
 {
 
 	// -------------------------------------------------------------------------
