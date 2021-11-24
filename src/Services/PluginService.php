@@ -59,23 +59,23 @@ class PluginService
 		$this->loader = $loader;
 		$this->options = $options;
 
-		if ($options["uses"] ?? null)
+		$uses = $this->options["uses"] ?? null;
+		foreach ((array)$uses as $key => $value)
 		{
-			foreach ($options["uses"] as $key => $value)
+			if (is_numeric($key))
 			{
-				if (is_array($value))
-				{
-					$title = $key;
-					$pluginOptions = $value;
-				}
-				else
-				{
-					$title = $value;
-					$pluginOptions = null;
-				}
-
-				$this->add($title, $pluginOptions);
+				// Does not have options
+				$title = $value;
+				$pluginOptions = null;
 			}
+			else
+			{
+				// Has options
+				$title = $key;
+				$pluginOptions = $value;
+			}
+
+			$this->add($title, $pluginOptions);
 		}
 
 	}
