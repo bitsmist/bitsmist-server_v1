@@ -39,7 +39,7 @@ class HeaderSecurity extends MiddlewareBase
 		// check host
 		if ($headers["host"][0] != $_SERVER["SERVER_NAME"])
 		{
-			$this->loader->getService("logger")->logger->alert("Invalid host: host = {host}", [
+			$this->loader->getService("logger")->alert("Invalid host: host = {host}", [
 				"method"=>__METHOD__,
 				"host"=>$headers["host"][0]
 			]);
