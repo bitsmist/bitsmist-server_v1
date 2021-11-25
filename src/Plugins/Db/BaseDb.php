@@ -427,11 +427,11 @@ class BaseDb extends PluginBase
 	/**
 	 * Build the order part of the query.
 	 *
-	 * @param       array      		 $orders			Sort order.
+	 * @param       ?array     		 $orders			Sort order.
 	 *
 	 * @return 		string								Query string.
 	 */
-	protected function buildQueryOrder($orders)
+	protected function buildQueryOrder(?array $orders)
 	{
 	}
 

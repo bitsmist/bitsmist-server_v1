@@ -413,17 +413,14 @@ class ElasticsearchDb extends CurlDb
 
     // -------------------------------------------------------------------------
 
-	protected function buildQueryOrder($orders)
+	protected function buildQueryOrder(?array $orders)
 	{
 
 		$sort = [];
 
-		if ($orders)
+		foreach ((array)$orders as $key => $value)
 		{
-			foreach ($orders as $key => $value)
-			{
-				$sort[] = array($key => $this->escape($value));
-			}
+			$sort[] = array($key => $this->escape($value));
 		}
 
 		return $sort;
