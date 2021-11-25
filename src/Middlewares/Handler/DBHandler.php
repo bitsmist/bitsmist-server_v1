@@ -84,7 +84,6 @@ class DBHandler extends MiddlewareBase
 
 		$id = $this->loader->getRouteInfo("args")["id"];
 		$gets = $request->getQueryParams();
-		$dbs = $this->loader->getService("db")->getPlugins();
 		$spec = $this->loader->getAppInfo("spec");
 		$fields = $this->buildFields($this->options["fields"] ?? null, $gets);
 		$searches = $this->options["searches"] ?? null;
@@ -100,6 +99,7 @@ class DBHandler extends MiddlewareBase
 		$order = $orders[($gets[$orderParamName] ?? "default")] ?? null;
 
 		$data = null;
+		$dbs = $this->loader->getService("db")->getPlugins();
 		foreach ($dbs as $dbName => $db)
 		{
 			switch ($id)
@@ -187,7 +187,7 @@ class DBHandler extends MiddlewareBase
 			}
 		}
 
-        return $data;
+        return null;
 
 	}
 
@@ -212,7 +212,6 @@ class DBHandler extends MiddlewareBase
 		$searches = $this->options["searches"] ?? null;
 		$listIdName = $this->options["specialParameters"]["list"] ?? "list";
 
-		$data = null;
 		$dbs = $this->loader->getService("db")->getPlugins();
 		foreach ($dbs as $dbName => $db)
 		{
@@ -243,7 +242,7 @@ class DBHandler extends MiddlewareBase
 			}
 		}
 
-        return $data;
+        return null;
 
 	}
 
@@ -266,7 +265,6 @@ class DBHandler extends MiddlewareBase
 		$searches = $this->options["searches"] ?? null;
 		$listIdName = $this->options["specialParameters"]["list"] ?? "list";
 
-		$data = null;
 		$dbs = $this->loader->getService("db")->getPlugins();
 		foreach ($dbs as $dbName => $db)
 		{
@@ -295,7 +293,7 @@ class DBHandler extends MiddlewareBase
 			}
 		}
 
-        return $data;
+        return null;
 
 	}
 
@@ -304,45 +302,42 @@ class DBHandler extends MiddlewareBase
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Build parameter array for search query from HTTP parameters and the spec.
+	 * Build parameter array for search query from URL parameters and the spec.
 	 *
 	 * @param	&$search		Search spec.
-	 * @param	$parameters		Parameters from HTTP.
+	 * @param	$parameters		URL parameters.
 	 *
 	 * @return	Parameter array.
 	 */
 	private function buildSearchKeys(?array &$search, array $parameters): ?array
 	{
 
-		if ($search && is_array($search))
+		for ($i = 0; $i < count($search); $i++)
 		{
-			for ($i = 0; $i < count($search); $i++)
+			$type = $search[$i]["type"] ?? null;
+			if ($type == "parameters")
 			{
-				$type = $search[$i]["type"] ?? null;
-				if ($type == "parameters")
+				$this->buildSearchKeys($search[$i]["fields"], $parameters);
+			}
+			else
+			{
+				$parameter = $search[$i]["parameter"] ?? null;
+				if ($parameter)
 				{
-					$this->buildSearchKeys($search[$i]["fields"], $parameters);
-				}
-				else
-				{
-					$parameter = $search[$i]["parameter"] ?? null;
-					if ($parameter)
+					$value  = $parameters[$parameter] ?? null;
+					$compareType = $search[$i]["compareType"] ?? null;
+					switch ($compareType)
 					{
-						$value  = $parameters[$parameter] ?? null;
-						$compareType = $search[$i]["compareType"] ?? null;
-						switch ($compareType)
+					case "flag":
+						if (($parameters[$parameter] ?? null) === null || $value == 0 || $value == "off")
 						{
-						case "flag":
-							if (($parameters[$parameter] ?? null) === null || $value == 0 || $value == "off")
-							{
-								$search[$i]["value"] = $search[$i]["defaultValue"] ?? null;
-							}
-							break;
-						default:
-							if ($value !== null)
-							{
-								$search[$i]["value"] = $value;
-							}
+							$search[$i]["value"] = $search[$i]["defaultValue"] ?? null;
+						}
+						break;
+					default:
+						if ($value !== null)
+						{
+							$search[$i]["value"] = $value;
 						}
 					}
 				}
