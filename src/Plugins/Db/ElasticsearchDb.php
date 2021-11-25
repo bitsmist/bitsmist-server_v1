@@ -397,18 +397,14 @@ class ElasticsearchDb extends CurlDb
 
     // -------------------------------------------------------------------------
 
-	protected function buildQueryFields($fields)
+	protected function buildQueryFields(?array $fields)
 	{
 
-		$fieldList = "*";
+		$fieldList = [];
 
-		if (is_array($fields))
+		foreach ((array)$fields as $key => $item)
 		{
-			$fieldList = [];
-			foreach ($fields as $key => $item)
-			{
-				$fieldList[] = $this->escape($key);
-			}
+			$fieldList[] = $this->escape($key);
 		}
 
 		return $fieldList;

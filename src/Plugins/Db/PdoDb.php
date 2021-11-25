@@ -328,21 +328,18 @@ class PdoDb extends BaseDb
 
     // -------------------------------------------------------------------------
 
-	protected function buildQueryFields($fields)
+	protected function buildQueryFields(?array $fields)
 	{
 
-		$fieldList = "*";
-		if (is_array($fields))
-		{
-			$fieldList = "";
-			foreach ($fields as $key => $item)
-			{
-				$fieldList .= $this->escape($key) . ",";
-			}
-			$fieldList = rtrim($fieldList, ",");
-		}
+		$fieldList = "";
 
-		return $fieldList;
+		foreach ((array)$fields as $key => $item)
+		{
+			$fieldList .= $this->escape($key) . ",";
+		}
+		$fieldList = rtrim($fieldList, ",");
+
+		return ( $fieldList ? $fieldList : "*" );
 
 	}
 

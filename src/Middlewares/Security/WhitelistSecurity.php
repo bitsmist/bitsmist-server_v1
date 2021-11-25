@@ -30,10 +30,16 @@ class WhitelistSecurity extends MiddlewareBase
 	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
 	{
 
-		$whitelist = $this->loader->getAppInfo("spec")["options"]["parameters"] ?? null;
-
-		if ($whitelist)
+		$parameters = $this->loader->getAppInfo("spec")["dbHandler"]["parameters"] ?? null;
+		if ($parameters)
 		{
+			$whitelist = array();
+			foreach ($this->loader->getAppInfo("spec")["dbHandler"]["parameters"] as $key => $value)
+			{
+				$key = ( is_numeric($key) ? $value : $key );
+				$whitelist[$key] = $key;
+			}
+
 			$method = strtolower($request->getMethod());
 			$resource = $this->loader->getRouteInfo("args")["resource"];
 
@@ -42,13 +48,10 @@ class WhitelistSecurity extends MiddlewareBase
 			$this->checkWhitelist($gets, $whitelist, $method, $resource);
 
 			// Check posts
-			$posts = $request->getParsedBody();
-			if (isset($posts["items"]))
+			$posts = $request->getParsedBody()["items"] ?? null;
+			foreach ((array)$posts as $item)
 			{
-				foreach ($posts["items"] as $item)
-				{
-					$this->checkWhitelist($item, $whitelist, $method, $resource);
-				}
+				$this->checkWhitelist($item, $whitelist, $method, $resource);
 			}
 		}
 
@@ -67,7 +70,7 @@ class WhitelistSecurity extends MiddlewareBase
 	 *
 	 * @throws	HttpException
      */
-	private function checkWhiteList($target, $whitelist, $method, $resource)
+	private function checkWhiteList(array $target, array $whitelist, string $method, string $resource)
 	{
 
 		foreach ($target as $key => $value)
@@ -75,6 +78,7 @@ class WhitelistSecurity extends MiddlewareBase
 			if (!isset($whitelist[$key]))
 			{
 				$this->loader->getService("logger")->alert("Invaild parameter: parameter = {key}, value = {value}, method = {method}, resource = {resource}", ["method"=>__METHOD__, "key"=>$key, "value"=>$value, "method"=>$method, "resource"=>$resource]);
+
 				throw new HttpException(HttpException::ERRNO_PARAMETER, HttpException::ERRMSG_PARAMETER);
 			}
 

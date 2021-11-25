@@ -86,7 +86,7 @@ class DBHandler extends MiddlewareBase
 		$gets = $request->getQueryParams();
 		$dbs = $this->loader->getService("db")->getPlugins();
 		$spec = $this->loader->getAppInfo("spec");
-		$fields = $this->options["fields"] ?? "*";
+		$fields = $this->buildFields($this->options["fields"] ?? null, $gets);
 		$searches = $this->options["searches"] ?? null;
 		$orders = $this->options["orders"] ?? null;
 		$limitParamName = $this->options["specialParameters"]["limit"] ?? "_limit";
@@ -358,27 +358,37 @@ class DBHandler extends MiddlewareBase
 	/**
 	 * Build parameter array for fields from HTTP parameters and the spec.
 	 *
-	 * @param	&$fields		Fields spec.
-	 * @param	$parameters		Parameters from HTTP.
+	 * @param	$fields		Fields spec.
+	 * @param	$parameters		URL parameters.
 	 *
 	 * @return	Parameter array.
 	 */
-	private function buildFields(array &$fields, array $parameters): array
+	private function buildFields(?array $fields, array $parameters): array
 	{
 
-		if ($fields && is_array($fields))
+		$result = array();
+
+		foreach ((array)$fields as $key => $item)
 		{
-			foreach ($fields as $key => &$item)
+			if (is_numeric($key))
 			{
-				$parameter = $item["parameter"] ?? $key;
-				if (array_key_exists($parameter, $parameters))
-				{
-					$item["value"] = $parameters[$parameter];
-				}
+				$key = $item;
+				$result[$key] = array();
+			}
+			else
+			{
+				$result[$key] = $item;
+			}
+
+			// Get a value from URL parameter if exists
+			$parameterName = $item["parameter"] ?? $key;
+			if (array_key_exists($parameterName, $parameters))
+			{
+				$result[$key]["value"] = $parameters[$parameterName];
 			}
 		}
 
-		return $fields;
+		return $result;
 
 	}
 

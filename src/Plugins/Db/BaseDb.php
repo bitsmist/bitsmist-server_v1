@@ -414,11 +414,11 @@ class BaseDb extends PluginBase
 	/**
 	 * Builds the field part of the query.
 	 *
-	 * @param       array       	$fields				Fields to retrieve.
+	 * @param       ?array       	$fields				Fields to retrieve.
 	 *
 	 * @return 		string								Query string.
 	 */
-	protected function buildQueryFields($fields)
+	protected function buildQueryFields(?array $fields)
 	{
 	}
 
