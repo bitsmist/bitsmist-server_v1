@@ -54,13 +54,10 @@ class PdoDb extends BaseDb
 		];
 
 		// Custom options
-		if ($this->options["pdoOptions"] ?? null)
+		foreach ((array)($this->options["pdoOptions"] ?? null) as $key => $value)
 		{
-			foreach ($this->options["pdoOptions"] as $key => $value)
-			{
-				$value = ( is_string($value) && substr($value, 0, 5) == "PDO::" ? constant($value) : $value);
-				$options[constant($key)] = $value;
-			}
+			$value = ( is_string($value) && substr($value, 0, 5) == "PDO::" ? constant($value) : $value);
+			$options[constant($key)] = $value;
 		}
 
 		// Connect to database
@@ -75,11 +72,9 @@ class PdoDb extends BaseDb
 	public function close()
 	{
 
-		if ($this->props["connection"]){
-			$this->props["connection"] = null;
+		$this->props["connection"] = null;
 
-			$this->logger->debug("dsn = {dsn}", ["method"=>__METHOD__, "dsn"=>$this->props["dsn"]]);
-		}
+		$this->logger->debug("dsn = {dsn}", ["method"=>__METHOD__, "dsn"=>$this->props["dsn"]]);
 
 	}
 
@@ -258,20 +253,20 @@ class PdoDb extends BaseDb
 		// Escape
 		$tableName = $this->escape($tableName);
 
-		$sql1 = "";
-		$sql2 = "";
+		$sqlFields = "";
+		$sqlValues = "";
 		$parmas = array();
 		foreach ($fields as $key => $item)
 		{
 			$key = $this->escape($key);
 
-			$sql1 .= $key . ",";
-			$sql2 .= $this->buildParam($key, $item, $params) . ",";
+			$sqlFields .= $key . ",";
+			$sqlValues .= $this->buildParam($key, $item, $params) . ",";
 		}
-		$sql1 = rtrim($sql1, ",");
-		$sql2 = rtrim($sql2, ",");
+		$sqlFields = rtrim($sqlFields, ",");
+		$sqlValues = rtrim($sqlValues, ",");
 
-		$sql = "INSERT INTO `" .$tableName . "` (" . $sql1 . ") VALUES (" . $sql2 . ") ";
+		$sql = "INSERT INTO `" .$tableName . "` (" . $sqlFields . ") VALUES (" . $sqlValues . ") ";
 
 		$this->logger->debug("query = {query}", ["method"=>__METHOD__, "query"=>$sql]);
 
@@ -288,19 +283,19 @@ class PdoDb extends BaseDb
 		$tableName = $this->escape($tableName);
 
 		// Data
-		$field = "";
+		$fieldList = "";
 		$fieldParams = array();
 		foreach ($fields as $key => $item)
 		{
 			$key = $this->escape($key);
-			$field .= $key . "=" .$this->buildParam($key, $item, $fieldParams) . ",";
+			$fieldList .= $key . "=" .$this->buildParam($key, $item, $fieldParams) . ",";
 		}
-		$field = rtrim($field, ",");
+		$field = rtrim($fieldList, ",");
 
 		// Key
 		list($where, $params) = $this->buildQueryWhere($keys);
 
-		$sql = "UPDATE `" . $tableName . "` SET " . $field . " WHERE " . $where ;
+		$sql = "UPDATE `" . $tableName . "` SET " . $fieldList . " WHERE " . $where ;
 
 		$this->logger->debug("query = {query}", ["method"=>__METHOD__, "query"=>$sql]);
 
@@ -335,7 +330,14 @@ class PdoDb extends BaseDb
 
 		foreach ((array)$fields as $key => $item)
 		{
-			$fieldList .= $this->escape($key) . ",";
+			if (array_key_exists("fieldName", $item))
+			{
+				$fieldList .= $this->escape($item["fieldName"]) . " AS " . $this->escape($key) . ",";
+			}
+			else
+			{
+				$fieldList .= $this->escape($key) . ",";
+			}
 		}
 		$fieldList = rtrim($fieldList, ",");
 
@@ -345,19 +347,16 @@ class PdoDb extends BaseDb
 
     // -------------------------------------------------------------------------
 
-	protected function buildQueryOrder($orders)
+	protected function buildQueryOrder(?array $orders)
 	{
 
 		$orderList = "";
-		if ($orders)
+
+		foreach ((array) $orders as $key => $value)
 		{
-			$orderList = "";
-			foreach ($orders as $key => $value)
-			{
-				$orderList .= $this->escape($key) . " " . $this->escape($value) . ",";
-			}
-			$orderList = rtrim($orderList, ",");
+			$orderList .= $this->escape($key) . " " . $this->escape($value) . ",";
 		}
+		$orderList = rtrim($orderList, ",");
 
 		return $orderList;
 
@@ -540,7 +539,7 @@ class PdoDb extends BaseDb
 		$field		= $item["field"] ?? "";
 		$parameter	= $item["parameter"] ?? $field;
 		$value		= $item["value"] ?? "";
-		$sql			= "";
+		$sql		= "";
 
 		$comp = $this->buildCompare($field, "key_" . $parameter, $value, $comparer, $params);
 		if ($comp)
