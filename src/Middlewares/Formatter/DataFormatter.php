@@ -30,10 +30,8 @@ class DataFormatter extends MiddlewareBase
 	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
 	{
 
-		$spec = $this->loader->getAppInfo("spec");
-		$fields = $spec["options"]["fields"] ?? array();
-		$params = $spec["options"]["parameters"] ?? array();
-		$gets = $request->getQueryParams();
+		$fields = $this->options["fields"] ?? array();
+		$params = $this->loader->getAppInfo("spec")["options"]["parameters"] ?? array();
 		$data = $request->getAttribute("data");
 
 		if ($data)
