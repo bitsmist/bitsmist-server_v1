@@ -30,11 +30,12 @@ class WhitelistSecurity extends MiddlewareBase
 	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
 	{
 
-		$parameters = $this->loader->getAppInfo("spec")["dbHandler"]["parameters"] ?? null;
+		$parameters = $this->loader->getAppInfo("spec")["options"]["parameters"] ?? null;
 		if ($parameters)
 		{
+			// Align array format to associative array
 			$whitelist = array();
-			foreach ($this->loader->getAppInfo("spec")["dbHandler"]["parameters"] as $key => $value)
+			foreach ($parameters as $key => $value)
 			{
 				$key = ( is_numeric($key) ? $value : $key );
 				$whitelist[$key] = $key;
@@ -48,7 +49,8 @@ class WhitelistSecurity extends MiddlewareBase
 			$this->checkWhitelist($gets, $whitelist, $method, $resource);
 
 			// Check posts
-			$posts = $request->getParsedBody()["items"] ?? null;
+			$itemsParamName = $this->options["specialParameters"]["items"] ?? "items";
+			$posts = ($request->getParsedBody())[$itemsParamName] ?? null;
 			foreach ((array)$posts as $item)
 			{
 				$this->checkWhitelist($item, $whitelist, $method, $resource);
