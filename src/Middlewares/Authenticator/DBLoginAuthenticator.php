@@ -12,7 +12,7 @@
 namespace Bitsmist\v1\Middlewares\Authenticator;
 
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
-use Bitsmist\v1\Middlewares\Handler\DBHandler;
+use Bitsmist\v1\Util\DBUtil;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -30,25 +30,14 @@ class DBLoginAuthenticator extends MiddlewareBase
 	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
 	{
 
-		$data = null;
-		$resultCount = 0;
-		$totalCount = 0;
-
-		// Create DBHandler
-		$middlewareName = $this->options["dbHandlerName"];
-		$options = $this->loader->getAppInfo("spec")[$middlewareName];
-		$db = new DBHandler($this->loader, $options);
-
-		// Get user data
+		// Handle database
+		$db = new DBUtil($this->loader, $this->options);
 		$data = $db->getItems($request, $response);
-		$resultCount = $db->resultCount;
-		$totalCount = $db->totalCount;
 
-		if ($resultCount == 1)
+		if ($db->resultCount == 1)
 		{
 			// Found
-			$spec = $this->loader->getAppInfo("spec");
-			$rootName = $spec["options"]["session"]["name"] ?? "";
+			$rootName = $this->loader->getAppInfo("spec")["options"]["session"]["name"] ?? "";
 			$root = &$_SESSION;
 			if ($rootName)
 			{
@@ -76,8 +65,8 @@ class DBLoginAuthenticator extends MiddlewareBase
 		}
 
 		$request = $request->withAttribute("data", $data);
-		$request = $request->withAttribute("resultCount", $resultCount);
-		$request = $request->withAttribute("totalCount", $totalCount);
+		$request = $request->withAttribute("resultCount", $db->resultCount);
+		$request = $request->withAttribute("totalCount", $db->totalCount);
 
 		return $request;
 
