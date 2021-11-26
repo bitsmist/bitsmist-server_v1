@@ -290,7 +290,7 @@ class PdoDb extends BaseDb
 			$key = $this->escape($key);
 			$fieldList .= $key . "=" .$this->buildParam($key, $item, $fieldParams) . ",";
 		}
-		$field = rtrim($fieldList, ",");
+		$fieldList = rtrim($fieldList, ",");
 
 		// Key
 		list($where, $params) = $this->buildQueryWhere($keys);
