@@ -120,12 +120,9 @@ class App
 	protected function setIni(?array $options)
 	{
 
-		if ($options)
+		foreach ((array)$options as $key => $value)
 		{
-			foreach ($options as $key => $value)
-			{
-				ini_set($key, $value);
-			}
+			ini_set($key, $value);
 		}
 
 	}

@@ -59,8 +59,7 @@ class PluginService
 		$this->loader = $loader;
 		$this->options = $options;
 
-		$uses = $this->options["uses"] ?? null;
-		foreach ((array)$uses as $key => $value)
+		foreach ((array)($this->options["uses"] ?? null) as $key => $value)
 		{
 			if (is_numeric($key))
 			{

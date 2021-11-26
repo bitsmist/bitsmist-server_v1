@@ -251,13 +251,10 @@ abstract class CurlDb extends BaseDb
 		}
 
 		// Custom
-		if ($this->options["curlOptions"] ?? null)
+		foreach ((array)($this->options["curlOptions"] ?? null) as $key => $value)
 		{
-			foreach ($this->options["curlOptions"] as $key => $value)
-			{
-				$value = ( is_string($value) && substr($value, 0, 5) == "CURL_" ? constant($value) : $value);
-				curl_setopt($this->props["connection"], constant($key), $value);
-			}
+			$value = ( is_string($value) && substr($value, 0, 5) == "CURL_" ? constant($value) : $value);
+			curl_setopt($this->props["connection"], constant($key), $value);
 		}
 
 	}

@@ -67,18 +67,15 @@ class HeaderValidator extends MiddlewareBase
 		}
 
 		// Check if required header exists
-		if ($spec["options"]["requiredHeaders"] ?? false)
+		foreach ((array)($spec["options"]["requiredHeaders"] ?? null) as $headerName)
 		{
-			foreach ($spec["options"]["requiredHeaders"] as $headerName)
+			if (!isset($headers[strtolower($headerName)][0]))
 			{
-				if (!isset($headers[strtolower($headerName)][0]))
-				{
-					$this->loader->getService("logger")->alert("Required header doesn't exist: headerName = {headerName}", [
-						"method"=>__METHOD__,
-						"headerName"=>$headerName,
-					]);
-					throw new HttpException(HttpException::ERRNO_PARAMETER, HttpException::ERRMSG_PARAMETER);
-				}
+				$this->loader->getService("logger")->alert("Required header doesn't exist: headerName = {headerName}", [
+					"method"=>__METHOD__,
+					"headerName"=>$headerName,
+				]);
+				throw new HttpException(HttpException::ERRNO_PARAMETER, HttpException::ERRMSG_PARAMETER);
 			}
 		}
 

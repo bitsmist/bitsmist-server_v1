@@ -30,21 +30,15 @@ class ExtraHeaderBuilder extends MiddlewareBase
 	{
 
 		$extras = $this->loader->getAppInfo("spec")["options"]["extraHeaders"] ?? null;
-		if ($extras)
+		foreach ((array)$extras as $key => $value)
 		{
-			foreach ($extras as $key => $value)
-			{
-				$response = $response->withHeader($key, $value);
-			}
+			$response = $response->withHeader($key, $value);
 		}
 
 		$extras = $this->options["extraHeaders"] ?? null;
-		if ($extras)
+		foreach ((array)$extras as $key => $value)
 		{
-			foreach ($extras as $key => $value)
-			{
-				$response = $response->withHeader($key, $value);
-			}
+			$response = $response->withHeader($key, $value);
 		}
 
 		return $response;
