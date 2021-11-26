@@ -9,7 +9,7 @@
  */
 // =============================================================================
 
-namespace Bitsmist\v1\Plugins\Db;
+namespace Bitsmist\v1\Plugins\DB;
 
 use Bitsmist\v1\Plugins\Base\PluginBase;
 
@@ -17,7 +17,7 @@ use Bitsmist\v1\Plugins\Base\PluginBase;
 //	Base Database class
 // =============================================================================
 
-class BaseDb extends PluginBase
+class BaseDB extends PluginBase
 {
 
 	// -------------------------------------------------------------------------
@@ -57,7 +57,7 @@ class BaseDb extends PluginBase
 	/**
 	 * Connect to the database.
 	 *
-	 * @param		string		$setting			Db setting.
+	 * @param		string		$setting			DB setting.
 	 */
 	public function open($setting = null)
 	{
@@ -717,7 +717,7 @@ class BaseDb extends PluginBase
 	 *
 	 * @return		bool								True when value is the database command.
 	 */
-	protected function isDbCommand($value)
+	protected function isDBCommand($value)
 	{
 
 		if (substr($value, 0, 1) == "@" && substr($value, -1, 1) == "@")

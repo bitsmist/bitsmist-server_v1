@@ -9,16 +9,16 @@
  */
 // =============================================================================
 
-namespace Bitsmist\v1\Plugins\Db;
+namespace Bitsmist\v1\Plugins\DB;
 
-use Bitsmist\v1\Plugins\Db\BaseDb;
+use Bitsmist\v1\Plugins\DB\BaseDB;
 use PDO;
 
 // =============================================================================
 //	PDO database class
 // =============================================================================
 
-class PdoDb extends BaseDb
+class PdoDB extends BaseDB
 {
 
 	// -------------------------------------------------------------------------

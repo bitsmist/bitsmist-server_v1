@@ -9,15 +9,15 @@
  */
 // =============================================================================
 
-namespace Bitsmist\v1\Plugins\Db;
+namespace Bitsmist\v1\Plugins\DB;
 
-use Bitsmist\v1\Plugins\Db\CurlDb;
+use Bitsmist\v1\Plugins\DB\CurlDB;
 
 // =============================================================================
 //	Elasticsearch database class
 // =============================================================================
 
-class ElasticsearchDb extends CurlDb
+class ElasticsearchDB extends CurlDB
 {
 
 	// -------------------------------------------------------------------------
