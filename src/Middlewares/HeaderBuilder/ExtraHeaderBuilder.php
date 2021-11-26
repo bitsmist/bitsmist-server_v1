@@ -9,17 +9,17 @@
  */
 // =============================================================================
 
-namespace Bitsmist\v1\Middlewares\Header;
+namespace Bitsmist\v1\Middlewares\HeaderBuilder;
 
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 // =============================================================================
-//	Extra header class.
+//	Extra header builder class.
 // =============================================================================
 
-class ExtraHeader extends MiddlewareBase
+class ExtraHeaderBuilder extends MiddlewareBase
 {
 
 	// -------------------------------------------------------------------------

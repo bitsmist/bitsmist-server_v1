@@ -9,17 +9,17 @@
  */
 // =============================================================================
 
-namespace Bitsmist\v1\Middlewares\Connection;
+namespace Bitsmist\v1\Middlewares\Connector;
 
+use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
 
 // =============================================================================
-//	Connect database class
+//	DB disconnector class
 // =============================================================================
 
-class ConnectDb extends MiddlewareBase
+class DBDisconnector extends MiddlewareBase
 {
 
 	// -------------------------------------------------------------------------
@@ -29,7 +29,7 @@ class ConnectDb extends MiddlewareBase
 	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
 	{
 
-		$this->loader->getService("db")->open();
+		$this->loader->getService("db")->close();
 
 	}
 

@@ -10,17 +10,17 @@
  */
 // =============================================================================
 
-namespace Bitsmist\v1\Middlewares\Session;
+namespace Bitsmist\v1\Middlewares\SessionHandler;
 
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 // =============================================================================
-//	Start session class
+//	Start session handler class
 // =============================================================================
 
-class StartSession extends MiddlewareBase
+class StartSessionHandler extends MiddlewareBase
 {
 
 	// -------------------------------------------------------------------------

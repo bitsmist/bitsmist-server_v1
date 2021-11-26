@@ -9,17 +9,18 @@
  */
 // =============================================================================
 
-namespace Bitsmist\v1\Middlewares\Session;
+namespace Bitsmist\v1\Middlewares\SessionHandler;
 
+use Bitsmist\v1\Exception\HttpException;
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 // =============================================================================
-//	Name session class
+//	Destroy session handler class
 // =============================================================================
 
-class NameSession extends MiddlewareBase
+class DestroySessionHandler extends MiddlewareBase
 {
 
 	// -------------------------------------------------------------------------
@@ -29,10 +30,9 @@ class NameSession extends MiddlewareBase
 	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
 	{
 
-		if (session_status() != PHP_SESSION_ACTIVE)
-		{
-			session_name($this->option["sessionName"]);
-		}
+		$_SESSION = array();
+		session_destroy();
+		setcookie(session_name(), '');
 
 	}
 

@@ -9,7 +9,7 @@
  */
 // =============================================================================
 
-namespace Bitsmist\v1\Middlewares\Exception;
+namespace Bitsmist\v1\Middlewares\ExceptionHandler;
 
 use Bitsmist\v1\Exception\HttpException;
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;

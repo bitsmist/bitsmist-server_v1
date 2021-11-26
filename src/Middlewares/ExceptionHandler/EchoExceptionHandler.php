@@ -9,17 +9,17 @@
  */
 // =============================================================================
 
-namespace Bitsmist\v1\Middlewares\Session;
+namespace Bitsmist\v1\Middlewares\ExceptionHandler;
 
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 // =============================================================================
-//	Regenerate session class
+//	Echo exception handler class.
 // =============================================================================
 
-class RegenerateSession extends MiddlewareBase
+class EchoExceptionHandler extends MiddlewareBase
 {
 
 	// -------------------------------------------------------------------------
@@ -29,7 +29,13 @@ class RegenerateSession extends MiddlewareBase
 	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
 	{
 
-		session_regenerate_id();
+		$exception = $request->getAttribute("exception");
+
+//		echo "Error code:\t {$exception->getCode()}<br>";
+		echo "Error message:\t {$exception->getMessage()}<br>";
+		echo "Error file:\t {$exception->getFile()}<br>";
+		echo "Error lineno:\t {$exception->getLine()}<br>";
+		echo "Error trace:\t {$exception->getTraceAsString()}<br>";
 
 	}
 

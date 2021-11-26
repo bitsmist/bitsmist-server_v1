@@ -9,17 +9,17 @@
  */
 // =============================================================================
 
-namespace Bitsmist\v1\Middlewares\Exception;
+namespace Bitsmist\v1\Middlewares\SessionHandler;
 
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 // =============================================================================
-//	Echo exception handler class.
+//	Name session handler class
 // =============================================================================
 
-class EchoExceptionHandler extends MiddlewareBase
+class NameSessionHandler extends MiddlewareBase
 {
 
 	// -------------------------------------------------------------------------
@@ -29,13 +29,10 @@ class EchoExceptionHandler extends MiddlewareBase
 	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
 	{
 
-		$exception = $request->getAttribute("exception");
-
-//		echo "Error code:\t {$exception->getCode()}<br>";
-		echo "Error message:\t {$exception->getMessage()}<br>";
-		echo "Error file:\t {$exception->getFile()}<br>";
-		echo "Error lineno:\t {$exception->getLine()}<br>";
-		echo "Error trace:\t {$exception->getTraceAsString()}<br>";
+		if (session_status() != PHP_SESSION_ACTIVE)
+		{
+			session_name($this->option["sessionName"]);
+		}
 
 	}
 

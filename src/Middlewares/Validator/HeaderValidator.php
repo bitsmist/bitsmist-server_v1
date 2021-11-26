@@ -9,7 +9,7 @@
  */
 // =============================================================================
 
-namespace Bitsmist\v1\Middlewares\Security;
+namespace Bitsmist\v1\Middlewares\Validator;
 
 use Bitsmist\v1\Exception\HttpException;
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
@@ -17,10 +17,10 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 // =============================================================================
-//	HTTP header security checker class
+//	HTTP header validatorclass
 // =============================================================================
 
-class HeaderSecurity extends MiddlewareBase
+class HeaderValidator extends MiddlewareBase
 {
 
 	// -------------------------------------------------------------------------

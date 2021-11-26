@@ -9,7 +9,7 @@
  */
 // =============================================================================
 
-namespace Bitsmist\v1\Middlewares\Security;
+namespace Bitsmist\v1\Middlewares\Validator;
 
 use Bitsmist\v1\Exception\HttpException;
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
@@ -17,10 +17,10 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 // =============================================================================
-//	White list based security checker class
+//	Parameter validator class
 // =============================================================================
 
-class WhitelistSecurity extends MiddlewareBase
+class ParameterValidator extends MiddlewareBase
 {
 
 	// -------------------------------------------------------------------------
