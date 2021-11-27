@@ -30,30 +30,43 @@ class ParameterValidator extends MiddlewareBase
 	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
 	{
 
-		$parameters = $this->loader->getAppInfo("spec")["options"]["parameters"] ?? null;
-		if ($parameters)
+		$options = $this->loader->getAppInfo("spec")["options"];
+
+		// Check query parameters
+		$allowedList = $options["query"]["parameters"] ?? null;
+		if ($allowedList)
 		{
-			// Align array format to associative array
-			$whitelist = array();
-			foreach ($parameters as $key => $value)
+			$allowedList = $this->alignArray($allowedList);
+			$this->checkMissing($request->getQueryParams(), $allowedList);
+			$this->checkValidity($request->getQueryParams(), $allowedList);
+		}
+
+		// Check body parameters
+		$allowedList = $options["body"]["parameters"] ?? null;
+		if ($allowedList)
+		{
+			$allowedList = $this->alignArray($allowedList);
+			$itemsParamName = $options["body"]["specialParameters"]["items"] ?? null;
+			$itemParamName = $options["body"]["specialParameters"]["item"] ?? null;
+
+			// Get items
+			if ($itemParamName)
 			{
-				$key = ( is_numeric($key) ? $value : $key );
-				$whitelist[$key] = $key;
+				$posts = array(($request->getParsedBody())[$itemParamName] ?? null);
+			}
+			else if ($itemsParamName)
+			{
+				$posts = ($request->getParsedBody())[$itemsParamName] ?? null;
+			}
+			else
+			{
+				$posts = array($request->getParsedBody());
 			}
 
-			$method = strtolower($request->getMethod());
-			$resource = $this->loader->getRouteInfo("args")["resource"];
-
-			// Check gets
-			$gets = $request->getQueryParams();
-			$this->checkWhitelist($gets, $whitelist, $method, $resource);
-
-			// Check posts
-			$itemsParamName = $this->options["specialParameters"]["items"] ?? "items";
-			$posts = ($request->getParsedBody())[$itemsParamName] ?? null;
 			foreach ((array)$posts as $item)
 			{
-				$this->checkWhitelist($item, $whitelist, $method, $resource);
+				$this->checkMissing($item, $allowedList);
+				$this->checkValidity($item, $allowedList);
 			}
 		}
 
@@ -61,6 +74,68 @@ class ParameterValidator extends MiddlewareBase
 
 	// -------------------------------------------------------------------------
 	//	Private
+	// -------------------------------------------------------------------------
+
+	/**
+  	 * Convert an indexed array to an associative array.
+	 *
+	 * @param	$target			Array to convert.
+	 *
+	 * @return	string			Converted array..
+     */
+	private function alignArray($target): array
+	{
+
+		$result = array();
+		foreach ($target as $key => $value)
+		{
+			if (is_numeric($key))
+			{
+				$key = $value;
+				$value = null;
+			}
+
+			$result[$key] = $value;
+		}
+
+		return $result;
+
+	}
+
+	// -------------------------------------------------------------------------
+
+	/**
+  	 * Check if required parameters are missing.
+	 *
+	 * @param	$appInfo		Application information.
+	 * @param	$method			Method.
+	 * @param	$resource		Resource.
+	 *
+	 * @return	Record count.
+	 *
+	 * @throws	HttpException
+     */
+	private function checkMissing(?array $target, array $allowedList)
+	{
+
+		foreach ($allowedList as $key => $value)
+		{
+			$validations = $allowedList[$key]["validator"] ?? [];
+			if (in_array("REQUIRED", $validations) && !array_key_exists($key, $target))
+			{
+				$this->loader->getService("logger")->alert("Parameter is missing: parameter = {key}, method = {httpmethod}, resource = {resource}", [
+					"method" => __METHOD__,
+					"key" => $key,
+					"httpmethod" => $_SERVER['REQUEST_METHOD'],
+					"resource" => $this->loader->getRouteInfo("args")["resource"],
+				]);
+
+				throw new HttpException(HttpException::ERRNO_PARAMETER, HttpException::ERRMSG_PARAMETER);
+			}
+		}
+
+	}
+
 	// -------------------------------------------------------------------------
 
 	/**
@@ -72,34 +147,37 @@ class ParameterValidator extends MiddlewareBase
 	 *
 	 * @throws	HttpException
      */
-	private function checkWhiteList(array $target, array $whitelist, string $method, string $resource)
+	private function checkValidity(?array $target, array $allowedList)
 	{
 
-		foreach ($target as $key => $value)
+		foreach ((array)$target as $key => $value)
 		{
-			if (!isset($whitelist[$key]))
+			// Check whether a parameter is in the allowed list
+			if (!array_key_exists($key, $allowedList))
 			{
-				$this->loader->getService("logger")->alert("Invaild parameter: parameter = {key}, value = {value}, method = {method}, resource = {resource}", ["method"=>__METHOD__, "key"=>$key, "value"=>$value, "method"=>$method, "resource"=>$resource]);
+				$this->loader->getService("logger")->alert("Invaild parameter: parameter = {key}, value = {value}, method = {httpmethod}, resource = {resource}", [
+					"method" => __METHOD__,
+					"key" => $key,
+					"value" => $value,
+					"httpmethod" => $_SERVER['REQUEST_METHOD'],
+					"resource" => $this->loader->getRouteInfo("args")["resource"],
+				]);
 
 				throw new HttpException(HttpException::ERRNO_PARAMETER, HttpException::ERRMSG_PARAMETER);
 			}
 
-			/*
-			if ($whitelist[$key] && is_array($whitelist[$key]) && array_key_exists("type", $whitelist[$key]))
+			// Validate a parameter
+			$validations = $allowedList[$key]["validator"] ?? [];
+			for ($i = 0; $i < count($validations); $i++)
 			{
-				$checkList = explode(",", $whitelist[$key]["type"]);
-				for ($i = 0; $i < count($checkList); $i++)
-				{
-					if (!Validator::validate($value, $checkList[$i]))
-					{
-						$this->loader->getService("logger")->alert("Validation error: parameter = {key}, value = {value}, method = {method}, resource = {resource}", ["method"=>__METHOD__, "key"=>$key, "value"=>$value, "method"=>$method, "resource"=>$resource]);
-						throw new HttpException(HttpException::ERRNO_PARAMETER, HttpException::ERRMSG_PARAMETER);
-					}
-				}
+				$this->validate($target[$key], $validations[$i]);
 			}
-			 */
 		}
 
+	}
+
+	private function validate($value, $validation)
+	{
 	}
 
 }
