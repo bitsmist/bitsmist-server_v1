@@ -141,7 +141,7 @@ class ElasticsearchDB extends CurlDB
 
 		$type = "_doc";
 		$command = "";
-		if (!isset($cmd["id"]))
+		if (!array_key_exists("id", $cmd))
 		{
 			switch ($cmd["method"])
 			{
@@ -160,7 +160,7 @@ class ElasticsearchDB extends CurlDB
 
 		$url = $this->props["dsn"] . "/" . $cmd["tableName"] .
 			($type ? "/" . $type : "") .
-			(isset($cmd["id"]) ? "/" . $cmd["id"] : "" ) .
+			(array_key_exists("id", $cmd) ? "/" . $cmd["id"] : "" ) .
 			($command ? "/" . $command : "");
 
 		return $url;
