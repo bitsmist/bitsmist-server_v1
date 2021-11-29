@@ -144,10 +144,10 @@ class DBUtil
 	{
 
 		$id = $this->loader->getRouteInfo("args")["id"] ?? null;
-		$posts = $request->getParsedBody();
 		$spec = $this->loader->getAppInfo("spec");
 		$fields = $this->options["fields"] ?? "*";
 		$newIdName = $this->options["specialParameters"]["new"] ?? "new";
+		$items = $this->getParamsFromBody($request, $spec["options"] ?? null);
 
 		$data = null;
 		$dbs = $this->loader->getService("db")->getPlugins();
@@ -158,18 +158,18 @@ class DBUtil
 			try
 			{
 				$cnt = 0;
-				for ($i = 0; $i < count($posts["items"]); $i++)
+				for ($i = 0; $i < count($items); $i++)
 				{
 					switch ($id)
 					{
 					case $newIdName:
 					case null:
-						$item = $this->buildFields($fields, $posts["items"][$i]);
+						$item = $this->buildFields($fields, $items[$i]);
 						$cnt += $db->insert($spec[$dbName]["tableName"], $item);
 						break;
 					default:
-						$item = $this->buildFields($fields, $posts["items"][$i]);
-						$cnt += $db->insertWithId($spec[$dbName]["tableName"], $item, $posts["items"][$i][$spec[$dbName]["keyName"]]);
+						$item = $this->buildFields($fields, $items[$i]);
+						$cnt += $db->insertWithId($spec[$dbName]["tableName"], $item, $items[$i][$spec[$dbName]["keyName"]]);
 						break;
 					}
 				}
@@ -203,11 +203,11 @@ class DBUtil
 
 		$id = $this->loader->getRouteInfo("args")["id"];
 		$gets = $request->getQueryParams();
-		$posts = $request->getParsedBody();
 		$spec = $this->loader->getAppInfo("spec");
 		$fields = $this->options["fields"] ?? "*";
 		$searches = $this->options["searches"] ?? null;
 		$listIdName = $this->options["specialParameters"]["list"] ?? "list";
+		$items = $this->getParamsFromBody($request, $spec["options"] ?? null);
 
 		$dbs = $this->loader->getService("db")->getPlugins();
 		foreach ($dbs as $dbName => $db)
@@ -219,13 +219,13 @@ class DBUtil
 				switch ($id)
 				{
 				case $listIdName:
-					$item = $this->buildFields($fields, $posts["items"][0]);
+					$item = $this->buildFields($fields, $items[0]);
 					$search = $searches[($gets["_search"] ?? "default")] ?? null;
 					$search = $this->buildSearchKeys($search, $gets);
 					$cnt = $db->update($spec[$dbName]["tableName"], $item, $search);
 					break;
 				default:
-					$item = $this->buildFields($fields, $posts["items"][0]);
+					$item = $this->buildFields($fields, $items[0]);
 					$cnt = $db->updateById($spec[$dbName]["tableName"], $item, ["field" => $spec[$dbName]["keyName"], "value" => $id]);
 					break;
 				}
@@ -299,6 +299,39 @@ class DBUtil
 	// -------------------------------------------------------------------------
 
 	/**
+  	 * Get parameter arrays from body.
+	 *
+	 * @param	$request		Request object.
+	 * @param	$options		Options.
+	 *
+	 * @return	array			Parameter arrays.
+     */
+	private function getParamsFromBody($request, $options)
+	{
+
+		$itemsParamName = $options["body"]["specialParameters"]["items"] ?? null;
+		$itemParamName = $options["body"]["specialParameters"]["item"] ?? null;
+
+		if ($itemParamName)
+		{
+			$items = array(($request->getParsedBody())[$itemParamName] ?? null);
+		}
+		else if ($itemsParamName)
+		{
+			$items = ($request->getParsedBody())[$itemsParamName] ?? null;
+		}
+		else
+		{
+			$items = array($request->getParsedBody());
+		}
+
+		return $items;
+
+	}
+
+	// -------------------------------------------------------------------------
+
+	/**
 	 * Build parameter array for search query from URL parameters and the spec.
 	 *
 	 * @param	&$search		Search spec.
@@ -312,7 +345,6 @@ class DBUtil
 		if (!$search) return null;
 
 		for ($i = 0; $i < count($search); $i++)
-//		foreach ((array)$search as $i)
 		{
 			$type = $search[$i]["type"] ?? null;
 			if ($type == "parameters")
