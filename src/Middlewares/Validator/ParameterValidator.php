@@ -46,24 +46,9 @@ class ParameterValidator extends MiddlewareBase
 		if ($allowedList)
 		{
 			$allowedList = $this->alignArray($allowedList);
-			$itemsParamName = $options["body"]["specialParameters"]["items"] ?? null;
-			$itemParamName = $options["body"]["specialParameters"]["item"] ?? null;
+			$items = $this->getParamsFromBody($request, $options);
 
-			// Get items
-			if ($itemParamName)
-			{
-				$posts = array(($request->getParsedBody())[$itemParamName] ?? null);
-			}
-			else if ($itemsParamName)
-			{
-				$posts = ($request->getParsedBody())[$itemsParamName] ?? null;
-			}
-			else
-			{
-				$posts = array($request->getParsedBody());
-			}
-
-			foreach ((array)$posts as $item)
+			foreach ((array)$items as $item)
 			{
 				$this->checkMissing($item, $allowedList);
 				$this->checkValidity($item, $allowedList);
@@ -81,7 +66,7 @@ class ParameterValidator extends MiddlewareBase
 	 *
 	 * @param	$target			Array to convert.
 	 *
-	 * @return	string			Converted array..
+	 * @return	string			Converted array.
      */
 	private function alignArray($target): array
 	{
@@ -99,6 +84,39 @@ class ParameterValidator extends MiddlewareBase
 		}
 
 		return $result;
+
+	}
+
+	// -------------------------------------------------------------------------
+
+	/**
+  	 * Get parameter arrays from body.
+	 *
+	 * @param	$request		Request object.
+	 * @param	$options		Options.
+	 *
+	 * @return	array			Parameter arrays.
+     */
+	private function getParamsFromBody($request, $options)
+	{
+
+		$itemsParamName = $options["body"]["specialParameters"]["items"] ?? null;
+		$itemParamName = $options["body"]["specialParameters"]["item"] ?? null;
+
+		if ($itemParamName)
+		{
+			$items = array(($request->getParsedBody())[$itemParamName] ?? null);
+		}
+		else if ($itemsParamName)
+		{
+			$items = ($request->getParsedBody())[$itemsParamName] ?? null;
+		}
+		else
+		{
+			$items = array($request->getParsedBody());
+		}
+
+		return $items;
 
 	}
 
