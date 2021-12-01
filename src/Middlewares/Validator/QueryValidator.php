@@ -14,6 +14,7 @@ namespace Bitsmist\v1\Middlewares\Validator;
 use Bitsmist\v1\Exception\HttpException;
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 // =============================================================================
@@ -27,10 +28,10 @@ class QueryValidator extends MiddlewareBase
 	//	Public
 	// -------------------------------------------------------------------------
 
-	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
+	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
-		$params = $this->loader->getAppInfo("spec")["options"]["parameters"] ?? array();
+		$params = $request->getAttribute("spec")["options"]["parameters"] ?? array();
 		$gets = $request->getQueryParams();
 
 		foreach ($params as $param => $spec)
@@ -50,8 +51,7 @@ class QueryValidator extends MiddlewareBase
 			}
 		}
 
-		return $request;
-
+		return $handler->handle($request);
 	 }
 
 }

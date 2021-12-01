@@ -13,6 +13,7 @@ namespace Bitsmist\v1\Middlewares\Handler;
 
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
 use Closure;
+use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -27,17 +28,45 @@ class CustomHandler extends MiddlewareBase
 	//	Public
 	// -------------------------------------------------------------------------
 
-	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
+	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
-		$eventName = $this->options["event"] ?? "";
-		$handler = $this->loader->loadHandler($eventName);
+		// Get a handler
+		$method = strtolower($_SERVER["REQUEST_METHOD"]);
+		$resource = strtolower($request->getAttribute("routeInfo")["args"]["resource"]);
+		$rootDir = $request->getAttribute("appInfo")["rootDir"];
+		$customHandler = $this->loadHandler($this->options["eventName"] ?? "", $method, $resource, $rootDir);
+
+		if ($customHandler)
+		{
+			$func = Closure::bind($customHandler, $this, get_class($this));
+			return $func($request, $handler);
+		}
+		else
+		{
+			return $handler->handle($request);
+		}
+
+	}
+
+	// -----------------------------------------------------------------------------
+
+	/**
+  	 * Load the request handler according to method, resource and event.
+	 *
+	 * @param	$eventName		An event name.
+	 *
+	 * @return	Handler.
+     */
+	private function loadHandler(?string $eventName = "", $method, $resource, $rootDir): ?callable
+	{
+
 		$ret = null;
 
-		if ($handler)
+		$fileName = $rootDir . "handlers/" . $method . "_" . $resource . ($eventName ? "_" : "") . $eventName . ".php";
+		if (file_exists($fileName))
 		{
-			$func = Closure::bind($handler, $this, get_class($this));
-			$ret = $func($request, $response);
+			$ret  = require $fileName;
 		}
 
 		return $ret;

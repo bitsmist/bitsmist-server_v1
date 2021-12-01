@@ -13,6 +13,7 @@ namespace Bitsmist\v1\Middlewares\Validator;
 
 use Bitsmist\v1\Exception\HttpException;
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
+use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -30,16 +31,17 @@ class HeaderValidator extends MiddlewareBase
 	/**
 	 * @throws HttpException
 	 */
-	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
+	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
+		$logger = $request->getAttribute("services")["logger"];
 		$headers = $request->getHeaders();
-		$spec = $this->loader->getAppInfo("spec");
+		$spec = $request->getAttribute("spec");
 
 		// check host
 		if ($headers["host"][0] != $_SERVER["SERVER_NAME"])
 		{
-			$this->loader->getService("logger")->alert("Invalid host: host = {host}", [
+			$logger->alert("Invalid host: host = {host}", [
 				"method"=>__METHOD__,
 				"host"=>$headers["host"][0]
 			]);
@@ -51,7 +53,7 @@ class HeaderValidator extends MiddlewareBase
 		{
 			if (!isset($headers["origin"][0]))
 			{
-				$this->loader->getService("logger")->alert("Invalid origin: no origin", ["method"=>__METHOD__]);
+				$logger->alert("Invalid origin: no origin", ["method"=>__METHOD__]);
 				throw new HttpException(HttpException::ERRNO_PARAMETER, HttpException::ERRMSG_PARAMETER);
 			}
 		}
@@ -59,7 +61,7 @@ class HeaderValidator extends MiddlewareBase
 		// check if origin is in allowed origins list
 		if (isset($headers["origin"][0]) && !in_array($headers["origin"][0], $spec["options"]["allowedOrigins"]))
 		{
-			$this->loader->getService("logger")->alert("Invalid origin: origin = {origin}", [
+			$logger->alert("Invalid origin: origin = {origin}", [
 				"method"=>__METHOD__,
 				"origin"=>($headers["origin"][0] ?? "")
 			]);
@@ -71,7 +73,7 @@ class HeaderValidator extends MiddlewareBase
 		{
 			if (!isset($headers[strtolower($headerName)][0]))
 			{
-				$this->loader->getService("logger")->alert("Required header doesn't exist: headerName = {headerName}", [
+				$logger->alert("Required header doesn't exist: headerName = {headerName}", [
 					"method"=>__METHOD__,
 					"headerName"=>$headerName,
 				]);
@@ -85,13 +87,15 @@ class HeaderValidator extends MiddlewareBase
 			$headerName = (is_string($spec["options"]["needPreflight"]) ? $spec["options"]["needPreflight"] : "X-From");
 			if (!isset($headers[strtolower($headerName)][0]))
 			{
-				$this->loader->getService("logger")->alert("Required header for preflight doesn't exist: headerName = {headerName}", [
+				$logger->alert("Required header for preflight doesn't exist: headerName = {headerName}", [
 					"method"=>__METHOD__,
 					"headerName"=>$headerName,
 				]);
 				throw new HttpException(HttpException::ERRNO_PARAMETER, HttpException::ERRMSG_PARAMETER);
 			}
 		}
+
+		return $handler->handle($request);
 	}
 
 }

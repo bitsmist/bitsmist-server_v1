@@ -11,6 +11,9 @@
 
 namespace Bitsmist\v1\Services;
 
+use Bitsmist\v1\Exception\HttpException;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -18,7 +21,7 @@ use Psr\Http\Message\ServerRequestInterface;
 //	Middlware service class
 // =============================================================================
 
-class MiddlewareService extends PluginService
+class MiddlewareService extends PluginService implements  RequestHandlerInterface
 {
 
 	// -------------------------------------------------------------------------
@@ -40,49 +43,87 @@ class MiddlewareService extends PluginService
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Process middleware chains.
+	 * Add a middleware.
 	 *
-	 * @param	$request		Request.
-	 * @param	$response		Response.
+	 * @param	$middleware		Middleware instance or middleware name.
+	 * @param	$options		Middleware options.
 	 *
-	 * @return	Response.
+	 * @return	Added middleware.
 	 */
-	public function process(ServerRequestInterface $request, ResponseInterface $response): array
+	public function add($middleware, ?array $options)
 	{
 
-		foreach ($this->plugins as $middlewareName => $middleware)
+		if (is_string($middleware))
 		{
-			$ret = $middleware($request, $response);
-
-			if ($ret instanceof \Psr\Http\Message\RequestInterface)
-			{
-				$request = $ret;
-			}
-
-			if ($ret instanceof \Psr\Http\Message\ResponseInterface)
-			{
-				$response = $ret;
-			}
+			// Create an instance
+			$options = array_merge($this->loader->getAppInfo("spec")[$middleware] ?? array(), $options ?? array());
+			$className = $options["className"] ?? null;
+			$this->plugins[] = new $className($options);
 		}
-
-		return array($request, $response);
+		else
+		{
+			$this->plugins[] = $middleware;
+		}
 
 	}
 
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Process middleware chains.
+	 * Dispatch middleware chains.
 	 *
 	 * @param	$request		Request.
-	 * @param	$response		Response.
 	 *
 	 * @return	Response.
 	 */
-	public function __invoke(ServerRequestInterface $request, ResponseInterface $response): array
+	public function dispatch(ServerRequestInterface $request): ResponseInterface
 	{
 
-		return $this->process($request, $response);
+		reset($this->plugins);
+
+		$request = $request->withAttribute("resultCode", HttpException::ERRNO_NONE);
+		$request = $request->withAttribute("resultMessage", HttpException::ERRMSG_NONE);
+		$request = $request->withAttribute("spec", $this->loader->getAppInfo("spec"));
+		$request = $request->withAttribute("routeInfo", $this->loader->routeInfo);
+		$request = $request->withAttribute("appInfo", $this->loader->appInfo);
+		$request = $request->withAttribute("sysInfo", $this->loader->sysInfo);
+		$request = $request->withAttribute("services", $this->loader->services);
+
+		return $this->handle($request);
+
+	}
+
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Handle an request.
+	 *
+	 * @param	$request		Request.
+	 *
+	 * @return	Response.
+	 */
+	public function handle(ServerRequestInterface $request): ResponseInterface
+	{
+
+		// Get a middleware
+		$middleware = current($this->plugins);
+		next($this->plugins);
+
+		// Execute
+		if (is_callable($middleware))
+		{
+			$ret = $middleware($request, $this);
+		}
+		else if ($middleware instanceof MiddlewareInterface)
+		{
+			$ret = $middleware->process($request, $this);
+		}
+		else
+		{
+			$ret = $this->loader->getResponse();
+		}
+
+		return $ret;
 
 	}
 

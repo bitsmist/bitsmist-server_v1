@@ -13,6 +13,7 @@ namespace Bitsmist\v1\Middlewares\SessionHandler;
 
 use Bitsmist\v1\Exception\HttpException;
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
+use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -27,12 +28,14 @@ class DestroySessionHandler extends MiddlewareBase
 	//	Public
 	// -------------------------------------------------------------------------
 
-	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
+	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
 		$_SESSION = array();
 		session_destroy();
 		setcookie(session_name(), '');
+
+		return $handler->handle($request);
 
 	}
 

@@ -12,6 +12,7 @@
 namespace Bitsmist\v1\Middlewares\SessionHandler;
 
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
+use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -26,10 +27,12 @@ class RegenerateSessionHandler extends MiddlewareBase
 	//	Public
 	// -------------------------------------------------------------------------
 
-	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
+	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
 		session_regenerate_id();
+
+		return $handler->handle($request);
 
 	}
 

@@ -13,6 +13,7 @@ namespace Bitsmist\v1\Middlewares\ExceptionHandler;
 
 use Bitsmist\v1\Exception\HttpException;
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
+use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -33,7 +34,7 @@ class LoggingExceptionHandler extends MiddlewareBase
 	//	Public
 	// -------------------------------------------------------------------------
 
-	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
+	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
 		$exception = $request->getAttribute("exception");
@@ -48,7 +49,9 @@ class LoggingExceptionHandler extends MiddlewareBase
 			break;
 		}
 
-		$this->dumpLog();
+		$this->dumpLog($request->getAttribute("services")["logger"]);
+
+		return $handler->handle($request);
 
 	}
 
@@ -99,12 +102,12 @@ class LoggingExceptionHandler extends MiddlewareBase
 	/**
 	 * Log error messages with logger
 	 */
-	private function dumpLog()
+	private function dumpLog($logger)
 	{
 
 		for ($i = 0; $i < count($this->messages); $i++)
 		{
-			$this->loader->getService("logger")->error("Exception: {message}", ["message"=>$this->messages[$i]]);
+			$logger->error("Exception: {message}", ["message"=>$this->messages[$i]]);
 		}
 		$this->clear();
 

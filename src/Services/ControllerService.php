@@ -84,7 +84,7 @@ class ControllerService
 	 *
 	 * @return	Response.
 	 */
-	public function handle(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+	public function dispatch(ServerRequestInterface $request): ResponseInterface
 	{
 
 		$request = $request->withAttribute("resultCode", HttpException::ERRNO_NONE);
@@ -92,7 +92,7 @@ class ControllerService
 
 		foreach ($this->handlers as $eventName => $service)
 		{
-			list($request, $response) = $service->process($request, $response);
+			$response = $service->handle($request);
 		}
 
 		return $response;

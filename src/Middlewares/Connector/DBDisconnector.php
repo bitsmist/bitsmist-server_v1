@@ -12,6 +12,7 @@
 namespace Bitsmist\v1\Middlewares\Connector;
 
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
+use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -26,10 +27,12 @@ class DBDisconnector extends MiddlewareBase
 	//	Public
 	// -------------------------------------------------------------------------
 
-	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
+	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
-		$this->loader->getService("db")->close();
+		$request->getAttribute("services")["db"]->close();
+
+		return $handler->handle($request);
 
 	}
 

@@ -12,6 +12,7 @@
 namespace Bitsmist\v1\Middlewares\Handler;
 
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
+use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -26,7 +27,7 @@ class PaginationHandler extends MiddlewareBase
 	//	Public
 	// -------------------------------------------------------------------------
 
-	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
+	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
 		$method = strtolower($request->getMethod());
@@ -48,7 +49,7 @@ class PaginationHandler extends MiddlewareBase
 
 		$request = $request->withAttribute("pagination", $pagination);
 
-		return $request;
+		return $handler->handle($request);
 
 	}
 

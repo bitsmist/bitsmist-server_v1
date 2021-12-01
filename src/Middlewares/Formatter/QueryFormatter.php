@@ -13,6 +13,7 @@ namespace Bitsmist\v1\Middlewares\Formatter;
 
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
 use Bitsmist\v1\Util\FormatterUtil;
+use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -27,10 +28,10 @@ class QueryFormatter extends MiddlewareBase
 	//	Public
 	// -------------------------------------------------------------------------
 
-	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
+	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
-		$spec = $this->loader->getAppInfo("spec");
+		$spec = $request->getAttribute("spec");
 		$params = $spec["options"]["parameters"] ?? array();
 		$gets = $request->getQueryParams();
 
@@ -45,8 +46,9 @@ class QueryFormatter extends MiddlewareBase
 			}
 		}
 
-		return $request->withQueryParams($gets);
+		$request = $request->withQueryParams($gets);
 
+		return $handler->handle($request);
 	 }
 
 }

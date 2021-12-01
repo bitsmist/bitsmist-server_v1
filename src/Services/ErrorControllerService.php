@@ -23,24 +23,6 @@ class ErrorControllerService extends MiddlewareService
 {
 
 	// -------------------------------------------------------------------------
-	//	Constructor
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Constructor.
-	 *
-	 * @param	$loader			Loader.
-	 * @param	$options		Options.
-	 */
-	public function __construct($loader, array $options = null)
-	{
-
-		// super
-		parent::__construct($loader, $options);
-
-	}
-
-	// -------------------------------------------------------------------------
 	//	Public
 	// -------------------------------------------------------------------------
 
@@ -48,11 +30,10 @@ class ErrorControllerService extends MiddlewareService
 	 * Handle an error.
 	 *
 	 * @param	$request		Request.
-	 * @param	$response		Response.
 	 *
 	 * @return	Response.
 	 */
-	public function handle(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+	public function dispatch(ServerRequestInterface $request): ResponseInterface
 	{
 
 		// Rethrow an exeption when no error handler available
@@ -61,10 +42,15 @@ class ErrorControllerService extends MiddlewareService
 			throw $request->getAttribute("exception");
 		}
 
-		// Process through middlewares
-		list($request, $response) = $this->process($request, $response);
+		reset($this->plugins);
 
-		return $response;
+		$request = $request->withAttribute("spec", $this->loader->getAppInfo("spec"));
+		$request = $request->withAttribute("routeInfo", $this->loader->routeInfo);
+		$request = $request->withAttribute("appInfo", $this->loader->appInfo);
+		$request = $request->withAttribute("sysInfo", $this->loader->sysInfo);
+		$request = $request->withAttribute("services", $this->loader->services);
+
+		return $this->handle($request);
 
 	}
 

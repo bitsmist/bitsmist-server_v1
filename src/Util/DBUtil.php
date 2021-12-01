@@ -11,7 +11,6 @@
 
 namespace Bitsmist\v1\Util;
 
-use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 // =============================================================================
@@ -24,13 +23,6 @@ class DBUtil
 	// -------------------------------------------------------------------------
 	//	Constants, Variables
 	// -------------------------------------------------------------------------
-
-	/**
-	 * Loader.
-	 *
-	 * @var		Loader
-	 */
-	protected $loader = null;
 
 	/**
 	 * Returned records count.
@@ -53,13 +45,11 @@ class DBUtil
 	/**
 	 * Constructor.
 	 *
-	 * @param	$loader			Loader.
 	 * @param	options			Middleware options.
 	 */
-	public function __construct($loader, ?array $options)
+	public function __construct(?array $options)
 	{
 
-		$this->loader = $loader;
 		$this->options = $options;
 
 	}
@@ -72,16 +62,15 @@ class DBUtil
 	 * Get items.
 	 *
 	 * @param	$request		Request.
-	 * @param	$response		Response.
 	 *
 	 * @return	Data retrieved.
 	 */
-	public function getItems(ServerRequestInterface $request, ResponseInterface $response): ?array
+	public function getItems(ServerRequestInterface $request): ?array
 	{
 
-		$id = $this->loader->getRouteInfo("args")["id"];
+		$id = $request->getAttribute("routeInfo")["args"]["id"];
 		$gets = $request->getQueryParams();
-		$spec = $this->loader->getAppInfo("spec");
+		$spec = $request->getAttribute("spec");
 		$fields = $this->buildFields($this->options["fields"] ?? null, $gets);
 		$searches = $this->options["searches"] ?? null;
 		$orders = $this->options["orders"] ?? null;
@@ -96,7 +85,7 @@ class DBUtil
 		$order = $orders[($gets[$orderParamName] ?? "default")] ?? null;
 
 		$data = null;
-		$dbs = $this->loader->getService("db")->getPlugins();
+		$dbs = $request->getAttribute("services")["db"]->getPlugins();
 		foreach ($dbs as $dbName => $db)
 		{
 			switch ($id)
@@ -126,7 +115,7 @@ class DBUtil
 			}
 		}
 
-        return $data;
+		return $data;
 
 	}
 
@@ -136,21 +125,20 @@ class DBUtil
 	 * Insert items.
 	 *
 	 * @param	$request		Request.
-	 * @param	$response		Response.
 	 *
 	 * @return	Result.
 	 */
-	public function postItems(ServerRequestInterface $request, ResponseInterface $response): ?array
+	public function postItems(ServerRequestInterface $request): ?array
 	{
 
-		$id = $this->loader->getRouteInfo("args")["id"] ?? null;
-		$spec = $this->loader->getAppInfo("spec");
+		$id = $request->getAttribute("routeInfo")["args"]["id"];
+		$spec = $request->getAttribute("spec");
 		$fields = $this->options["fields"] ?? "*";
 		$newIdName = $this->options["specialParameters"]["new"] ?? "new";
 		$items = $this->getParamsFromBody($request, $spec["options"] ?? null);
 
 		$data = null;
-		$dbs = $this->loader->getService("db")->getPlugins();
+		$dbs = $request->getAttribute("services")["db"]->getPlugins();
 		foreach ($dbs as $dbName => $db)
 		{
 			// beginTrans()
@@ -194,22 +182,21 @@ class DBUtil
 	 * Update items.
 	 *
 	 * @param	$request		Request.
-	 * @param	$response		Response.
 	 *
 	 * @return	Result.
 	 */
-	public function putItems(ServerRequestInterface $request, ResponseInterface $response): ?array
+	public function putItems(ServerRequestInterface $request): ?array
 	{
 
-		$id = $this->loader->getRouteInfo("args")["id"];
+		$id = $request->getAttribute("routeInfo")["args"]["id"];
 		$gets = $request->getQueryParams();
-		$spec = $this->loader->getAppInfo("spec");
+		$spec = $request->getAttribute("spec");
 		$fields = $this->options["fields"] ?? "*";
 		$searches = $this->options["searches"] ?? null;
 		$listIdName = $this->options["specialParameters"]["list"] ?? "list";
 		$items = $this->getParamsFromBody($request, $spec["options"] ?? null);
 
-		$dbs = $this->loader->getService("db")->getPlugins();
+		$dbs = $request->getAttribute("services")["db"]->getPlugins();
 		foreach ($dbs as $dbName => $db)
 		{
 			// beginTrans();
@@ -249,20 +236,20 @@ class DBUtil
 	 * Delete items.
 	 *
 	 * @param	$request		Request.
-	 * @param	$response		Response.
 	 *
 	 * @return	Result.
 	 */
-	public function deleteItems(ServerRequestInterface $request, ResponseInterface $response): ?array
+	public function deleteItems(ServerRequestInterface $request): ?array
 	{
 
-		$id = $this->loader->getRouteInfo("args")["id"];
+		$id = $request->getAttribute("routeInfo")["args"]["id"];
 		$gets = $request->getQueryParams();
-		$spec = $this->loader->getAppInfo("spec");
+		$spec = $request->getAttribute("spec");
 		$searches = $this->options["searches"] ?? null;
 		$listIdName = $this->options["specialParameters"]["list"] ?? "list";
 
-		$dbs = $this->loader->getService("db")->getPlugins();
+		//$dbs = $this->loader->getService("db")->getPlugins();
+		$dbs = $request->getAttribute("services")["db"]->getPlugins();
 		foreach ($dbs as $dbName => $db)
 		{
 			// beginTrans();

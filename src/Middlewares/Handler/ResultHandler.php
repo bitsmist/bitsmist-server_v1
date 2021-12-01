@@ -13,6 +13,7 @@ namespace Bitsmist\v1\Middlewares\Handler;
 
 use Bitsmist\v1\Exception\HttpException;
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
+use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -27,7 +28,7 @@ class ResultHandler extends MiddlewareBase
 	//	Public
 	// -------------------------------------------------------------------------
 
-	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
+	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
 		$result = $this->buildResult(
@@ -39,7 +40,10 @@ class ResultHandler extends MiddlewareBase
 			$request->getAttribute("pagination"),
 		);
 
-		return $request->withAttribute("result", $result);
+		$request = $request->withAttribute("result", $result);
+
+		return $handler->handle($request);
+
 
 	}
 

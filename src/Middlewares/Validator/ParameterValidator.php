@@ -13,6 +13,7 @@ namespace Bitsmist\v1\Middlewares\Validator;
 
 use Bitsmist\v1\Exception\HttpException;
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
+use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -27,18 +28,18 @@ class ParameterValidator extends MiddlewareBase
 	//	Public
 	// -------------------------------------------------------------------------
 
-	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
+	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
-		$options = $this->loader->getAppInfo("spec")["options"];
+		$options = $request->getAttribute("spec")["options"];
 
 		// Check query parameters
 		$allowedList = $options["query"]["parameters"] ?? null;
 		if ($allowedList)
 		{
 			$allowedList = $this->alignArray($allowedList);
-			$this->checkMissing($request->getQueryParams(), $allowedList);
-			$this->checkValidity($request->getQueryParams(), $allowedList);
+			$this->checkMissing($request, $request->getQueryParams(), $allowedList);
+			$this->checkValidity($request, $request->getQueryParams(), $allowedList);
 		}
 
 		// Check body parameters
@@ -50,10 +51,12 @@ class ParameterValidator extends MiddlewareBase
 
 			foreach ((array)$items as $item)
 			{
-				$this->checkMissing($item, $allowedList);
-				$this->checkValidity($item, $allowedList);
+				$this->checkMissing($request, $item, $allowedList);
+				$this->checkValidity($request, $item, $allowedList);
 			}
 		}
+
+		return $handler->handle($request);
 
 	}
 
@@ -97,7 +100,7 @@ class ParameterValidator extends MiddlewareBase
 	 *
 	 * @return	array			Parameter arrays.
      */
-	private function getParamsFromBody($request, $options)
+	private function getParamsFromBody(ServerRequestInterface $request, $options)
 	{
 
 		$itemsParamName = $options["body"]["specialParameters"]["items"] ?? null;
@@ -133,7 +136,7 @@ class ParameterValidator extends MiddlewareBase
 	 *
 	 * @throws	HttpException
      */
-	private function checkMissing(?array $target, array $allowedList)
+	private function checkMissing(ServerRequestInterface $request, ?array $target, array $allowedList)
 	{
 
 		foreach ($allowedList as $key => $value)
@@ -141,11 +144,9 @@ class ParameterValidator extends MiddlewareBase
 			$validations = $allowedList[$key]["validator"] ?? [];
 			if (in_array("REQUIRED", $validations) && !array_key_exists($key, $target))
 			{
-				$this->loader->getService("logger")->alert("Parameter is missing: parameter = {key}, method = {httpmethod}, resource = {resource}", [
+				$request->getAttribute("services")["logger"]->alert("Parameter is missing: parameter = {key}", [
 					"method" => __METHOD__,
 					"key" => $key,
-					"httpmethod" => $_SERVER['REQUEST_METHOD'],
-					"resource" => $this->loader->getRouteInfo("args")["resource"],
 				]);
 
 				throw new HttpException(HttpException::ERRNO_PARAMETER, HttpException::ERRMSG_PARAMETER);
@@ -165,7 +166,7 @@ class ParameterValidator extends MiddlewareBase
 	 *
 	 * @throws	HttpException
      */
-	private function checkValidity(?array $target, array $allowedList)
+	private function checkValidity(ServerRequestInterface $request, ?array $target, array $allowedList)
 	{
 
 		foreach ((array)$target as $key => $value)
@@ -173,12 +174,10 @@ class ParameterValidator extends MiddlewareBase
 			// Check whether a parameter is in the allowed list
 			if (!array_key_exists($key, $allowedList))
 			{
-				$this->loader->getService("logger")->alert("Invaild parameter: parameter = {key}, value = {value}, method = {httpmethod}, resource = {resource}", [
+				$request->getAttribute("services")["logger"]->alert("Invaild parameter: parameter = {key}, value = {value}", [
 					"method" => __METHOD__,
 					"key" => $key,
 					"value" => $value,
-					"httpmethod" => $_SERVER['REQUEST_METHOD'],
-					"resource" => $this->loader->getRouteInfo("args")["resource"],
 				]);
 
 				throw new HttpException(HttpException::ERRNO_PARAMETER, HttpException::ERRMSG_PARAMETER);

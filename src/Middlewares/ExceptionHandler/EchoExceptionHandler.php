@@ -12,11 +12,12 @@
 namespace Bitsmist\v1\Middlewares\ExceptionHandler;
 
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
+use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 // =============================================================================
-//	Echo exception handler class.
+//	Echo exception handler class
 // =============================================================================
 
 class EchoExceptionHandler extends MiddlewareBase
@@ -26,7 +27,7 @@ class EchoExceptionHandler extends MiddlewareBase
 	//	Public
 	// -------------------------------------------------------------------------
 
-	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
+	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
 		$exception = $request->getAttribute("exception");
@@ -36,6 +37,8 @@ class EchoExceptionHandler extends MiddlewareBase
 		echo "Error file:\t {$exception->getFile()}<br>";
 		echo "Error lineno:\t {$exception->getLine()}<br>";
 		echo "Error trace:\t {$exception->getTraceAsString()}<br>";
+
+		return $handler->handle($request);
 
 	}
 

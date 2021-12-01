@@ -13,6 +13,7 @@ namespace Bitsmist\v1\Middlewares\ExceptionHandler;
 
 use Bitsmist\v1\Exception\HttpException;
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
+use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -27,7 +28,7 @@ class BasicExceptionHandler extends MiddlewareBase
 	//	Public
 	// -------------------------------------------------------------------------
 
-	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
+	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
 		$exception = $request->getAttribute("exception");
@@ -47,7 +48,7 @@ class BasicExceptionHandler extends MiddlewareBase
 		$request = $request->withAttribute("resultCode", $resultCode);
 		$request = $request->withAttribute("resultMessage", $resultMessage);
 
-		return $request;
+		return $handler->handle($request);
 
 	}
 

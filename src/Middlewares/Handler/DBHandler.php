@@ -13,6 +13,7 @@ namespace Bitsmist\v1\Middlewares\Handler;
 
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
 use Bitsmist\v1\Util\DBUtil;
+use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -27,19 +28,19 @@ class DBHandler extends MiddlewareBase
 	//	Public
 	// -------------------------------------------------------------------------
 
-	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
+	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
 		// Handle database
-		$db = new DBUtil($this->loader, $this->options);
+		$db = new DBUtil($this->options);
 		$methodName = strtolower($request->getMethod()) . "Items";
-		$data = $db->$methodName($request, $response);
+		$data = $db->$methodName($request);
 
 		$request = $request->withAttribute("data", $data);
 		$request = $request->withAttribute("resultCount", $db->resultCount);
 		$request = $request->withAttribute("totalCount", $db->totalCount);
 
-		return $request;
+		return $handler->handle($request);
 
 	}
 

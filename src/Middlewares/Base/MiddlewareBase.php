@@ -11,6 +11,8 @@
 
 namespace Bitsmist\v1\Middlewares\Base;
 
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -18,19 +20,12 @@ use Psr\Http\Message\ServerRequestInterface;
 //	Middleware base class
 // =============================================================================
 
-abstract class MiddlewareBase
+abstract class MiddlewareBase implements MiddlewareInterface
 {
 
 	// -------------------------------------------------------------------------
 	//	Constants, Variables
 	// -------------------------------------------------------------------------
-
-	/**
-	 * Loader.
-	 *
-	 * @var		Loader
-	 */
-	protected $loader = null;
 
 	/**
 	 * Options.
@@ -46,29 +41,13 @@ abstract class MiddlewareBase
 	/**
 	 * Constructor.
 	 *
-	 * @param	$loader			Loader.
 	 * @param	options			Middleware options.
 	 */
-	public function __construct($loader, ?array $options)
+	public function __construct(?array $options)
 	{
 
-		$this->loader = $loader;
 		$this->options = $options;
 
 	}
-
-	// -------------------------------------------------------------------------
-	//	Public
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Handle the request.
-	 *
-	 * @param	$request		Request.
-	 * @param	$response		Response.
-	 *
-	 * @return	Request or response.
-	 */
-	abstract public function __invoke(ServerRequestInterface $request, ResponseInterface $response);
 
 }

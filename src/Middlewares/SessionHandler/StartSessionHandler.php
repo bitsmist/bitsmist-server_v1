@@ -13,6 +13,7 @@
 namespace Bitsmist\v1\Middlewares\SessionHandler;
 
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
+use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -27,20 +28,20 @@ class StartSessionHandler extends MiddlewareBase
 	//	Public
 	// -------------------------------------------------------------------------
 
-	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
+	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
 		if (session_status() != PHP_SESSION_ACTIVE)
 		{
 			// Set session name
-			$sessionName = $this->loader->getAppInfo("spec")["options"]["session"]["name"] ?? null;
+			$sessionName = $request->getAttribute("spec")["options"]["session"]["name"] ?? null;
 			if ($sessionName)
 			{
 				session_name($sessionName);
 			}
 
 			// Set cookie options
-			$cookieOptions = $this->loader->getAppInfo("spec")["options"]["session"]["cookieOptions"] ?? null;
+			$cookieOptions = $request->getAttribute("spec")["options"]["session"]["cookieOptions"] ?? null;
 			if ($cookieOptions)
 			{
 				$currentOptions = session_get_cookie_params();
@@ -66,6 +67,8 @@ class StartSessionHandler extends MiddlewareBase
 
 			// Start session
 			session_start();
+
+			return $handler->handle($request);
 		}
 
 	}

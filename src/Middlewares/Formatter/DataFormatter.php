@@ -13,6 +13,7 @@ namespace Bitsmist\v1\Middlewares\Formatter;
 
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
 use Bitsmist\v1\Util\FormatterUtil;
+use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -27,11 +28,12 @@ class DataFormatter extends MiddlewareBase
 	//	Public
 	// -------------------------------------------------------------------------
 
-	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
+	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
+		$spec = $request->getAttribute("spec");
 		$fields = $this->options["fields"] ?? array();
-		$params = $this->loader->getAppInfo("spec")["options"]["parameters"] ?? array();
+		$params = $spec["options"]["parameters"] ?? array();
 		$data = $request->getAttribute("data");
 
 		if ($data)
@@ -50,7 +52,9 @@ class DataFormatter extends MiddlewareBase
 			}
 		}
 
-		return $request->withAttribute("data", $data);
+		$request = $request->withAttribute("data", $data);
+
+		return $handler->handle($request);
 
 	 }
 

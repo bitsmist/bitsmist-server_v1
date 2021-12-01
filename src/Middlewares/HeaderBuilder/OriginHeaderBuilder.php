@@ -12,6 +12,7 @@
 namespace Bitsmist\v1\Middlewares\HeaderBuilder;
 
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
+use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -26,10 +27,12 @@ class OriginHeaderBuilder extends MiddlewareBase
 	//	Public
 	// -------------------------------------------------------------------------
 
-	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
+	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
-		$origins = $this->loader->getAppInfo("spec")["options"]["allowedOrigins"] ?? null;
+		$response = $handler->handle($request);
+
+		$origins = $request->getAttribute("spec")["options"]["allowedOrigins"] ?? null;
 		$headers = $request->getHeaders();
 
 		if ($origins && array_key_exists("origin", $headers))
