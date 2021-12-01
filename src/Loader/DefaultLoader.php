@@ -110,7 +110,7 @@ class DefaultLoader
 		$this->response = $this->loadResponse($appInfo["spec"]["response"]);
 
 		// Load services
-		$this->loadServices($appInfo["spec"]["services"]);
+		$this->loadServices($appInfo["spec"]["services"]["uses"] ?? null);
 
 	}
 
@@ -263,66 +263,6 @@ class DefaultLoader
 
 	}
 
-	// -----------------------------------------------------------------------------
-
-	/**
-	 * Merge two arrays. Overwrites $arr1 with $arr2.
-	 *
-	 * @param	$arr1			Array1.
-	 * @param	$arr2			Array2.
-	 *
-	 * @return	Mergeed array.
-	 */
-	public function mergeArray(array $arr1, array $arr2, int $depth = 2): array
-	{
-
-		$ret = array();
-
-		// Iterate each keys in arr1
-		foreach ($arr1 as $key1 => $val1)
-		{
-			if (is_array($val1))
-			{
-				$val2 = $arr2[$key1] ?? null;
-				if (!$val2)
-				{
-					$ret[$key1] = $val1;
-				}
-				else if (is_array($val2))
-				{
-					if ($depth == 0)
-					{
-						$ret[$key1] = $val2;
-					}
-					else
-					{
-						$ret[$key1] = $this->mergeArray($val1, $val2, $depth-1);
-					}
-				}
-				else
-				{
-					$ret[$key1] = $val2;
-				}
-			}
-			else
-			{
-				$ret[$key1] = $arr2[$key1] ?? $val1;
-			}
-		}
-
-		// Add keys exists only in arr2
-		foreach ($arr2 as $key2 => $val2)
-		{
-			if (!array_key_exists($key2, $arr1))
-			{
-				$ret[$key2] = $val2;
-			}
-		}
-
-		return $ret;
-
-	}
-
 	// -------------------------------------------------------------------------
 	//	Protected
 	// -------------------------------------------------------------------------
@@ -408,7 +348,7 @@ class DefaultLoader
 
 		$this->services = array();
 
-		foreach ($services as $serviceName)
+		foreach ((array)$services as $serviceName)
 		{
 			$serviceOptions = $this->appInfo["spec"][$serviceName];
 			$className = $serviceOptions["className"];
@@ -431,7 +371,7 @@ class DefaultLoader
 
 		$globalSettings = $this->loadSettingFile($this->sysInfo["rootDir"] . "conf/v" . $this->sysInfo["version"] . "/settings.php");
 		$localSettings = $this->loadSettingFile($this->appInfo["rootDir"] . "conf/settings.php");
-		$ret = $this->mergeArray($globalSettings, $localSettings);
+		$ret = array_replace_recursive($globalSettings, $localSettings);
 
 		return $ret;
 
@@ -440,7 +380,7 @@ class DefaultLoader
 	// -----------------------------------------------------------------------------
 
 	/**
-  	 * Load the global and local specs and merge them.
+  	 * Load specs and merge them.
 	 *
 	 * @return	Specs.
      */
@@ -452,26 +392,24 @@ class DefaultLoader
 		$method = strtolower($_SERVER["REQUEST_METHOD"]);
 		$resource = strtolower($this->routeInfo["args"]["resource"]);
 
-		$spec1_1 = $this->loadSettingFile($sysBaseDir . "common.php");
-		$spec1_2 = $this->loadSettingFile($appBaseDir . "common.php");
-		$spec1 = $this->mergeArray($spec1_1, $spec1_2, 1);
+		$spec = $this->loadSettingFile($sysBaseDir . "common.php");
+		$curSpec = $spec;
+		$spec = $this->loadSettingFile($appBaseDir . "common.php", $curSpec);
+		$curSpec = array_replace_recursive($curSpec, $spec);
+		$spec = $this->loadSettingFile($sysBaseDir . $method . ".php", $curSpec);
+		$curSpec = array_replace_recursive($curSpec, $spec);
+		$spec = $this->loadSettingFile($appBaseDir . $method . ".php", $curSpec);
+		$curSpec = array_replace_recursive($curSpec, $spec);
+		$spec = $this->loadSettingFile($sysBaseDir . $resource . ".php", $curSpec);
+		$curSpec = array_replace_recursive($curSpec, $spec);
+		$spec = $this->loadSettingFile($appBaseDir . $resource . ".php", $curSpec);
+		$curSpec = array_replace_recursive($curSpec, $spec);
+		$spec = $this->loadSettingFile($sysBaseDir . $method . "_" . $resource . ".php", $curSpec);
+		$curSpec = array_replace_recursive($curSpec, $spec);
+		$spec = $this->loadSettingFile($appBaseDir . $method . "_" . $resource . ".php", $curSpec);
+		$curSpec = array_replace_recursive($curSpec, $spec);
 
-		$spec2_1 = $this->loadSettingFile($sysBaseDir . $method . ".php");
-		$spec2_2 = $this->loadSettingFile($appBaseDir . $method . ".php");
-		$spec2 = $this->mergeArray($spec2_1, $spec2_2, 1);
-
-		$spec3_1 = $this->loadSettingFile($sysBaseDir . $resource . ".php");
-		$spec3_2 = $this->loadSettingFile($appBaseDir . $resource . ".php");
-		$spec3 = $this->mergeArray($spec3_1, $spec3_2, 1);
-
-		$spec4_1 = $this->loadSettingFile($sysBaseDir . $method . "_" . $resource . ".php");
-		$spec4_2 = $this->loadSettingFile($appBaseDir . $method . "_" . $resource . ".php");
-		$spec4 = $this->mergeArray($spec4_1, $spec4_2, 1);
-
-		$specA = $this->mergeArray($spec1, $spec2, 1);
-		$specB = $this->mergeArray($spec3, $spec4, 1);
-
-		return $this->mergeArray($specA, $specB, 1);;
+		return $curSpec;
 
 	}
 
@@ -484,21 +422,18 @@ class DefaultLoader
 	 *
 	 * @return	Settings array.
      */
-	protected function loadSettingFile(string $path): array
+	protected function loadSettingFile(string $path, ?array &$current = null): array
 	{
-
-		$settings = array();
 
 		if (is_readable($path))
 		{
 			$settings = require $path;
 		}
-		/*
 		else
 		{
-			throw new Exception("Setting file not found. file = " . $path);
+			$settings = array();
+//			throw new Exception("Setting file not found. file = " . $path);
 		}
-		 */
 
 		return $settings;
 
