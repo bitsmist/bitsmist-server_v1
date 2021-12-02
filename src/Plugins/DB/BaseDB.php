@@ -35,12 +35,12 @@ class BaseDB extends PluginBase
 	//	Constructor, Destructor
 	// -------------------------------------------------------------------------
 
-	public function __construct($loader, ?array $options)
+	public function __construct($container, ?array $options)
 	{
 
-		parent::__construct($loader, $options);
+		parent::__construct($container, $options);
 
-		$this->logger = $this->loader->getService("logger");
+		$this->logger = $container["services"]["logger"];
 
 		$this->props["dsn"] = $options["dsn"] ?? null;
 		$this->props["user"] = $options["user"] ?? null;

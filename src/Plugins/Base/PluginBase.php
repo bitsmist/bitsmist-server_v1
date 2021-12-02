@@ -23,11 +23,11 @@ class PluginBase
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Loader.
+	 * Container.
 	 *
-	 * @var		Loader
+	 * @var		Container
 	 */
-	protected $loader = null;
+	protected $contaier = null;
 
 	/**
 	 * Options.
@@ -50,13 +50,13 @@ class PluginBase
 	/**
 	 * Constructor.
 	 *
-	 * @param	$loader			Loader.
-	 * @param	options			Plugin options.
+	 * @param	$container		Container.
+	 * @param	$options		Plugin options.
 	 */
-	public function __construct($loader, ?array $options)
+	public function __construct($container, ?array $options)
 	{
 
-		$this->loader = $loader;
+		$this->container = $container;
 		$this->options = $options;
 
 	}

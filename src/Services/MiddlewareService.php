@@ -56,7 +56,7 @@ class MiddlewareService extends PluginService implements  RequestHandlerInterfac
 		if (is_string($middleware))
 		{
 			// Create an instance
-			$options = array_merge($this->loader->getAppInfo("spec")[$middleware] ?? array(), $options ?? array());
+			$options = array_merge($this->container["spec"][$middleware] ?? array(), $options ?? array());
 			$className = $options["className"] ?? null;
 			$this->plugins[] = new $className($options);
 		}
@@ -83,11 +83,11 @@ class MiddlewareService extends PluginService implements  RequestHandlerInterfac
 
 		$request = $request->withAttribute("resultCode", HttpException::ERRNO_NONE);
 		$request = $request->withAttribute("resultMessage", HttpException::ERRMSG_NONE);
-		$request = $request->withAttribute("spec", $this->loader->getAppInfo("spec"));
-		$request = $request->withAttribute("routeInfo", $this->loader->routeInfo);
-		$request = $request->withAttribute("appInfo", $this->loader->appInfo);
-		$request = $request->withAttribute("sysInfo", $this->loader->sysInfo);
-		$request = $request->withAttribute("services", $this->loader->services);
+		$request = $request->withAttribute("spec", $this->container["spec"]);
+		$request = $request->withAttribute("routeInfo", $this->container["routeInfo"]);
+		$request = $request->withAttribute("appInfo", $this->container["appInfo"]);
+		$request = $request->withAttribute("sysInfo", $this->container["sysInfo"]);
+		$request = $request->withAttribute("services", $this->container["services"]);
 
 		return $this->handle($request);
 
@@ -120,7 +120,7 @@ class MiddlewareService extends PluginService implements  RequestHandlerInterfac
 		}
 		else
 		{
-			$ret = $this->loader->getResponse();
+			$ret = $this->container["response"];
 		}
 
 		return $ret;

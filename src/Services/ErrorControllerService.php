@@ -44,11 +44,13 @@ class ErrorControllerService extends MiddlewareService
 
 		reset($this->plugins);
 
-		$request = $request->withAttribute("spec", $this->loader->getAppInfo("spec"));
-		$request = $request->withAttribute("routeInfo", $this->loader->routeInfo);
-		$request = $request->withAttribute("appInfo", $this->loader->appInfo);
-		$request = $request->withAttribute("sysInfo", $this->loader->sysInfo);
-		$request = $request->withAttribute("services", $this->loader->services);
+		//$request = $request->withAttribute("resultCode", HttpException::ERRNO_NONE);
+		//$request = $request->withAttribute("resultMessage", HttpException::ERRMSG_NONE);
+		$request = $request->withAttribute("spec", $this->container["spec"]);
+		$request = $request->withAttribute("routeInfo", $this->container["routeInfo"]);
+		$request = $request->withAttribute("appInfo", $this->container["appInfo"]);
+		$request = $request->withAttribute("sysInfo", $this->container["sysInfo"]);
+		$request = $request->withAttribute("services", $this->container["services"]);
 
 		return $this->handle($request);
 

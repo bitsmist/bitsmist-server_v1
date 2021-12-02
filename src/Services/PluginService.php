@@ -23,11 +23,11 @@ class PluginService
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Loader.
+	 * Container.
 	 *
-	 * @var		Loader
+	 * @var		Container
 	 */
-	protected $loader = null;
+	protected $container = null;
 
 	/**
 	 * Options.
@@ -50,13 +50,13 @@ class PluginService
 	/**
 	 * Constructor.
 	 *
-	 * @param	$loader			Loader.
+	 * @param	$container		Container.
 	 * @param	$options		Options.
 	 */
-	public function __construct($loader, array $options = null)
+	public function __construct($container, array $options = null)
 	{
 
-		$this->loader = $loader;
+		$this->container = $container;
 		$this->options = $options;
 
 		foreach ((array)($this->options["uses"] ?? null) as $key => $value)
@@ -109,11 +109,11 @@ class PluginService
 	{
 
 		// Merge settings
-		$options = array_merge($this->loader->getAppInfo("spec")[$title] ?? array(), $options ?? array());
+		$options = array_merge($this->container["spec"][$title] ?? array(), $options ?? array());
 
 		// Create an instance
 		$className = $options["className"] ?? null;
-		$this->plugins[$title] = new $className($this->loader, $options);
+		$this->plugins[$title] = new $className($this->container, $options);
 
 		return $this->plugins[$title];
 
