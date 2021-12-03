@@ -11,6 +11,7 @@
 
 namespace Bitsmist\v1;
 
+use Bitsmist\v1\Exception\HttpException;
 use Pimple\Container;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -45,63 +46,24 @@ class App
 	public function __construct(array $settings)
 	{
 
+		// Set php.ini from settings
+		$this->setIni($settings["phpOptions"] ?? null);
+
 		// Init error handling
 		$this->initError();
 
 		$this->settings = $settings;
 		$this->container = new Container();
+		$this->container["settings"] = $settings;
+		$this->container["request"] = $this->loadRequest();
+		$this->container["response"] = $this->loadResponse();
+		//$this->container["request"] = \Zend\Diactoros\ServerRequestFactory::FromGlobals($_SERVER, $_GET, $_POST, $_COOKIE, $_FILES);
+		//$this->container["response"] = new \Zend\Diactoros\Response();
 
-		// Set php.ini from settings
-		$this->setIni($settings["phpOptions"] ?? null);
-
-		// Init system info
-		$sysInfo = array();
-		$sysInfo["version"] = $settings["version"];
-		$sysInfo["rootDir"] = $settings["options"]["rootDir"];
-		$sysInfo["sitesDir"] = $settings["options"]["sitesDir"];
-		$sysInfo["settings"] = $settings;
-		$this->container["sysInfo"] = $sysInfo;
-
-		// Init route info
-		$this->routeInfo = $this->loadRoute($settings["router"]);
-		$this->container["routeInfo"] = $this->routeInfo;
-
-		// Init application info
-		$appInfo = array();
-		$appInfo["domain"] = $args["appDomain"] ?? $_SERVER["HTTP_HOST"];
-		$appInfo["name"] = $args["appName"] ?? $appInfo["domain"];
-		$appInfo["version"] = $args["appVersion"] ?? 1;
-		$appInfo["lang"] = $args["appLang"] ?? "ja";
-		$appInfo["rootDir"] = $sysInfo["sitesDir"] . $appInfo["name"] . "/";
-		$this->container["appInfo"] = $appInfo;
-		$this->container["settings"] = $this->loadSettings();
-		$this->container["spec"] = $this->loadSpecs();
-
-		// Set php.ini from spec
-		$this->setIni($this->container["spec"]["phpOptions"] ?? null);
-
-		// Init request & response
-		$this->container["request"] = $this->loadRequest($this->container["spec"]["request"]);
-		$this->container["response"] = $this->loadResponse($this->container["spec"]["response"]);
-
-		// Load services
-		$options = $this->container["spec"]["services"]["uses"] ?? null;
-		$this->container["services"] = $this->loadServices($options);
-
-		// Controller
-		$serviceOptions = $this->container["spec"]["controller"];
+		// Initialize controller
+		$serviceOptions = $settings["initializeController"];
 		$className = $serviceOptions["className"];
-		$this->controller = new $className($this->container, $serviceOptions);
-
-		// ErrorController
-		$serviceOptions = $this->container["spec"]["errorController"];
-		$className = $serviceOptions["className"];
-		$this->errorController = new $className($this->container, $serviceOptions);
-
-		// Emitter
-		$serviceOptions = $this->container["spec"]["emitter"];
-		$className = $serviceOptions["className"];
-		$this->emitter = new $className($this->container, $serviceOptions);
+		$this->initializeController = new $className($this->container, $serviceOptions);
 	}
 
 	// -------------------------------------------------------------------------
@@ -117,20 +79,37 @@ class App
 		$response = null;
 		$exception = null;
 
-		// Handle request
+		// Dispatch initializer middleware chain
+		$request = $this->container["request"];
+		$request = $request->withAttribute("resultCode", HttpException::ERRNO_NONE);
+		$request = $request->withAttribute("resultMessage", HttpException::ERRMSG_NONE);
+		$request = $request->withAttribute("app", $this);
+		$request = $request->withAttribute("settings", $this->settings);
+		$this->initializeController->dispatch($request);
+
+		// Copy request attributes back to container
+		foreach ($this->initializeController->request->getAttributes() as $key => $value)
+		{
+			$this->container[$key] = $value;
+		}
+
 		try
 		{
-			$response = $this->controller->dispatch($this->container["request"]);
+			// Dispatch middleware chain
+			$response = $this->container["services"]["controller"]->dispatch($this->initializeController->request);
 		}
 		catch (\Throwable $e)
 		{
 			$exception = $e;
-			$request = $this->container["request"];
-			$response = $this->errorController->dispatch($request->withAttribute("exception", $e));
+
+			// Dispatch error middleware chain
+			$request = $this->initializeController->request;
+			$request = $request->withAttribute("exception", $e);
+			$response = $this->container["services"]["errorController"]->dispatch($request);
 		}
 
 		// Send response
-		$this->emitter->emit($response);
+		$this->container["services"]["emitter"]->emit($response);
 
 		// Re-throw an exception during middleware handling to show error messages
 		if ($exception)
@@ -166,10 +145,10 @@ class App
 	 *
 	 * @return	Request.
 	 */
-	protected function loadRequest($options): ServerRequestInterface
+	protected function loadRequest(): ServerRequestInterface
 	{
 
-		$className = $options["className"];
+		$className = "\Zend\Diactoros\ServerRequestFactory";
 
 		$body = $_POST;
 		if (strtolower($_SERVER["REQUEST_METHOD"]) == "put")
@@ -196,10 +175,10 @@ class App
 	 *
 	 * @return	Response.
 	 */
-	protected function loadResponse($options): ResponseInterface
+	protected function loadResponse(): ResponseInterface
 	{
 
-		$className = $options["className"];
+		$className = "\Zend\Diactoros\Response";
 
 		return new $className();
 
@@ -253,191 +232,6 @@ class App
 				}
 			}
 		});
-
-	}
-
-    // -------------------------------------------------------------------------
-
-	/**
-	 * Set routes and get the selected route info.
-	 *
-	 * @return	Route info.
-	 *
-	 * @throws	HttpException
-	 */
-	protected function loadRoute($options): ?array
-	{
-
-		$className = $options["className"] ?? "nikic\FastRoute";
-		$routes = $options["routes"];
-
-		$ret = null;
-		switch ($className)
-		{
-		case "nikic\FastRoute":
-			$ret = $this->loadRoute_FastRoute($routes);
-			break;
-		}
-
-		return $ret;
-
-	}
-
-    // -------------------------------------------------------------------------
-
-	/**
-	 * Load services.
-	 */
-	protected function loadServices($options)
-	{
-
-		$services = new Container();
-
-		foreach ((array)$options as $serviceName)
-		{
-			$serviceOptions = $this->container["spec"][$serviceName];
-			$className = $serviceOptions["className"];
-
-			$services[$serviceName] = function ($c) use ($className, $serviceOptions) {
-				return new $className($this->container, $serviceOptions);
-			};
-		}
-
-		return $services;
-
-	}
-
-	// -----------------------------------------------------------------------------
-
-	/**
-  	 * Load the global and local settings and merge them.
-	 *
-	 * @return	Settings.
-     */
-	protected function loadSettings(): ?array
-	{
-
-		$ret = null;
-
-		$globalSettings = $this->loadSettingFile($this->container["sysInfo"]["rootDir"] . "conf/v" . $this->container["sysInfo"]["version"] . "/settings.php");
-		$localSettings = $this->loadSettingFile($this->container["appInfo"]["rootDir"] . "conf/settings.php");
-		$ret = array_replace_recursive($globalSettings, $localSettings);
-
-		return $ret;
-
-	}
-
-	// -----------------------------------------------------------------------------
-
-	/**
-  	 * Load specs and merge them.
-	 *
-	 * @return	Specs.
-     */
-	protected function loadSpecs(): ?array
-	{
-
-		$sysBaseDir = $this->container["sysInfo"]["rootDir"] . "specs/v" . $this->container["sysInfo"]["version"] . "/";
-		$appBaseDir = $this->container["appInfo"]["rootDir"] . "specs/";
-		$method = strtolower($_SERVER["REQUEST_METHOD"]);
-		$resource = strtolower($this->container["routeInfo"]["args"]["resource"]);
-
-		$spec = $this->loadSettingFile($sysBaseDir . "common.php");
-		$curSpec = $spec;
-		$spec = $this->loadSettingFile($appBaseDir . "common.php", $curSpec);
-		$curSpec = array_replace_recursive($curSpec, $spec);
-		$spec = $this->loadSettingFile($sysBaseDir . $method . ".php", $curSpec);
-		$curSpec = array_replace_recursive($curSpec, $spec);
-		$spec = $this->loadSettingFile($appBaseDir . $method . ".php", $curSpec);
-		$curSpec = array_replace_recursive($curSpec, $spec);
-		$spec = $this->loadSettingFile($sysBaseDir . $resource . ".php", $curSpec);
-		$curSpec = array_replace_recursive($curSpec, $spec);
-		$spec = $this->loadSettingFile($appBaseDir . $resource . ".php", $curSpec);
-		$curSpec = array_replace_recursive($curSpec, $spec);
-		$spec = $this->loadSettingFile($sysBaseDir . $method . "_" . $resource . ".php", $curSpec);
-		$curSpec = array_replace_recursive($curSpec, $spec);
-		$spec = $this->loadSettingFile($appBaseDir . $method . "_" . $resource . ".php", $curSpec);
-		$curSpec = array_replace_recursive($curSpec, $spec);
-
-		return $curSpec;
-
-	}
-
-	// -----------------------------------------------------------------------------
-
-	/**
-  	 * Load the spec file and merge to current spec.
-	 *
-	 * @param	$path			Path to a setting file.
-	 *
-	 * @return	Settings array.
-     */
-	protected function loadSettingFile(string $path, ?array &$current = null): array
-	{
-
-		if (is_readable($path))
-		{
-			$settings = require $path;
-		}
-		else
-		{
-			$settings = array();
-//			throw new Exception("Setting file not found. file = " . $path);
-		}
-
-		return $settings;
-
-	}
-
-	// -------------------------------------------------------------------------
-	//	Private
-	// -------------------------------------------------------------------------
-
-	/**
-  	 * Load route using nikic/FastRoute.
-	 *
-	 * @param	$routes			Routes.
-	 *
-	 * @return	Route arguments.
-     */
-	private function loadRoute_FastRoute($routes)
-	{
-
-		$dispatcher = \FastRoute\simpleDispatcher(function(\FastRoute\RouteCollector $r) use ($routes) {
-			foreach ($routes as $routeName => $route)
-			{
-				$r->addRoute(['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], $route["route"], $routeName);
-			}
-		});
-
-		$routeinfo = $dispatcher->dispatch($_SERVER["REQUEST_METHOD"], $_SERVER["REQUEST_URI"]);
-
-		$args = null;
-		switch ($routeinfo[0])
-		{
-		case \FastRoute\Dispatcher::NOT_FOUND:
-			header("HTTP/1.1 404 OK\r\n");
-			throw new HttpException(HttpException::ERRNO_PARAMETER_INVALIDROUTE, HttpException::ERRMSG_PARAMETER_INVALIDROUTE);
-			break;
-		case \FastRoute\Dispatcher::METHOD_NOT_ALLOWED:
-			header("HTTP/1.1 405 OK\r\n");
-			throw new HttpException(HttpException::ERRNO_PARAMETER_INVALIDMETHOD, HttpException::ERRMSG_PARAMETER_INVALIDMETHOD);
-			break;
-		case \FastRoute\Dispatcher::FOUND:
-			$routeName = $routeinfo[1];
-			if (($routes[$routeName]["handler"] ?? "default") == "reject")
-			{
-				header("HTTP/1.1 " . ($routes[$routeName]["status"] ?? "404") . " OK\r\n");
-				exit;
-			}
-			$args = $routeinfo[2];
-			break;
-		}
-
-		return array(
-			"name" => $routeName,
-			"args" => $args,
-		);
 
 	}
 

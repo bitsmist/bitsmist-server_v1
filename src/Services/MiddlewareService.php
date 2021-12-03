@@ -25,6 +25,17 @@ class MiddlewareService extends PluginService implements  RequestHandlerInterfac
 {
 
 	// -------------------------------------------------------------------------
+	//	Constants, Variables
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Request.
+	 *
+	 * @var		Request
+	 */
+	public $request = null;
+
+	// -------------------------------------------------------------------------
 	//	Public
 	// -------------------------------------------------------------------------
 
@@ -81,14 +92,6 @@ class MiddlewareService extends PluginService implements  RequestHandlerInterfac
 
 		reset($this->plugins);
 
-		$request = $request->withAttribute("resultCode", HttpException::ERRNO_NONE);
-		$request = $request->withAttribute("resultMessage", HttpException::ERRMSG_NONE);
-		$request = $request->withAttribute("spec", $this->container["spec"]);
-		$request = $request->withAttribute("routeInfo", $this->container["routeInfo"]);
-		$request = $request->withAttribute("appInfo", $this->container["appInfo"]);
-		$request = $request->withAttribute("sysInfo", $this->container["sysInfo"]);
-		$request = $request->withAttribute("services", $this->container["services"]);
-
 		return $this->handle($request);
 
 	}
@@ -104,6 +107,8 @@ class MiddlewareService extends PluginService implements  RequestHandlerInterfac
 	 */
 	public function handle(ServerRequestInterface $request): ResponseInterface
 	{
+
+		$this->request = $request;
 
 		// Get a middleware
 		$middleware = current($this->plugins);
