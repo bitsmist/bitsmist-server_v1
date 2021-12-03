@@ -12,6 +12,7 @@
 namespace Bitsmist\v1\Middlewares\Initializer;
 
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
+use Bitsmist\v1\Util\Util;
 use Pimple\Container;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -35,19 +36,28 @@ class ServiceInitializer extends MiddlewareBase
 		$spec = $request->getAttribute("spec");
 		$services = new Container();
 
-		foreach ((array)$spec["services"]["uses"] as $serviceName)
+		foreach ((array)$spec["services"]["uses"] as $key => $value)
 		{
-			$serviceOptions = $spec[$serviceName];
-			$className = $serviceOptions["className"];
+			if (is_numeric($key))
+			{
+				// Does not have options
+				$title = $value;
+				$serviceOptions = null;
+			}
+			else
+			{
+				// Has options
+				$title = $key;
+				$serviceOptions = $value;
+			}
 
-			$services[$serviceName] = \Closure::bind(function ($c) use ($className, $serviceOptions) {
-				return new $className($this->container, $serviceOptions);
+			// Merge settings
+			$options = array_merge($spec[$title] ?? array(), $serviceOptions ?? array());
+
+			$services[$title] = \Closure::bind(function ($c) use ($options) {
+				// Create an instance
+				return Util::resolveInstance($options, $this->container, $options);
 			}, $app, get_class($app));
-			/*
-			$services[$serviceName] = function ($c) use ($className, $serviceOptions) {
-				return new $className($this->container, $serviceOptions);
-			};
-			 */
 		}
 
 		$request = $request->withAttribute("services", $services);

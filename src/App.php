@@ -54,11 +54,10 @@ class App
 
 		$this->settings = $settings;
 		$this->container = new Container();
+		$this->container["app"] = $this;
 		$this->container["settings"] = $settings;
 		$this->container["request"] = $this->loadRequest();
 		$this->container["response"] = $this->loadResponse();
-		//$this->container["request"] = \Zend\Diactoros\ServerRequestFactory::FromGlobals($_SERVER, $_GET, $_POST, $_COOKIE, $_FILES);
-		//$this->container["response"] = new \Zend\Diactoros\Response();
 
 		// Initialize controller
 		$serviceOptions = $settings["initializeController"];

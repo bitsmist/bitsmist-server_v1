@@ -12,6 +12,7 @@
 namespace Bitsmist\v1\Services;
 
 use Bitsmist\v1\Exception\HttpException;
+use Bitsmist\v1\Util\Util;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -66,10 +67,11 @@ class MiddlewareService extends PluginService implements  RequestHandlerInterfac
 
 		if (is_string($middleware))
 		{
-			// Create an instance
+			// Merge settings
 			$options = array_merge($this->container["spec"][$middleware] ?? array(), $options ?? array());
-			$className = $options["className"] ?? null;
-			$this->plugins[] = new $className($options);
+
+			// Create an instance
+			$this->plugins[] = Util::resolveInstance($options, $options);
 		}
 		else
 		{

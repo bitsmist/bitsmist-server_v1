@@ -11,6 +11,8 @@
 
 namespace Bitsmist\v1\Services;
 
+use Bitsmist\v1\Util\Util;
+
 // =============================================================================
 //	Plugin service class
 // =============================================================================
@@ -112,8 +114,7 @@ class PluginService
 		$options = array_merge($this->container["spec"][$title] ?? array(), $options ?? array());
 
 		// Create an instance
-		$className = $options["className"] ?? null;
-		$this->plugins[$title] = new $className($this->container, $options);
+		$this->plugins[$title] = Util::resolveInstance($options, $this->container, $options);
 
 		return $this->plugins[$title];
 
