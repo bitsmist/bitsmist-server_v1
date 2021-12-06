@@ -25,6 +25,23 @@ class Util extends PluginBase
 	// -------------------------------------------------------------------------
 
 	/**
+	 * Set php.ini.
+	 *
+	 * @param	$options		Options.
+	 */
+	static public function setIni(?array $options)
+	{
+
+		foreach ((array)$options as $key => $value)
+		{
+			ini_set($key, $value);
+		}
+
+	}
+
+	// -------------------------------------------------------------------------
+
+	/**
 	 * Instantiate a class from options.
 	 *
 	 * @param	$options		Options.
