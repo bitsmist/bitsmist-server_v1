@@ -78,24 +78,26 @@ class App
 
 		// Dispatch initializer middleware chain
 		$request = $this->container["request"];
-		$request = $request->withAttribute("resultCode", HttpException::ERRNO_NONE);
-		$request = $request->withAttribute("resultMessage", HttpException::ERRMSG_NONE);
 		$request = $request->withAttribute("container", $this->container);
-		$request = $request->withAttribute("services", $this->container["services"]);
-		$request = $request->withAttribute("settings", $this->container["settings"]);
 		$this->container["services"]["initializeController"]->dispatch($request);
 
 		try
 		{
 			// Dispatch middleware chain
-			$response = $this->container["services"]["controller"]->dispatch($this->container["services"]["initializeController"]->request);
+			$request = $this->container["services"]["initializeController"]->getRequest();
+			$request = $request->withAttribute("container", null);
+			$request = $request->withAttribute("resultCode", HttpException::ERRNO_NONE);
+			$request = $request->withAttribute("resultMessage", HttpException::ERRMSG_NONE);
+			$request = $request->withAttribute("services", $this->container["services"]);
+			$request = $request->withAttribute("settings", $this->container["settings"]);
+			$response = $this->container["services"]["controller"]->dispatch($request);
 		}
 		catch (\Throwable $e)
 		{
 			$exception = $e;
 
 			// Dispatch error middleware chain
-			$request = $this->container["services"]["initializeController"]->request;
+			$request = $this->container["services"]["initializeController"]->getRequest();
 			$request = $request->withAttribute("exception", $e);
 			$response = $this->container["services"]["errorController"]->dispatch($request);
 		}
@@ -116,39 +118,22 @@ class App
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Create services.
+	 * Create service manager.
 	 *
-	 * @return	Container containing services.
+	 * @return	Service manager.
 	 */
 	protected function loadServices()
 	{
 
-		$services = new Container();
+		$options = $this->container["settings"]["services"] ?? array();
 
-		foreach ((array)$this->container["settings"]["services"]["uses"] as $key => $value)
+		// Set default if none is set
+		if (!isset($options["className"]) && !isset($options["class"]))
 		{
-			if (is_numeric($key))
-			{
-				// Does not have options
-				$title = $value;
-				$options= null;
-			}
-			else
-			{
-				// Has options
-				$title = $key;
-				$options = $value;
-			}
-
-			$services[$title] = function ($c) use ($title, $options) {
-				// Merge settings
-				$options = array_merge($this->container["settings"][$title] ?? array(), $options ?? array());
-
-				return Util::resolveInstance($options, $this->container, $options);
-			};
+			$options["className"] = "Bitsmist\\v1\Services\ServiceManager";
 		}
 
-		return $services;
+		return Util::resolveInstance($options, $this->container);
 
 	}
 
@@ -192,9 +177,15 @@ class App
 	protected function loadResponse(): ResponseInterface
 	{
 
-		$className = "\Zend\Diactoros\Response";
+		$options = $this->container["settings"]["response"];
 
-		return new $className();
+		// Set default if none is set
+		if (!isset($options["className"]) && !isset($options["class"]))
+		{
+			$options["className"] = "\Zend\Diactoros\Response";
+		}
+
+		return Util::resolveInstance($options);
 
 	}
 
