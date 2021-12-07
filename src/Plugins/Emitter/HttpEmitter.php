@@ -14,7 +14,7 @@ namespace Bitsmist\v1\Plugins\Emitter;
 use Bitsmist\v1\Plugins\Base\PluginBase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Zend\HttpHandlerRunner\Emitter\SapiEmitter;
+use Laminas\HttpHandlerRunner\Emitter\SapiEmitter;
 
 // =============================================================================
 //	HTTP emitter class

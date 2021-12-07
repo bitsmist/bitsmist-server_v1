@@ -12,6 +12,7 @@
 namespace Bitsmist\v1\Util;
 
 use Bitsmist\v1\Plugins\Base\PluginBase;
+use Psr\Http\Message\ResponseInterface;
 
 // =============================================================================
 //	Utility class
