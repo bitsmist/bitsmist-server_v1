@@ -165,7 +165,7 @@ class DBUtil
 
 				// commitTrans($dbName);
 			}
-			catch (Exception $e)
+			catch (\Exception $e)
 			{
 				// rollbackTrans();
 				throw $e;
@@ -219,7 +219,7 @@ class DBUtil
 
 				// commitTrans();
 			}
-			catch (Exception $e)
+			catch (\Exception $e)
 			{
 				// rollbackTrans();
 				throw $e;
@@ -270,7 +270,7 @@ class DBUtil
 
 				// commitTrans();
 			}
-			catch (Exception $e)
+			catch (\Exception $e)
 			{
 				// rollbackTrans();
 				throw $e;
