@@ -32,7 +32,6 @@ class DBLoginAuthenticator extends MiddlewareBase
 	{
 
 		$logger = $request->getAttribute("services")["logger"];
-		$spec = $request->getAttribute("spec");
 
 		// Handle database
 		$db = new DBUtil($this->options);
@@ -41,7 +40,7 @@ class DBLoginAuthenticator extends MiddlewareBase
 		if ($db->resultCount == 1)
 		{
 			// Found
-			$rootName = $spec["options"]["session"]["name"] ?? "";
+			$rootName = $request->getAttribute("settings")["options"]["session"]["name"] ?? "";
 			$root = &$_SESSION;
 			if ($rootName)
 			{

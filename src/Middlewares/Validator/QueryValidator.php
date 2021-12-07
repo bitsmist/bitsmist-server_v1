@@ -31,7 +31,7 @@ class QueryValidator extends MiddlewareBase
 	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
-		$params = $request->getAttribute("spec")["options"]["parameters"] ?? array();
+		$params = $request->getAttribute("settings")["options"]["parameters"] ?? array();
 		$gets = $request->getQueryParams();
 
 		foreach ($params as $param => $spec)

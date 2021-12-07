@@ -31,7 +31,7 @@ class ParameterValidator extends MiddlewareBase
 	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
-		$options = $request->getAttribute("spec")["options"];
+		$options = $request->getAttribute("settings")["options"];
 
 		// Check query parameters
 		$allowedList = $options["query"]["parameters"] ?? null;

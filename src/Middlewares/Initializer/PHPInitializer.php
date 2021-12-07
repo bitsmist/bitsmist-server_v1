@@ -31,7 +31,7 @@ class PHPInitializer extends MiddlewareBase
 	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
-		$options = $request->getAttribute("spec")["phpOptions"] ?? null;
+		$options = $request->getAttribute("container")["settings"]["phpOptions"] ?? null;
 
 		Util::setIni($options);
 

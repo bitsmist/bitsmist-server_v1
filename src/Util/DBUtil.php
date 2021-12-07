@@ -70,7 +70,7 @@ class DBUtil
 
 		$id = $request->getAttribute("routeInfo")["args"]["id"];
 		$gets = $request->getQueryParams();
-		$spec = $request->getAttribute("spec");
+		$settings = $request->getAttribute("settings");
 		$fields = $this->buildFields($this->options["fields"] ?? null, $gets);
 		$searches = $this->options["searches"] ?? null;
 		$orders = $this->options["orders"] ?? null;
@@ -94,7 +94,7 @@ class DBUtil
 				$search = $this->buildSearchKeys($search, $gets);
 
 				// Get data
-				$data = $db->select($spec[$dbName]["tableName"], $fields, $search, $order, $limit, $offset);
+				$data = $db->select($settings[$dbName]["tableName"], $fields, $search, $order, $limit, $offset);
 				if ($data) {
 					$this->resultCount = count($data);
 					$this->totalCount = count($data);
@@ -108,7 +108,7 @@ class DBUtil
 
 				break;
 			default:
-				$data = $db->selectById($spec[$dbName]["tableName"], $fields, [ "field" => $spec[$dbName]["keyName"], "value" => $id ]);
+				$data = $db->selectById($settings[$dbName]["tableName"], $fields, [ "field" => $settings[$dbName]["keyName"], "value" => $id ]);
 				$this->resultCount = count($data);
 				$this->totalCount = count($data);
 				break;
@@ -132,10 +132,10 @@ class DBUtil
 	{
 
 		$id = $request->getAttribute("routeInfo")["args"]["id"];
-		$spec = $request->getAttribute("spec");
+		$settings = $request->getAttribute("settings");
 		$fields = $this->options["fields"] ?? "*";
 		$newIdName = $this->options["specialParameters"]["new"] ?? "new";
-		$items = $this->getParamsFromBody($request, $spec["options"] ?? null);
+		$items = $this->getParamsFromBody($request, $settings["options"] ?? null);
 
 		$data = null;
 		$dbs = $request->getAttribute("services")["db"]->getPlugins();
@@ -153,11 +153,11 @@ class DBUtil
 					case $newIdName:
 					case null:
 						$item = $this->buildFields($fields, $items[$i]);
-						$cnt += $db->insert($spec[$dbName]["tableName"], $item);
+						$cnt += $db->insert($settings[$dbName]["tableName"], $item);
 						break;
 					default:
 						$item = $this->buildFields($fields, $items[$i]);
-						$cnt += $db->insertWithId($spec[$dbName]["tableName"], $item, $items[$i][$spec[$dbName]["keyName"]]);
+						$cnt += $db->insertWithId($settings[$dbName]["tableName"], $item, $items[$i][$settings[$dbName]["keyName"]]);
 						break;
 					}
 				}
@@ -190,11 +190,11 @@ class DBUtil
 
 		$id = $request->getAttribute("routeInfo")["args"]["id"];
 		$gets = $request->getQueryParams();
-		$spec = $request->getAttribute("spec");
+		$settings = $request->getAttribute("settings");
 		$fields = $this->options["fields"] ?? "*";
 		$searches = $this->options["searches"] ?? null;
 		$listIdName = $this->options["specialParameters"]["list"] ?? "list";
-		$items = $this->getParamsFromBody($request, $spec["options"] ?? null);
+		$items = $this->getParamsFromBody($request, $settings["options"] ?? null);
 
 		$dbs = $request->getAttribute("services")["db"]->getPlugins();
 		foreach ($dbs as $dbName => $db)
@@ -209,11 +209,11 @@ class DBUtil
 					$item = $this->buildFields($fields, $items[0]);
 					$search = $searches[($gets["_search"] ?? "default")] ?? null;
 					$search = $this->buildSearchKeys($search, $gets);
-					$cnt = $db->update($spec[$dbName]["tableName"], $item, $search);
+					$cnt = $db->update($settings[$dbName]["tableName"], $item, $search);
 					break;
 				default:
 					$item = $this->buildFields($fields, $items[0]);
-					$cnt = $db->updateById($spec[$dbName]["tableName"], $item, ["field" => $spec[$dbName]["keyName"], "value" => $id]);
+					$cnt = $db->updateById($settings[$dbName]["tableName"], $item, ["field" => $settings[$dbName]["keyName"], "value" => $id]);
 					break;
 				}
 
@@ -244,7 +244,7 @@ class DBUtil
 
 		$id = $request->getAttribute("routeInfo")["args"]["id"];
 		$gets = $request->getQueryParams();
-		$spec = $request->getAttribute("spec");
+		$settings = $request->getAttribute("settings");
 		$searches = $this->options["searches"] ?? null;
 		$listIdName = $this->options["specialParameters"]["list"] ?? "list";
 
@@ -261,10 +261,10 @@ class DBUtil
 					case $listIdName:
 						$search = $searches[($gets["_search"] ?? "default")] ?? null;
 						$search = $this->buildSearchKeys($search, $gets);
-						$cnt = $db->delete($spec[$dbName]["tableName"], $search);
+						$cnt = $db->delete($settings[$dbName]["tableName"], $search);
 						break;
 					default:
-						$cnt = $db->deleteById($spec[$dbName]["tableName"], ["field" => $spec[$dbName]["keyName"], "value" => $id]);
+						$cnt = $db->deleteById($settings[$dbName]["tableName"], ["field" => $settings[$dbName]["keyName"], "value" => $id]);
 						break;
 				}
 

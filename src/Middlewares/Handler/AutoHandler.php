@@ -32,7 +32,7 @@ class AutoHandler extends MiddlewareBase
 	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
-		$spec = $request->getAttribute("spec");
+		$settings = $request->getAttribute("settings");
 		$rootDir = $request->getAttribute("appInfo")["rootDir"];
 		$method = strtolower($_SERVER["REQUEST_METHOD"]);
 		$resource = strtolower($request->getAttribute("routeInfo")["args"]["resource"]);
@@ -40,14 +40,14 @@ class AutoHandler extends MiddlewareBase
 		if ($this->isHandlerExists($rootDir, $method, $resource))
 		{
 			$middlewareName = $this->options["handlers"]["custom"];
-			$className = $spec[$middlewareName]["className"];
-			$options = $spec[$middlewareName];
+			$className = $settings[$middlewareName]["className"];
+			$options = $settings[$middlewareName];
 		}
 		else
 		{
 			$middlewareName = $this->options["handlers"]["default"];
-			$className = $spec[$middlewareName]["className"];
-			$options = $spec[$middlewareName];
+			$className = $settings[$middlewareName]["className"];
+			$options = $settings[$middlewareName];
 		}
 		$middleware = new $className($options);
 

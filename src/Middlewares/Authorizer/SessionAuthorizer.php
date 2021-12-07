@@ -31,13 +31,12 @@ class SessionAuthorizer extends MiddlewareBase
 	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
-		$spec = $request->getAttribute("spec");
 		$logger = $request->getAttribute("services")["logger"];
 		$isAuthorized = false;
 
 		// Check a session varaiable existence to determine whether user is logged in.
 		// This session variable is set in LoginAuthenticator.
-		$rootName = $spec["options"]["session"]["name"] ?? "";
+		$rootName = $request->getAttribute("settings")["options"]["session"]["name"] ?? "";
 		if (isset($_SESSION[$rootName]))
 		{
 			$isAuthorized = true;

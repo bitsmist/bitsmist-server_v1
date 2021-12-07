@@ -32,7 +32,7 @@ class OriginHeaderBuilder extends MiddlewareBase
 
 		$response = $handler->handle($request);
 
-		$origins = $request->getAttribute("spec")["options"]["allowedOrigins"] ?? null;
+		$origins = $request->getAttribute("settings")["options"]["allowedOrigins"] ?? null;
 		$headers = $request->getHeaders();
 
 		if ($origins && array_key_exists("origin", $headers))

@@ -38,7 +38,6 @@ class SettingsInitializer extends MiddlewareBase
 		$sysInfo["version"] = $settings["version"];
 		$sysInfo["rootDir"] = $settings["options"]["rootDir"];
 		$sysInfo["sitesDir"] = $settings["options"]["sitesDir"];
-		$sysInfo["settings"] = $settings;
 
 		$appInfo = array();
 		$appInfo["domain"] = $args["appDomain"] ?? $_SERVER["HTTP_HOST"];
@@ -49,10 +48,8 @@ class SettingsInitializer extends MiddlewareBase
 
 		$request = $request->withAttribute("appInfo", $appInfo);
 		$request = $request->withAttribute("sysInfo", $sysInfo);
-		$request = $request->withAttribute("settings", $this->loadSetting($request));
-		$request = $request->withAttribute("spec", $this->loadSpec($request));
 
-		$container["settings"] = $request->getAttribute("settings");
+		$container["settings"] = $this->loadSetting($request);
 
 		return $handler->handle($request);
 

@@ -32,7 +32,7 @@ class ExtraHeaderBuilder extends MiddlewareBase
 
 		$response = $handler->handle($request);
 
-		$extras = $request->getAttribute("spec")["options"]["extraHeaders"] ?? null;
+		$extras = $request->getAttribute("settings")["options"]["extraHeaders"] ?? null;
 		foreach ((array)$extras as $key => $value)
 		{
 			$response = $response->withHeader($key, $value);

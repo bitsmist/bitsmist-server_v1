@@ -36,7 +36,7 @@ class HeaderValidator extends MiddlewareBase
 
 		$logger = $request->getAttribute("services")["logger"];
 		$headers = $request->getHeaders();
-		$spec = $request->getAttribute("spec");
+		$settings = $request->getAttribute("settings");
 
 		// check host
 		if ($headers["host"][0] != $_SERVER["SERVER_NAME"])
@@ -49,7 +49,7 @@ class HeaderValidator extends MiddlewareBase
 		}
 
 		// check if origin is set
-		if ($spec["options"]["needOrigin"] ?? false)
+		if ($settings["options"]["needOrigin"] ?? false)
 		{
 			if (!isset($headers["origin"][0]))
 			{
@@ -59,7 +59,7 @@ class HeaderValidator extends MiddlewareBase
 		}
 
 		// check if origin is in allowed origins list
-		if (isset($headers["origin"][0]) && !in_array($headers["origin"][0], $spec["options"]["allowedOrigins"]))
+		if (isset($headers["origin"][0]) && !in_array($headers["origin"][0], $settings["options"]["allowedOrigins"]))
 		{
 			$logger->alert("Invalid origin: origin = {origin}", [
 				"method"=>__METHOD__,
@@ -69,7 +69,7 @@ class HeaderValidator extends MiddlewareBase
 		}
 
 		// Check if required header exists
-		foreach ((array)($spec["options"]["requiredHeaders"] ?? null) as $headerName)
+		foreach ((array)($settings["options"]["requiredHeaders"] ?? null) as $headerName)
 		{
 			if (!isset($headers[strtolower($headerName)][0]))
 			{
@@ -82,9 +82,9 @@ class HeaderValidator extends MiddlewareBase
 		}
 
 		// Check if header exists when needPreflight option is true
-		if ($spec["options"]["needPreflight"] ?? false)
+		if ($settings["options"]["needPreflight"] ?? false)
 		{
-			$headerName = (is_string($spec["options"]["needPreflight"]) ? $spec["options"]["needPreflight"] : "X-From");
+			$headerName = (is_string($settings["options"]["needPreflight"]) ? $settings["options"]["needPreflight"] : "X-From");
 			if (!isset($headers[strtolower($headerName)][0]))
 			{
 				$logger->alert("Required header for preflight doesn't exist: headerName = {headerName}", [

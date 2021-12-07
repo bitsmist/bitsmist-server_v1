@@ -31,8 +31,7 @@ class QueryFormatter extends MiddlewareBase
 	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
-		$spec = $request->getAttribute("spec");
-		$params = $spec["options"]["parameters"] ?? array();
+		$params = $request->getAttribute("settings")["options"]["parameters"] ?? array();
 		$gets = $request->getQueryParams();
 
 		foreach ($params as $param => $spec)

@@ -31,9 +31,8 @@ class DataFormatter extends MiddlewareBase
 	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
-		$spec = $request->getAttribute("spec");
 		$fields = $this->options["fields"] ?? array();
-		$params = $spec["options"]["parameters"] ?? array();
+		$params = $request->getAttribute("settings")["options"]["parameters"] ?? array();
 		$data = $request->getAttribute("data");
 
 		if ($data)
