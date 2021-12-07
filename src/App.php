@@ -12,6 +12,7 @@
 namespace Bitsmist\v1;
 
 use Bitsmist\v1\Exception\HttpException;
+use Bitsmist\v1\Util\Util;
 use Pimple\Container;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -32,7 +33,7 @@ class App
 	 *
 	 * @var		Container
 	 */
-	private $container = null;
+	protected $container = null;
 
 	// -------------------------------------------------------------------------
 	//	Constructor, Destructor
@@ -47,22 +48,19 @@ class App
 	{
 
 		// Set php.ini from settings
-		$this->setIni($settings["phpOptions"] ?? null);
+		Util::setIni($settings["phpOptions"] ?? null);
 
 		// Init error handling
 		$this->initError();
 
-		$this->settings = $settings;
+		// Initialize container
 		$this->container = new Container();
 		$this->container["app"] = $this;
 		$this->container["settings"] = $settings;
 		$this->container["request"] = $this->loadRequest();
 		$this->container["response"] = $this->loadResponse();
+		$this->container["services"] = $this->loadServices();
 
-		// Initialize controller
-		$serviceOptions = $settings["initializeController"];
-		$className = $serviceOptions["className"];
-		$this->initializeController = new $className($this->container, $serviceOptions);
 	}
 
 	// -------------------------------------------------------------------------
@@ -82,27 +80,22 @@ class App
 		$request = $this->container["request"];
 		$request = $request->withAttribute("resultCode", HttpException::ERRNO_NONE);
 		$request = $request->withAttribute("resultMessage", HttpException::ERRMSG_NONE);
-		$request = $request->withAttribute("app", $this);
-		$request = $request->withAttribute("settings", $this->settings);
-		$this->initializeController->dispatch($request);
-
-		// Copy request attributes back to container
-		foreach ($this->initializeController->request->getAttributes() as $key => $value)
-		{
-			$this->container[$key] = $value;
-		}
+		$request = $request->withAttribute("container", $this->container);
+		$request = $request->withAttribute("services", $this->container["services"]);
+		$request = $request->withAttribute("settings", $this->container["settings"]);
+		$this->container["services"]["initializeController"]->dispatch($request);
 
 		try
 		{
 			// Dispatch middleware chain
-			$response = $this->container["services"]["controller"]->dispatch($this->initializeController->request);
+			$response = $this->container["services"]["controller"]->dispatch($this->container["services"]["initializeController"]->request);
 		}
 		catch (\Throwable $e)
 		{
 			$exception = $e;
 
 			// Dispatch error middleware chain
-			$request = $this->initializeController->request;
+			$request = $this->container["services"]["initializeController"]->request;
 			$request = $request->withAttribute("exception", $e);
 			$response = $this->container["services"]["errorController"]->dispatch($request);
 		}
@@ -123,21 +116,43 @@ class App
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Set php.ini.
+	 * Create services.
 	 *
-	 * @param	$options		Options.
+	 * @return	Container containing services.
 	 */
-	protected function setIni(?array $options)
+	protected function loadServices()
 	{
 
-		foreach ((array)$options as $key => $value)
+		$services = new Container();
+
+		foreach ((array)$this->container["settings"]["services"]["uses"] as $key => $value)
 		{
-			ini_set($key, $value);
+			if (is_numeric($key))
+			{
+				// Does not have options
+				$title = $value;
+				$options= null;
+			}
+			else
+			{
+				// Has options
+				$title = $key;
+				$options = $value;
+			}
+
+			$services[$title] = function ($c) use ($title, $options) {
+				// Merge settings
+				$options = array_merge($this->container["settings"][$title] ?? array(), $options ?? array());
+
+				return Util::resolveInstance($options, $this->container, $options);
+			};
 		}
+
+		return $services;
 
 	}
 
-	// -------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
 	/**
 	 * Create a request object.
@@ -208,7 +223,7 @@ class App
 				$type = $e["type"] ?? null;
 				if( $type == E_ERROR || $type == E_PARSE || $type == E_CORE_ERROR || $type == E_COMPILE_ERROR || $type == E_USER_ERROR )
 				{
-					if ($this->settings["options"]["showErrors"] ?? false)
+					if ($this->container["settings"]["options"]["showErrors"] ?? false)
 					{
 						$msg = $e["message"];
 						echo "\n\n";
@@ -217,7 +232,7 @@ class App
 						echo "Error file:\t {$e['file']}\n";
 						echo "Error line:\t {$e['line']}\n";
 					}
-					if ($this->settings["options"]["showErrorsInHTML"] ?? false)
+					if ($this->container["settings"]["options"]["showErrorsInHTML"] ?? false)
 					{
 						$msg = str_replace('Stack trace:', '<br>Stack trace:', $e['message']);
 						$msg = str_replace('#', '<br>#', $msg);

@@ -32,9 +32,8 @@ class ServiceInitializer extends MiddlewareBase
 	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
-		$app = $request->getAttribute("app");
+		$container = $request->getAttribute("container");
 		$spec = $request->getAttribute("spec");
-		$services = new Container();
 
 		foreach ((array)$spec["services"]["uses"] as $key => $value)
 		{
@@ -42,25 +41,23 @@ class ServiceInitializer extends MiddlewareBase
 			{
 				// Does not have options
 				$title = $value;
-				$serviceOptions = null;
+				$options = null;
 			}
 			else
 			{
 				// Has options
 				$title = $key;
-				$serviceOptions = $value;
+				$options = $value;
 			}
 
-			// Merge settings
-			$options = array_merge($spec[$title] ?? array(), $serviceOptions ?? array());
+			$container["services"][$title] = function ($c) use ($title, $options, $container) {
+				// Merge settings
+				$options = array_merge($container["settings"][$title] ?? array(), $options ?? array());
 
-			$services[$title] = \Closure::bind(function ($c) use ($options) {
 				// Create an instance
-				return Util::resolveInstance($options, $this->container, $options);
-			}, $app, get_class($app));
+				return Util::resolveInstance($options, $container, $options);
+			};
 		}
-
-		$request = $request->withAttribute("services", $services);
 
 		return $handler->handle($request);
 
