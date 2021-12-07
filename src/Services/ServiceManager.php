@@ -91,7 +91,7 @@ class ServiceManager implements \ArrayAccess
 	{
 
 		$this->services->offsetUnset($offset);
-		unset($this->serviceNames[$serviceName]);
+		unset($this->serviceNames[$offset]);
 
     }
 
