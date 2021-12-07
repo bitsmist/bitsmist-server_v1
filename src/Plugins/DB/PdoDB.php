@@ -712,7 +712,7 @@ class PdoDB extends BaseDB
 	protected function bindParam($cmd, $name, $dataType, $value = null)
 	{
 
-		$this->logger->info("name = {name}, dataType = {dataType}, value = {value}", ["method"=>__METHOD__, "name"->$name, "dataType"=>$dataType, "value"=>$value]);
+		$this->logger->info("name = {name}, dataType = {dataType}, value = {value}", ["method"=>__METHOD__, "name"=>$name, "dataType"=>$dataType, "value"=>$value]);
 
 		$cmd->bindParam($name, $value, $dataType);
 
