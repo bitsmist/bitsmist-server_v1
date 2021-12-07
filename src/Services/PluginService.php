@@ -12,7 +12,6 @@
 namespace Bitsmist\v1\Services;
 
 use Bitsmist\v1\Util\Util;
-use Pimple\Container;
 
 // =============================================================================
 //	Plugin service class
@@ -61,7 +60,7 @@ class PluginService
 
 		$this->container = $container;
 		$this->options = $options;
-		$this->plugins = new Container();
+		$this->plugins = array();
 
 		foreach ((array)($this->options["uses"] ?? null) as $key => $value)
 		{
@@ -95,14 +94,7 @@ class PluginService
 	public function getPlugins(): array
 	{
 
-		$ret = array();
-
-		foreach ($this->plugins->keys() as $key)
-		{
-			$ret[$key] = $this->plugins[$key];
-		}
-
-		return $ret;
+		return $this->plugins;
 
 	}
 
@@ -116,23 +108,16 @@ class PluginService
 	 *
 	 * @return	Added plugin.
 	 */
-	public function add($plugin, ?array $options)
+	public function add($title, ?array $options)
 	{
 
-		if (is_string($plugin))
-		{
-			$this->plugins[$plugin] = function ($c) use ($plugin, $options) {
-				$options = array_merge($this->container["settings"][$plugin] ?? array(), $options ?? array());
-				return Util::resolveInstance($options, $this->container, $options);
-			};
-		}
-		else
-		{
-			$title = spl_object_hash($plugin);
-			$this->plugins[$title] = function ($c) use ($plugin) {
-				return $plugin;
-			};
-		}
+		// Merge settings
+		$options = array_merge($this->container["settings"][$title] ?? array(), $options ?? array());
+
+		// Create an instance
+		$this->plugins[$title] = Util::resolveInstance($options, $this->container, $options);
+
+		return $this->plugins[$title];
 
 	}
 
@@ -151,9 +136,9 @@ class PluginService
 
 		$ret = array();
 
-		foreach ($this->plugins->keys() as $key)
+		foreach ($this->plugins as $plugin)
 		{
-			$ret[] = call_user_func_array(array($this->plugins[$key], $name), $args);
+			$ret[] = call_user_func_array(array($plugin, $name), $args);
 		}
 
 		return $ret;

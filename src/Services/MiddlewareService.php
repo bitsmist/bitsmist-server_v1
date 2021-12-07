@@ -33,14 +33,7 @@ class MiddlewareService extends PluginService implements  RequestHandlerInterfac
 	 *
 	 * @var		Request
 	 */
-	protected $request = null;
-
-	/**
-	 * Plugin names.
-	 *
-	 * @var		array
-	 */
-	protected $pluginNames = array();
+	protected ?ServerRequestInterface $request = null;
 
 	// -------------------------------------------------------------------------
 	//	Public
@@ -87,19 +80,15 @@ class MiddlewareService extends PluginService implements  RequestHandlerInterfac
 
 		if (is_string($middleware))
 		{
-			$this->pluginNames[] = $middleware;
-			$this->plugins[$middleware] = function ($c) use ($middleware, $options) {
-				$options = array_merge($this->container["settings"][$middleware] ?? array(), $options ?? array());
-				return Util::resolveInstance($options, $options);
-			};
+			// Merge settings
+			$options = array_merge($this->container["settings"][$middleware] ?? array(), $options ?? array());
+
+			// Create an instance
+			$this->plugins[] = Util::resolveInstance($options, $options);
 		}
 		else
 		{
-			$title = spl_object_hash($middleware);
-			$this->pluginNames[] = $title;
-			$this->plugins[$title] = function ($c) use ($middleware) {
-				return $middleware;
-			};
+			$this->plugins[] = $middleware;
 		}
 
 	}
@@ -116,7 +105,7 @@ class MiddlewareService extends PluginService implements  RequestHandlerInterfac
 	public function dispatch(ServerRequestInterface $request): ResponseInterface
 	{
 
-		reset($this->pluginNames);
+		reset($this->plugins);
 
 		return $this->handle($request);
 
@@ -136,23 +125,17 @@ class MiddlewareService extends PluginService implements  RequestHandlerInterfac
 
 		$this->request = $request;
 
-		$title = current($this->pluginNames);
-		next($this->pluginNames);
+		$middleware = current($this->plugins);
+		next($this->plugins);
 
-		if ($title)
+		// Execute
+		if ($middleware instanceof MiddlewareInterface)
 		{
-			// Get a middleware
-			$middleware = $this->plugins[$title];
-
-			// Execute
-			if (is_callable($middleware))
-			{
-				$ret = $middleware($request, $this);
-			}
-			else if ($middleware instanceof MiddlewareInterface)
-			{
-				$ret = $middleware->process($request, $this);
-			}
+			$ret = $middleware->process($request, $this);
+		}
+		else if (is_callable($middleware))
+		{
+			$ret = $middleware($request, $this);
 		}
 		else
 		{
