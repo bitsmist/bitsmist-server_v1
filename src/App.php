@@ -85,7 +85,7 @@ class App
 		{
 			// Dispatch middleware chain
 			$request = $this->container["services"]["initializeController"]->getRequest();
-			$request = $request->withAttribute("container", null);
+			$request = $request->withAttribute("container", null); // Remove access to container
 			$request = $request->withAttribute("resultCode", HttpException::ERRNO_NONE);
 			$request = $request->withAttribute("resultMessage", HttpException::ERRMSG_NONE);
 			$request = $request->withAttribute("services", $this->container["services"]);
@@ -97,7 +97,7 @@ class App
 			$exception = $e;
 
 			// Dispatch error middleware chain
-			$request = $this->container["services"]["initializeController"]->getRequest();
+			$request = $this->container["services"]["controller"]->getRequest();
 			$request = $request->withAttribute("exception", $e);
 			$response = $this->container["services"]["errorController"]->dispatch($request);
 		}
@@ -118,7 +118,7 @@ class App
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Create service manager.
+	 * Create a default service manager.
 	 *
 	 * @return	Service manager.
 	 */
@@ -127,7 +127,7 @@ class App
 
 		$options = $this->container["settings"]["services"] ?? array();
 
-		// Set default if none is set
+		// Set default class if none is set
 		if (!isset($options["className"]) && !isset($options["class"]))
 		{
 			$options["className"] = "Bitsmist\\v1\Services\ServiceManager";
@@ -140,14 +140,20 @@ class App
     // -------------------------------------------------------------------------
 
 	/**
-	 * Create a request object.
+	 * Create a default request object.
 	 *
 	 * @return	Request.
 	 */
 	protected function loadRequest(): ServerRequestInterface
 	{
 
-		$className = "\Zend\Diactoros\ServerRequestFactory";
+		$options = $this->container["settings"]["request"] ?? array();
+
+		// Set default class if none is set
+		if (!isset($options["className"]))
+		{
+			$options["className"] = "\Zend\Diactoros\ServerRequestFactory";
+		}
 
 		$body = $_POST;
 		if (strtolower($_SERVER["REQUEST_METHOD"]) == "put")
@@ -163,6 +169,8 @@ class App
 			break;
 		}
 
+		$className = $options["className"];
+
 		return $className::FromGlobals($_SERVER, $_GET, $body, $_COOKIE, $_FILES);
 
 	}
@@ -170,7 +178,7 @@ class App
     // -------------------------------------------------------------------------
 
 	/**
-	 * Create a response object.
+	 * Create a default response object.
 	 *
 	 * @return	Response.
 	 */
@@ -179,7 +187,7 @@ class App
 
 		$options = $this->container["settings"]["response"];
 
-		// Set default if none is set
+		// Set default class if none is set
 		if (!isset($options["className"]) && !isset($options["class"]))
 		{
 			$options["className"] = "\Zend\Diactoros\Response";
