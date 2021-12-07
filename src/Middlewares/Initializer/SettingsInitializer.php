@@ -31,7 +31,7 @@ class SettingsInitializer extends MiddlewareBase
 	{
 
 		$container = $request->getAttribute("container");
-		$settings = $request->getAttribute("settings");
+		$settings = $container["settings"];
 		$args = $request->getAttribute("routeInfo")["args"];
 
 		$sysInfo = array();
