@@ -11,7 +11,6 @@
 
 namespace Bitsmist\v1\Services;
 
-use Bitsmist\v1\Exception\HttpException;
 use Bitsmist\v1\Util\Util;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -35,6 +34,13 @@ class MiddlewareService extends PluginService implements  RequestHandlerInterfac
 	 * @var		Request
 	 */
 	public $request = null;
+
+	/**
+	 * Plugin names.
+	 *
+	 * @var		array
+	 */
+	protected $pluginNames = array();
 
 	// -------------------------------------------------------------------------
 	//	Public
@@ -67,15 +73,19 @@ class MiddlewareService extends PluginService implements  RequestHandlerInterfac
 
 		if (is_string($middleware))
 		{
-			// Merge settings
-			$options = array_merge($this->container["spec"][$middleware] ?? array(), $options ?? array());
-
-			// Create an instance
-			$this->plugins[] = Util::resolveInstance($options, $options);
+			$this->pluginNames[] = $middleware;
+			$this->plugins[$middleware] = function ($c) use ($middleware, $options) {
+				$options = array_merge($this->container["settings"][$middleware] ?? array(), $options ?? array());
+				return Util::resolveInstance($options, $options);
+			};
 		}
 		else
 		{
-			$this->plugins[] = $middleware;
+			$title = spl_object_hash($middleware);
+			$this->pluginNames[] = $title;
+			$this->plugins[$title] = function ($c) use ($middleware) {
+				return $middleware;
+			};
 		}
 
 	}
@@ -92,7 +102,7 @@ class MiddlewareService extends PluginService implements  RequestHandlerInterfac
 	public function dispatch(ServerRequestInterface $request): ResponseInterface
 	{
 
-		reset($this->plugins);
+		reset($this->pluginNames);
 
 		return $this->handle($request);
 
@@ -112,21 +122,27 @@ class MiddlewareService extends PluginService implements  RequestHandlerInterfac
 
 		$this->request = $request;
 
-		// Get a middleware
-		$middleware = current($this->plugins);
-		next($this->plugins);
+		$title = current($this->pluginNames);
+		next($this->pluginNames);
 
-		// Execute
-		if (is_callable($middleware))
+		if ($title)
 		{
-			$ret = $middleware($request, $this);
-		}
-		else if ($middleware instanceof MiddlewareInterface)
-		{
-			$ret = $middleware->process($request, $this);
+			// Get a middleware
+			$middleware = $this->plugins[$title];
+
+			// Execute
+			if (is_callable($middleware))
+			{
+				$ret = $middleware($request, $this);
+			}
+			else if ($middleware instanceof MiddlewareInterface)
+			{
+				$ret = $middleware->process($request, $this);
+			}
 		}
 		else
 		{
+			// Get a respose
 			$ret = $this->container["response"];
 		}
 

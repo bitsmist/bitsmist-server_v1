@@ -37,7 +37,7 @@ class ErrorControllerService extends MiddlewareService
 	{
 
 		// Rethrow an exeption when no error handler available
-		if (count($this->plugins) == 0)
+		if (count($this->plugins->keys()) == 0)
 		{
 			throw $request->getAttribute("exception");
 		}
