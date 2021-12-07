@@ -25,10 +25,10 @@ class PdoDB extends BaseDB
     //  Constructor, Destructor
     // -------------------------------------------------------------------------
 
-	public function __construct($loader, ?array $options)
+	public function __construct($container, ?array $options)
     {
 
-		parent::__construct($loader, $options);
+		parent::__construct($container, $options);
 
         $this->props["dbType"] = "PDO";
 
