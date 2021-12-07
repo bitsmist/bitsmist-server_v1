@@ -33,7 +33,7 @@ class MiddlewareService extends PluginService implements  RequestHandlerInterfac
 	 *
 	 * @var		Request
 	 */
-	public $request = null;
+	protected $request = null;
 
 	/**
 	 * Plugin names.
@@ -55,6 +55,20 @@ class MiddlewareService extends PluginService implements  RequestHandlerInterfac
 	{
 
 		return $this->plugins;
+
+	}
+
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Get request object.
+	 *
+	 * @return	Request object.
+	 */
+	public function getRequest(): ServerRequestInterface
+	{
+
+		return $this->request;
 
 	}
 
