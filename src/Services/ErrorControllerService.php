@@ -1,7 +1,7 @@
 <?php
 // =============================================================================
 /**
- * Bitsmist Server - PHP WebAPI Server Framework
+ * Bitsmist - PHP WebAPI Server Framework
  *
  * @copyright		Masaki Yasutake
  * @link			https://bitsmist.com/
@@ -9,45 +9,40 @@
  */
 // =============================================================================
 
-namespace Bitsmist\v1\Middlewares\Handler;
+namespace Bitsmist\v1\Services;
 
-use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
-use Psr\Http\Server\RequestHandlerInterface;
+use Bitsmist\v1\Services\MiddlewareService;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 // =============================================================================
-//	Status code handler class
+//	Error controller class.
 // =============================================================================
 
-class StatuscodeHandler extends MiddlewareBase
+class ErrorControllerService extends MiddlewareService
 {
 
 	// -------------------------------------------------------------------------
 	//	Public
 	// -------------------------------------------------------------------------
 
-	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
+	/**
+	 * Handle an error.
+	 *
+	 * @param	$request		Request.
+	 *
+	 * @return	Response.
+	 */
+	public function dispatch(ServerRequestInterface $request): ResponseInterface
 	{
 
-		$response = $handler->handle($request);
-
-		$resultCode = $request->getAttribute("resultCode");
-
-		switch (strtolower($request->getMethod()))
+		// Rethrow an exeption when no error handler available
+		if (count($this->plugins->keys()) == 0)
 		{
-			case "post":
-				if ($resultCode == 200)
-				{
-					$resultCode = 201;
-				}
-				break;
+			throw $request->getAttribute("exception");
 		}
 
-
-		$response = $response->withStatus((int)$resultCode);
-
-		return $response;
+		return parent::dispatch($request);
 
 	}
 

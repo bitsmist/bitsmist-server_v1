@@ -9,44 +9,36 @@
  */
 // =============================================================================
 
-namespace Bitsmist\v1\Middlewares\Base;
+namespace Bitsmist\v1\Middlewares\ExceptionHandler;
 
-use Psr\Http\Server\MiddlewareInterface;
+use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 // =============================================================================
-//	Middleware base class
+//	Echo exception handler class
 // =============================================================================
 
-abstract class MiddlewareBase implements MiddlewareInterface
+class EchoExceptionHandler extends MiddlewareBase
 {
 
 	// -------------------------------------------------------------------------
-	//	Constants, Variables
+	//	Public
 	// -------------------------------------------------------------------------
 
-	/**
-	 * Options.
-	 *
-	 * @var		array
-	 */
-	protected $options = null;
-
-	// -------------------------------------------------------------------------
-	//	Constructor, Destructor
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Constructor.
-	 *
-	 * @param	options			Middleware options.
-	 */
-	public function __construct(?array $options)
+	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
-		$this->options = $options;
+		$exception = $request->getAttribute("exception");
+
+//		echo "Error code:\t {$exception->getCode()}<br>";
+		echo "Error message:\t {$exception->getMessage()}<br>";
+		echo "Error file:\t {$exception->getFile()}<br>";
+		echo "Error lineno:\t {$exception->getLine()}<br>";
+		echo "Error trace:\t {$exception->getTraceAsString()}<br>";
+
+		return $handler->handle($request);
 
 	}
 

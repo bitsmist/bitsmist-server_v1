@@ -1,7 +1,7 @@
 <?php
 // =============================================================================
 /**
- * Bitsmist - PHP WebAPI Server Framework
+ * Bitsmist Server - PHP WebAPI Server Framework
  *
  * @copyright		Masaki Yasutake
  * @link			https://bitsmist.com/
@@ -13,16 +13,14 @@ namespace Bitsmist\v1\Middlewares\Renderer;
 
 use Bitsmist\v1\Exception\HttpException;
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
+use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-// -----------------------------------------------------------------------------
-//	Class
-// -----------------------------------------------------------------------------
+// =============================================================================
+//	Json renderer class
+// =============================================================================
 
-/**
- * Json renderer class.
- */
 class JsonRenderer extends MiddlewareBase
 {
 
@@ -30,15 +28,19 @@ class JsonRenderer extends MiddlewareBase
 	//	Public
 	// -------------------------------------------------------------------------
 
-	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
+	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
-		$result = $request->getAttribute("result");
+		$response = $handler->handle($request);
 
-		$response->getBody()->write(json_encode($result));
-		$response = $response->withHeader('Content-Type', 'application/json');
+		if ($request->getAttribute("result"))
+		{
+			$response->getBody()->write(json_encode($request->getAttribute("result")));
+			$response = $response->withHeader('Content-Type', 'application/json');
+		}
 
 		return $response;
+
 
 	}
 

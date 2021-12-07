@@ -1,7 +1,7 @@
 <?php
 // =============================================================================
 /**
- * Bitsmist - PHP WebAPI Server Framework
+ * Bitsmist Server - PHP WebAPI Server Framework
  *
  * @copyright		Masaki Yasutake
  * @link			https://bitsmist.com/
@@ -13,16 +13,14 @@ namespace Bitsmist\v1\Middlewares\Formatter;
 
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
 use Bitsmist\v1\Util\FormatterUtil;
+use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-// -----------------------------------------------------------------------------
-//	Class
-// -----------------------------------------------------------------------------
+// =============================================================================
+//	Query formatter class
+// =============================================================================
 
-/**
- * Query formatter class.
- */
 class QueryFormatter extends MiddlewareBase
 {
 
@@ -30,17 +28,16 @@ class QueryFormatter extends MiddlewareBase
 	//	Public
 	// -------------------------------------------------------------------------
 
-	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
+	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
-		$spec = $request->getAttribute("appInfo")["spec"];
-		$params = $spec["parameters"] ?? array();
-		$gets = $request->getAttribute("queryParams");
+		$params = $request->getAttribute("settings")["options"]["parameters"] ?? array();
+		$gets = $request->getQueryParams();
 
 		foreach ($params as $param => $spec)
 		{
-			$type = $spec["fieldType"] ?? null;
-			$format = $spec["format"] ?? null;
+			$type = $spec["options"]["fieldType"] ?? null;
+			$format = $spec["options"]["format"] ?? null;
 			$value = $gets[$param] ?? null;
 			if ($type && $format && $value !== null)
 			{
@@ -48,8 +45,9 @@ class QueryFormatter extends MiddlewareBase
 			}
 		}
 
-		return $request->withAttribute("queryParams", $gets);
+		$request = $request->withQueryParams($gets);
 
+		return $handler->handle($request);
 	 }
 
 }

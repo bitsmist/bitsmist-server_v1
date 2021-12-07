@@ -9,19 +9,18 @@
  */
 // =============================================================================
 
-namespace Bitsmist\v1\Middlewares\Handler;
+namespace Bitsmist\v1\Middlewares\HeaderBuilder;
 
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
-use Closure;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 // =============================================================================
-//	Custom request handler class
+//	Origin header builder class
 // =============================================================================
 
-class CustomHandler extends MiddlewareBase
+class OriginHeaderBuilder extends MiddlewareBase
 {
 
 	// -------------------------------------------------------------------------
@@ -31,45 +30,45 @@ class CustomHandler extends MiddlewareBase
 	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
-		// Get a handler
-		$method = strtolower($_SERVER["REQUEST_METHOD"]);
-		$resource = strtolower($request->getAttribute("routeInfo")["args"]["resource"]);
-		$rootDir = $request->getAttribute("appInfo")["rootDir"];
-		$customHandler = $this->loadHandler($this->options["eventName"] ?? "", $method, $resource, $rootDir);
+		$response = $handler->handle($request);
 
-		if ($customHandler)
+		$origins = $request->getAttribute("settings")["options"]["allowedOrigins"] ?? null;
+		$headers = $request->getHeaders();
+
+		if ($origins && array_key_exists("origin", $headers))
 		{
-			$func = Closure::bind($customHandler, $this, get_class($this));
-			return $func($request, $handler);
+			$allowedOrigin = $this->getAllowedOrigin($headers["origin"][0], $origins);
+			if ($allowedOrigin)
+			{
+				$response = $response->withHeader("Access-Control-Allow-Origin", $allowedOrigin);
+			}
 		}
-		else
-		{
-			return $handler->handle($request);
-		}
+
+		return $response;
 
 	}
 
 	// -----------------------------------------------------------------------------
 
 	/**
-  	 * Load the request handler according to method, resource and event.
+	 * Return allowed origin if the host exists in the setting.
 	 *
-	 * @param	$eventName		An event name.
+	 * @param	$host			Host name passed via HTTP.
+	 * @param	$origins		Allowed origins list in the setting.
 	 *
-	 * @return	Handler.
-     */
-	private function loadHandler(?string $eventName = "", $method, $resource, $rootDir): ?callable
+	 * @return	Allowed origin.
+	 */
+	public function getAllowedOrigin(string $host, array $origins): string
 	{
 
-		$ret = null;
+		$allowedOrigin = "";
 
-		$fileName = $rootDir . "handlers/" . $method . "_" . $resource . ($eventName ? "_" : "") . $eventName . ".php";
-		if (file_exists($fileName))
+		if (is_array($origins) && in_array($host, $origins))
 		{
-			$ret  = require $fileName;
+			$allowedOrigin = $host;
 		}
 
-		return $ret;
+		return $allowedOrigin;
 
 	}
 

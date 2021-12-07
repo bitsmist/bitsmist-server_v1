@@ -1,7 +1,7 @@
 <?php
 // =============================================================================
 /**
- * Bitsmist - PHP WebAPI Server Framework
+ * Bitsmist Server - PHP WebAPI Server Framework
  *
  * @copyright		Masaki Yasutake
  * @link			https://bitsmist.com/
@@ -13,16 +13,14 @@ namespace Bitsmist\v1\Middlewares\Formatter;
 
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
 use Bitsmist\v1\Util\FormatterUtil;
+use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-// -----------------------------------------------------------------------------
-//	Class
-// -----------------------------------------------------------------------------
+// =============================================================================
+//	Data formatter class
+// =============================================================================
 
-/**
- * Data formatter class.
- */
 class DataFormatter extends MiddlewareBase
 {
 
@@ -30,13 +28,11 @@ class DataFormatter extends MiddlewareBase
 	//	Public
 	// -------------------------------------------------------------------------
 
-	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
+	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
-		$spec = $request->getAttribute("appInfo")["spec"];
-		$fields = $spec["fields"] ?? array();
-		$params = $spec["parameters"] ?? array();
-		$gets = $request->getAttribute("queryParams");
+		$fields = $this->options["fields"] ?? array();
+		$params = $request->getAttribute("settings")["options"]["parameters"] ?? array();
 		$data = $request->getAttribute("data");
 
 		if ($data)
@@ -55,7 +51,9 @@ class DataFormatter extends MiddlewareBase
 			}
 		}
 
-		return $request->withAttribute("data", $data);
+		$request = $request->withAttribute("data", $data);
+
+		return $handler->handle($request);
 
 	 }
 

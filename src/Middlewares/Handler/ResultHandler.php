@@ -1,7 +1,7 @@
 <?php
 // =============================================================================
 /**
- * Bitsmist - PHP WebAPI Server Framework
+ * Bitsmist Server - PHP WebAPI Server Framework
  *
  * @copyright		Masaki Yasutake
  * @link			https://bitsmist.com/
@@ -13,16 +13,14 @@ namespace Bitsmist\v1\Middlewares\Handler;
 
 use Bitsmist\v1\Exception\HttpException;
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
+use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-// -----------------------------------------------------------------------------
-//	Class
-// -----------------------------------------------------------------------------
+// =============================================================================
+//	Result builder class
+// =============================================================================
 
-/**
- * Result builder class.
- */
 class ResultHandler extends MiddlewareBase
 {
 
@@ -30,19 +28,22 @@ class ResultHandler extends MiddlewareBase
 	//	Public
 	// -------------------------------------------------------------------------
 
-	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
+	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
-		$data = $request->getAttribute("data");
-		$resultCount = $request->getAttribute("resultCount");
-		$totalCount = $request->getAttribute("totalCount");
-		$pagination = $request->getAttribute("pagination");
-		$resultCode = $request->getAttribute("resultCode");
-		$resultMessage = $request->getAttribute("resultMessage");
+		$result = $this->buildResult(
+			$request->getAttribute("resultCode"),
+			$request->getAttribute("resultMessage"),
+			$request->getAttribute("resultCount"),
+			$request->getAttribute("totalCount"),
+			$request->getAttribute("data"),
+			$request->getAttribute("pagination"),
+		);
 
-		$result = $this->buildResult($resultCode, $resultMessage, $resultCount, $totalCount, $data, $pagination);
+		$request = $request->withAttribute("result", $result);
 
-		return $request->withAttribute("result", $result);
+		return $handler->handle($request);
+
 
 	}
 
@@ -89,4 +90,3 @@ class ResultHandler extends MiddlewareBase
 	}
 
 }
-

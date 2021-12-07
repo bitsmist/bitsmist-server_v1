@@ -9,44 +9,29 @@
  */
 // =============================================================================
 
-namespace Bitsmist\v1\Middlewares\Base;
+namespace Bitsmist\v1\Plugins\Emitter;
 
-use Psr\Http\Server\MiddlewareInterface;
-use Psr\Http\Server\RequestHandlerInterface;
+use Bitsmist\v1\Plugins\Base\PluginBase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Zend\HttpHandlerRunner\Emitter\SapiEmitter;
 
 // =============================================================================
-//	Middleware base class
+//	HTTP emitter class
 // =============================================================================
 
-abstract class MiddlewareBase implements MiddlewareInterface
+class HttpEmitter extends PluginBase
 {
 
 	// -------------------------------------------------------------------------
-	//	Constants, Variables
+	//	Public
 	// -------------------------------------------------------------------------
 
-	/**
-	 * Options.
-	 *
-	 * @var		array
-	 */
-	protected $options = null;
-
-	// -------------------------------------------------------------------------
-	//	Constructor, Destructor
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Constructor.
-	 *
-	 * @param	options			Middleware options.
-	 */
-	public function __construct(?array $options)
+	public function emit(ResponseInterface $response)
 	{
 
-		$this->options = $options;
+		$emitter = new SapiEmitter();
+		$emitter->emit($response);
 
 	}
 

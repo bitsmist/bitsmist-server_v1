@@ -9,19 +9,19 @@
  */
 // =============================================================================
 
-namespace Bitsmist\v1\Middlewares\Validator;
+namespace Bitsmist\v1\Middlewares\ExceptionHandler;
 
 use Bitsmist\v1\Exception\HttpException;
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
-use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 // =============================================================================
-//	Query validator class
+//	Basic exception handler class
 // =============================================================================
 
-class QueryValidator extends MiddlewareBase
+class BasicExceptionHandler extends MiddlewareBase
 {
 
 	// -------------------------------------------------------------------------
@@ -31,27 +31,25 @@ class QueryValidator extends MiddlewareBase
 	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
-		$params = $request->getAttribute("settings")["options"]["parameters"] ?? array();
-		$gets = $request->getQueryParams();
+		$exception = $request->getAttribute("exception");
 
-		foreach ($params as $param => $spec)
+		switch (get_class($exception))
 		{
-			$validations = $spec["validator"] ?? [];
-			for ($i = 0; $i < count($validations); $i++)
-			{
-				switch (strtolower($validations[$i]))
-				{
-				case "required":
-					if (!($gets[$param] ?? null))
-					{
-						throw new HttpException(HttpException::ERRNO_PARAMETER, HttpException::ERRMSG_PARAMETER);
-					}
-					break;
-				}
-			}
+		case "Bitsmist\\v1\Exception\HttpException":
+			$resultCode = $exception->getCode();
+			$resultMessage = $exception->getMessage();
+			break;
+		default:
+			$resultCode = HttpException::ERRNO_EXCEPTION;
+			$resultMessage = HttpException::ERRMSG_EXCEPTION;
+			break;
 		}
 
+		$request = $request->withAttribute("resultCode", $resultCode);
+		$request = $request->withAttribute("resultMessage", $resultMessage);
+
 		return $handler->handle($request);
-	 }
+
+	}
 
 }

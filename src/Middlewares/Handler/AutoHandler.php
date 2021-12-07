@@ -1,7 +1,7 @@
 <?php
 // =============================================================================
 /**
- * Bitsmist - PHP WebAPI Server Framework
+ * Bitsmist Server - PHP WebAPI Server Framework
  *
  * @copyright		Masaki Yasutake
  * @link			https://bitsmist.com/
@@ -12,18 +12,16 @@
 namespace Bitsmist\v1\Middlewares\Handler;
 
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
-use Bitsmist\v1\Middlewares\Handler\ModelHandler;
+use Bitsmist\v1\Middlewares\Handler\DBHandler;
 use Bitsmist\v1\Middlewares\Handler\CustomHandler;
+use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-// -----------------------------------------------------------------------------
-//	Class
-// -----------------------------------------------------------------------------
+// =============================================================================
+//	Request handler dispatcher class
+// =============================================================================
 
-/**
- * Request handler dispatcher class.
- */
 class AutoHandler extends MiddlewareBase
 {
 
@@ -31,34 +29,56 @@ class AutoHandler extends MiddlewareBase
 	//	Public
 	// -------------------------------------------------------------------------
 
-	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
+	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
-		$appInfo = $request->getAttribute("appInfo");
-		$method = strtolower($request->getMethod());
-		$resource = strtolower($request->getAttribute("appInfo")["args"]["resource"]);
-		$loader = $request->getAttribute("loader");
+		$settings = $request->getAttribute("settings");
+		$rootDir = $request->getAttribute("appInfo")["rootDir"];
+		$method = strtolower($_SERVER["REQUEST_METHOD"]);
+		$resource = strtolower($request->getAttribute("routeInfo")["args"]["resource"]);
 
-		if ($loader->isHandlerExists())
+		if ($this->isHandlerExists($rootDir, $method, $resource))
 		{
-			$className = $appInfo["settings"]["middlewares"][$this->options["handlers"]["custom"]]["className"];
-			$options = null;
+			$middlewareName = $this->options["handlers"]["custom"];
+			$className = $settings[$middlewareName]["className"];
+			$options = $settings[$middlewareName];
 		}
 		else
 		{
-			$className = $appInfo["settings"]["middlewares"][$this->options["handlers"]["default"]]["className"];
-			$options = null;
+			$middlewareName = $this->options["handlers"]["default"];
+			$className = $settings[$middlewareName]["className"];
+			$options = $settings[$middlewareName];
 		}
-
 		$middleware = new $className($options);
-		if (method_exists($middleware, "setLogger"))
+
+		return $middleware->process($request, $handler);
+
+	}
+
+	// -----------------------------------------------------------------------------
+
+	/**
+  	 * Check whether custom handler exists.
+	 *
+	 * @param	$appInfo		Application information.
+	 * @param	$method			Method.
+	 * @param	$resource		Resource.
+	 *
+	 * @return	Exists or not.
+     */
+	public function isHandlerExists(string $rootDir, string $method, string $resource, ?string $eventName = ""): bool
+	{
+
+		$ret = false;
+
+		$fileName = $rootDir . "handlers/" . $method . "_" . $resource . ($eventName ? "_" : "") . $eventName . ".php";
+		if (is_readable($fileName))
 		{
-			$middleware->setLogger($this->logger);
+			$ret = true;
 		}
 
-		return $middleware($request, $response);;
+		return $ret;
 
 	}
 
 }
-

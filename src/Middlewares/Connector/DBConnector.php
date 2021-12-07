@@ -9,19 +9,18 @@
  */
 // =============================================================================
 
-namespace Bitsmist\v1\Middlewares\Validator;
+namespace Bitsmist\v1\Middlewares\Connector;
 
-use Bitsmist\v1\Exception\HttpException;
-use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
-use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
 
 // =============================================================================
-//	Query validator class
+//	DB connector class
 // =============================================================================
 
-class QueryValidator extends MiddlewareBase
+class DBConnector extends MiddlewareBase
 {
 
 	// -------------------------------------------------------------------------
@@ -31,27 +30,10 @@ class QueryValidator extends MiddlewareBase
 	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
-		$params = $request->getAttribute("settings")["options"]["parameters"] ?? array();
-		$gets = $request->getQueryParams();
-
-		foreach ($params as $param => $spec)
-		{
-			$validations = $spec["validator"] ?? [];
-			for ($i = 0; $i < count($validations); $i++)
-			{
-				switch (strtolower($validations[$i]))
-				{
-				case "required":
-					if (!($gets[$param] ?? null))
-					{
-						throw new HttpException(HttpException::ERRNO_PARAMETER, HttpException::ERRMSG_PARAMETER);
-					}
-					break;
-				}
-			}
-		}
+		$request->getAttribute("services")["db"]->open();
 
 		return $handler->handle($request);
-	 }
+
+	}
 
 }

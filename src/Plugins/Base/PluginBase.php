@@ -1,7 +1,7 @@
 <?php
 // =============================================================================
 /**
- * Bitsmist - PHP WebAPI Server Framework
+ * Bitsmist Server - PHP WebAPI Server Framework
  *
  * @copyright		Masaki Yasutake
  * @link			https://bitsmist.com/
@@ -11,13 +11,10 @@
 
 namespace Bitsmist\v1\Plugins\Base;
 
-// -----------------------------------------------------------------------------
-//	Class
-// -----------------------------------------------------------------------------
+// =============================================================================
+//	Plugin base class
+// =============================================================================
 
-/**
- * Plugin base class.
- */
 class PluginBase
 {
 
@@ -26,18 +23,11 @@ class PluginBase
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Properties.
+	 * Container.
 	 *
-	 * @var		array
+	 * @var		Container
 	 */
-	protected $props = array();
-
-	/**
-	 * Logger.
-	 *
-	 * @var		Logger
-	 */
-	protected $logger = null;
+	protected $contaier = null;
 
 	/**
 	 * Options.
@@ -46,6 +36,13 @@ class PluginBase
 	 */
 	protected $options = null;
 
+	/**
+	 * Properties.
+	 *
+	 * @var		array
+	 */
+	protected $props = array();
+
 	// -------------------------------------------------------------------------
 	//	Constructor, Destructor
 	// -------------------------------------------------------------------------
@@ -53,30 +50,15 @@ class PluginBase
 	/**
 	 * Constructor.
 	 *
-	 * @param	options			Plugin options.
+	 * @param	$container		Container.
+	 * @param	$options		Plugin options.
 	 */
-	public function __construct(?array $options)
+	public function __construct($container, ?array $options)
 	{
 
+		$this->container = $container;
 		$this->options = $options;
 
 	}
 
-	// -------------------------------------------------------------------------
-	//	Public
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Set logger.
-	 *
-	 * @param	$logger			Logger.
-	 */
-	public function setLogger($logger)
-	{
-
-		$this->logger = $logger;
-
-	}
-
 }
-

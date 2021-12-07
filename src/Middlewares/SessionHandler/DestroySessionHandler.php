@@ -9,44 +9,33 @@
  */
 // =============================================================================
 
-namespace Bitsmist\v1\Middlewares\Base;
+namespace Bitsmist\v1\Middlewares\SessionHandler;
 
-use Psr\Http\Server\MiddlewareInterface;
+use Bitsmist\v1\Exception\HttpException;
+use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 // =============================================================================
-//	Middleware base class
+//	Destroy session handler class
 // =============================================================================
 
-abstract class MiddlewareBase implements MiddlewareInterface
+class DestroySessionHandler extends MiddlewareBase
 {
 
 	// -------------------------------------------------------------------------
-	//	Constants, Variables
+	//	Public
 	// -------------------------------------------------------------------------
 
-	/**
-	 * Options.
-	 *
-	 * @var		array
-	 */
-	protected $options = null;
-
-	// -------------------------------------------------------------------------
-	//	Constructor, Destructor
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Constructor.
-	 *
-	 * @param	options			Middleware options.
-	 */
-	public function __construct(?array $options)
+	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
-		$this->options = $options;
+		$_SESSION = array();
+		session_destroy();
+		setcookie(session_name(), '');
+
+		return $handler->handle($request);
 
 	}
 

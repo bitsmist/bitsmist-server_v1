@@ -1,7 +1,7 @@
 <?php
 // =============================================================================
 /**
- * Bitsmist - PHP WebAPI Server Framework
+ * Bitsmist Server - PHP WebAPI Server Framework
  *
  * @copyright		Masaki Yasutake
  * @link			https://bitsmist.com/
@@ -13,16 +13,14 @@ namespace Bitsmist\v1\Middlewares\Formatter;
 
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
 use Bitsmist\v1\Util\FormatterUtil;
+use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-// -----------------------------------------------------------------------------
-//	Class
-// -----------------------------------------------------------------------------
+// =============================================================================
+//	Query limiter class
+// =============================================================================
 
-/**
- * Query limiter class.
- */
 class QueryLimiter extends MiddlewareBase
 {
 
@@ -30,12 +28,11 @@ class QueryLimiter extends MiddlewareBase
 	//	Public
 	// -------------------------------------------------------------------------
 
-	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
+	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
-		$spec = $request->getAttribute("appInfo")["spec"];
-		$options = $spec["options"] ?? array();
-		$gets = $request->getAttribute("queryParams");
+		$options = $this->options ?? array();
+		$gets = $request->getQueryParams();
 
 		// Limit
 		if (array_key_exists("maxLimit", $options))
@@ -57,8 +54,9 @@ class QueryLimiter extends MiddlewareBase
 			}
 		}
 
-		return $request->withAttribute("queryParams", $gets);
+		$request = $request->withQueryParams($gets);
 
+		return $handler->handle($request);
 	 }
 
 }

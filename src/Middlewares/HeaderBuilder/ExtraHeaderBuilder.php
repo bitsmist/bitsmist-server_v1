@@ -9,44 +9,42 @@
  */
 // =============================================================================
 
-namespace Bitsmist\v1\Middlewares\Base;
+namespace Bitsmist\v1\Middlewares\HeaderBuilder;
 
-use Psr\Http\Server\MiddlewareInterface;
+use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 // =============================================================================
-//	Middleware base class
+//	Extra header builder class.
 // =============================================================================
 
-abstract class MiddlewareBase implements MiddlewareInterface
+class ExtraHeaderBuilder extends MiddlewareBase
 {
 
 	// -------------------------------------------------------------------------
-	//	Constants, Variables
+	//	Public
 	// -------------------------------------------------------------------------
 
-	/**
-	 * Options.
-	 *
-	 * @var		array
-	 */
-	protected $options = null;
-
-	// -------------------------------------------------------------------------
-	//	Constructor, Destructor
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Constructor.
-	 *
-	 * @param	options			Middleware options.
-	 */
-	public function __construct(?array $options)
+	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
-		$this->options = $options;
+		$response = $handler->handle($request);
+
+		$extras = $request->getAttribute("settings")["options"]["extraHeaders"] ?? null;
+		foreach ((array)$extras as $key => $value)
+		{
+			$response = $response->withHeader($key, $value);
+		}
+
+		$extras = $this->options["extraHeaders"] ?? null;
+		foreach ((array)$extras as $key => $value)
+		{
+			$response = $response->withHeader($key, $value);
+		}
+
+		return $response;
 
 	}
 

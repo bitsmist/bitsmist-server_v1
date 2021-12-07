@@ -14,10 +14,10 @@ namespace Bitsmist\v1\Util;
 use Bitsmist\v1\Plugins\Base\PluginBase;
 
 // =============================================================================
-//	Formatter utility class
+//	Utility class
 // =============================================================================
 
-class FormatterUtil extends PluginBase
+class Util extends PluginBase
 {
 
 	// -------------------------------------------------------------------------
@@ -25,30 +25,46 @@ class FormatterUtil extends PluginBase
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Format the value.
+	 * Set php.ini.
 	 *
-	 * @param	$value			Value to format.
-	 * @param	$type			Format type.
-	 * @param	$format			Format.
-	 *
-	 * @return	Formatted value.
+	 * @param	$options		Options.
 	 */
-	static public function format($value, ?string $type, ?string $format)
+	static public function setIni(?array $options)
 	{
 
-		$ret = $value;
-
-		if ($value && $type && $format)
+		foreach ((array)$options as $key => $value)
 		{
-			switch ($type)
-			{
-			case "date":
-				$ret = date($format, strtotime($value));
-				break;
-			}
+			ini_set($key, $value);
 		}
 
-		return $ret;
+	}
+
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Instantiate a class from options.
+	 *
+	 * @param	$options		Options.
+	 * @param	...$args		Arguments to constructor.
+	 *
+	 * @return	Instance.
+	 */
+	static public function resolveInstance($options, ...$args)
+	{
+
+		$obj = null;
+
+		if (isset($options["className"]))
+		{
+			$className = $options["className"];
+			$obj = new $className(...$args);
+		}
+		else if (isset($options["class"]))
+		{
+			$obj = $options["class"];
+		}
+
+		return $obj;
 
 	}
 

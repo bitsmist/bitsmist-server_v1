@@ -1,7 +1,7 @@
 <?php
 // =============================================================================
 /**
- * Bitsmist - PHP WebAPI Server Framework
+ * Bitsmist Server - PHP WebAPI Server Framework
  *
  * @copyright		Masaki Yasutake
  * @link			https://bitsmist.com/
@@ -12,16 +12,14 @@
 namespace Bitsmist\v1\Middlewares\Handler;
 
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
+use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-// -----------------------------------------------------------------------------
-//	Class
-// -----------------------------------------------------------------------------
+// =============================================================================
+//	Pagination handler class
+// =============================================================================
 
-/**
- * Pagination handler class.
- */
 class PaginationHandler extends MiddlewareBase
 {
 
@@ -29,12 +27,11 @@ class PaginationHandler extends MiddlewareBase
 	//	Public
 	// -------------------------------------------------------------------------
 
-	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
+	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
 		$method = strtolower($request->getMethod());
-		$gets = $request->getAttribute("queryParams");
-		$totalCount = $request->getAttribute("totalCount");
+		$gets = $request->getQueryParams();
 		$limit = 0;
 		$offset = 0;
 		$pagination = null;
@@ -45,14 +42,14 @@ class PaginationHandler extends MiddlewareBase
 			if($limit)
 			{
 				$offset = $gets["_offset"] ?? 0;
-				list($page, $pageMax) = $this->getPagination($totalCount, $limit, $offset);
+				list($page, $pageMax) = $this->getPagination($request->getAttribute("totalCount"), $limit, $offset);
 				$pagination = array("limit" => $limit, "offset" => $offset, "pageCurrent" => $page, "pageLast" => $pageMax);
 			}
 		}
 
 		$request = $request->withAttribute("pagination", $pagination);
 
-		return $request;
+		return $handler->handle($request);
 
 	}
 
@@ -88,4 +85,3 @@ class PaginationHandler extends MiddlewareBase
 	}
 
 }
-

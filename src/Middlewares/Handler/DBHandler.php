@@ -9,44 +9,38 @@
  */
 // =============================================================================
 
-namespace Bitsmist\v1\Middlewares\Base;
+namespace Bitsmist\v1\Middlewares\Handler;
 
-use Psr\Http\Server\MiddlewareInterface;
+use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
+use Bitsmist\v1\Util\DBUtil;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 // =============================================================================
-//	Middleware base class
+//	Database handler class
 // =============================================================================
 
-abstract class MiddlewareBase implements MiddlewareInterface
+class DBHandler extends MiddlewareBase
 {
 
 	// -------------------------------------------------------------------------
-	//	Constants, Variables
+	//	Public
 	// -------------------------------------------------------------------------
 
-	/**
-	 * Options.
-	 *
-	 * @var		array
-	 */
-	protected $options = null;
-
-	// -------------------------------------------------------------------------
-	//	Constructor, Destructor
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Constructor.
-	 *
-	 * @param	options			Middleware options.
-	 */
-	public function __construct(?array $options)
+	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
-		$this->options = $options;
+		// Handle database
+		$db = new DBUtil($this->options);
+		$methodName = strtolower($request->getMethod()) . "Items";
+		$data = $db->$methodName($request);
+
+		$request = $request->withAttribute("data", $data);
+		$request = $request->withAttribute("resultCount", $db->resultCount);
+		$request = $request->withAttribute("totalCount", $db->totalCount);
+
+		return $handler->handle($request);
 
 	}
 

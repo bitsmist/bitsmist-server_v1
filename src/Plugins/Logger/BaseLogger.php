@@ -11,7 +11,8 @@
 
 namespace Bitsmist\v1\Plugins\Logger;
 
-use Psr\Log\AbstractLogger;
+use Bitsmist\v1\Plugins\Base\PluginBase;
+use Psr\Log\LoggerTrait;
 use Psr\Log\LogLevel;
 
 // -----------------------------------------------------------------------------
@@ -21,8 +22,10 @@ use Psr\Log\LogLevel;
 /**
  * Base Logger class.
  */
-class BaseLogger extends AbstractLogger
+class BaseLogger extends PluginBase
 {
+
+	use LoggerTrait;
 
 	// -------------------------------------------------------------------------
 	//	Constants, Variables
@@ -62,16 +65,12 @@ class BaseLogger extends AbstractLogger
 	//	Constructor, Destructor
 	// -------------------------------------------------------------------------
 
-	/**
-	 * Constructor.
-	 *
-	 * @param	$options		Options.
-	 */
-	public function __construct(?array $options)
+	public function __construct($container, ?array $options)
 	{
 
-		$this->options = $options;
-		$this->level = $options["level"];
+		parent::__construct($container, $options);
+
+		$this->level = $options["level"] ?? "info";
 		$this->fileName = $options["baseDir"] . basename($options["fileName"]);
 
 	}
@@ -113,4 +112,3 @@ class BaseLogger extends AbstractLogger
 	}
 
 }
-

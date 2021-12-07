@@ -1,7 +1,7 @@
 <?php
 // =============================================================================
 /**
- * Bitsmist - PHP WebAPI Server Framework
+ * Bitsmist Server - PHP WebAPI Server Framework
  *
  * @copyright		Masaki Yasutake
  * @link			https://bitsmist.com/
@@ -11,17 +11,16 @@
 
 namespace Bitsmist\v1;
 
+use Bitsmist\v1\Exception\HttpException;
+use Bitsmist\v1\Util\Util;
 use Pimple\Container;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-// -----------------------------------------------------------------------------
-//	Class
-// -----------------------------------------------------------------------------
+// =============================================================================
+//	Application class
+// =============================================================================
 
-/**
- * Application class.
- */
 class App
 {
 
@@ -34,7 +33,7 @@ class App
 	 *
 	 * @var		Container
 	 */
-	private $container = null;
+	protected $container = null;
 
 	// -------------------------------------------------------------------------
 	//	Constructor, Destructor
@@ -48,52 +47,19 @@ class App
 	public function __construct(array $settings)
 	{
 
+		// Set php.ini from settings
+		Util::setIni($settings["phpOptions"] ?? null);
+
 		// Init error handling
 		$this->initError();
 
-		// Init a container
-		$container = new Container();
-		$this->container = $container;
-		$container["app"] = $this;
-		$container["settings"] = $settings;
-		$container["appInfo"] = null;
-		$container["sysInfo"] = null;
-		$container["request"] = null;
-		$container["response"] = null;
-
-		// Init a loader
-		$this->initLoader($container);
-
-		// Load route info
-		$args = $this->container["loader"]->loadRoute();
-
-		// Init request & response
-		$container["request"] = $container["loader"]->loadRequest();
-		$container["response"] = $container["loader"]->loadResponse();
-
-		// Init system information
-		$sysInfo = array();
-		$sysInfo["version"] = $settings["version"];
-		$sysInfo["rootDir"] = $settings["options"]["rootDir"];
-		$sysInfo["sitesDir"] = $settings["options"]["sitesDir"];
-		$container["sysInfo"] = $sysInfo;
-
-		// Init application information
-		$appInfo = array();
-		$appInfo["domain"] = $args["appDomain"] ?? $_SERVER["HTTP_HOST"];
-		$appInfo["name"] = $args["appName"] ?? $appInfo["domain"];
-		$appInfo["version"] = $args["appVersion"] ?? 1;
-		$appInfo["lang"] = $args["appLang"] ?? "ja";
-		$appInfo["rootDir"] = $sysInfo["sitesDir"] . $appInfo["name"] . "/";
-		$appInfo["args"] = $args;
-		$container["appInfo"] = $appInfo;
-		$appInfo["settings"] = $container["loader"]->loadSettings();
-		$appInfo["spec"] = $container["loader"]->loadSpecs();
-		unset($container["appInfo"]);
-		$container["appInfo"] = $appInfo;
-
-		// Load services
-		$container["loader"]->loadServices();
+		// Initialize container
+		$this->container = new Container();
+		$this->container["app"] = $this;
+		$this->container["settings"] = $settings;
+		$this->container["request"] = $this->loadRequest();
+		$this->container["response"] = $this->loadResponse();
+		$this->container["services"] = $this->loadServices();
 
 	}
 
@@ -107,26 +73,127 @@ class App
 	public function run()
 	{
 
-		// Handle request
+		$response = null;
+		$exception = null;
+
+		// Dispatch initializer middleware chain
+		$request = $this->container["request"];
+		$request = $request->withAttribute("container", $this->container);
+		$this->container["services"]["initializeController"]->dispatch($request);
+
 		try
 		{
-			$ret = $this->container["controllerManager"]->handle($this->container["request"]);
-			$response = $ret[count($ret) - 1];
+			// Dispatch middleware chain
+			$request = $this->container["services"]["initializeController"]->getRequest();
+			$request = $request->withAttribute("container", null); // Remove access to container
+			$request = $request->withAttribute("resultCode", HttpException::ERRNO_NONE);
+			$request = $request->withAttribute("resultMessage", HttpException::ERRMSG_NONE);
+			$request = $request->withAttribute("services", $this->container["services"]);
+			$request = $request->withAttribute("settings", $this->container["settings"]);
+			$response = $this->container["services"]["controller"]->dispatch($request);
 		}
 		catch (\Throwable $e)
 		{
-			$response = $this->handleException($this->container["request"]->withAttribute("exception", $e), $this->container["response"]);
+			$exception = $e;
+
+			// Dispatch error middleware chain
+			$request = $this->container["services"]["controller"]->getRequest();
+			$request = $request->withAttribute("exception", $e);
+			$response = $this->container["services"]["errorController"]->dispatch($request);
 		}
 
 		// Send response
-		try
+		$this->container["services"]["emitter"]->emit($response);
+
+		// Re-throw an exception during middleware handling to show error messages
+		if ($exception)
 		{
-			$this->container["emitterManager"]->emit($response);
+			throw $exception;
 		}
-		catch (\Throwable $e)
+
+	}
+
+	// -------------------------------------------------------------------------
+	//	Protected
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Create a default service manager.
+	 *
+	 * @return	Service manager.
+	 */
+	protected function loadServices()
+	{
+
+		$options = $this->container["settings"]["services"] ?? array();
+
+		// Set default class if none is set
+		if (!isset($options["className"]) && !isset($options["class"]))
 		{
-			$response = $this->handleException($this->container["request"]->withAttribute("exception", $e), $this->container["response"]);
+			$options["className"] = "Bitsmist\\v1\Services\ServiceManager";
 		}
+
+		return Util::resolveInstance($options, $this->container);
+
+	}
+
+    // -------------------------------------------------------------------------
+
+	/**
+	 * Create a default request object.
+	 *
+	 * @return	Request.
+	 */
+	protected function loadRequest(): ServerRequestInterface
+	{
+
+		$options = $this->container["settings"]["request"] ?? array();
+
+		// Set default class if none is set
+		if (!isset($options["className"]))
+		{
+			$options["className"] = "\Zend\Diactoros\ServerRequestFactory";
+		}
+
+		$body = $_POST;
+		if (strtolower($_SERVER["REQUEST_METHOD"]) == "put")
+		{
+			parse_str(file_get_contents('php://input'), $body);
+		}
+
+		$contentType = $_SERVER["CONTENT_TYPE"] ?? "";
+		switch ($contentType)
+		{
+		case "application/json":
+			$body = json_decode(file_get_contents('php://input'), true);
+			break;
+		}
+
+		$className = $options["className"];
+
+		return $className::FromGlobals($_SERVER, $_GET, $body, $_COOKIE, $_FILES);
+
+	}
+
+    // -------------------------------------------------------------------------
+
+	/**
+	 * Create a default response object.
+	 *
+	 * @return	Response.
+	 */
+	protected function loadResponse(): ResponseInterface
+	{
+
+		$options = $this->container["settings"]["response"];
+
+		// Set default class if none is set
+		if (!isset($options["className"]) && !isset($options["class"]))
+		{
+			$options["className"] = "\Zend\Diactoros\Response";
+		}
+
+		return Util::resolveInstance($options);
 
 	}
 
@@ -149,19 +216,31 @@ class App
 
 		// Handle an uncaught error
 		register_shutdown_function(function () {
-			if ($this->container["settings"]["options"]["showErrors"] ?? false)
+			$e = error_get_last();
+			if ($e)
 			{
-				$e = error_get_last();
-				if ($e)
+				$type = $e["type"] ?? null;
+				if( $type == E_ERROR || $type == E_PARSE || $type == E_CORE_ERROR || $type == E_COMPILE_ERROR || $type == E_USER_ERROR )
 				{
-					$type = $e["type"] ?? null;
-					if( $type == E_ERROR || $type == E_PARSE || $type == E_CORE_ERROR || $type == E_COMPILE_ERROR || $type == E_USER_ERROR )
+					if ($this->container["settings"]["options"]["showErrors"] ?? false)
 					{
-						echo "<br>";
-						echo "Error type:\t {$e['type']}<br>";
-						echo "Error message:\t {$e['message']}<br>";
-						echo "Error file:\t {$e['file']}<br>";
-						echo "Error line:\t {$e['line']}<br>";
+						$msg = $e["message"];
+						echo "\n\n";
+						echo "Error type:\t {$e['type']}\n";
+						echo "Error message:\t {$msg}\n";
+						echo "Error file:\t {$e['file']}\n";
+						echo "Error line:\t {$e['line']}\n";
+					}
+					if ($this->container["settings"]["options"]["showErrorsInHTML"] ?? false)
+					{
+						$msg = str_replace('Stack trace:', '<br>Stack trace:', $e['message']);
+						$msg = str_replace('#', '<br>#', $msg);
+						echo "<br><br><table>";
+						echo "<tr><td>Error type</td><td>{$e['type']}</td></tr>";
+						echo "<tr><td style='vertical-align:top'>Error message</td><td>{$msg}</td></tr>";
+						echo "<tr><td>Error file</td><td>{$e['file']}</td></tr>";
+						echo "<tr><td>Error line</td><td>{$e['line']}</td></tr>";
+						echo "</table>";
 					}
 				}
 			}
@@ -169,50 +248,4 @@ class App
 
 	}
 
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Init a loader.
-	 *
-	 * @param	$container		Container.
-	 */
-	private function initLoader(Container $container)
-	{
-
-		$container["loader"] = function($c)
-		{
-			$options = array(
-				"container" => $c,
-			);
-			$className = $c["settings"]["loader"]["className"];
-
-			return new $className($options);
-		};
-
-	}
-
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Handle an exception.
-	 *
-	 * @param	$request		Request.
-	 * @param	$response		Response.
-	 *
-	 * @return	Response.
-	 */
-	private function handleException(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
-	{
-
-		if (count($this->container["exceptionManager"]->getMiddlewares()) == 0)
-		{
-			// No error handler available
-			throw $request->getAttribute("exception");
-		}
-
-		return $this->container["exceptionManager"]($request, $response);
-
-	}
-
 }
-

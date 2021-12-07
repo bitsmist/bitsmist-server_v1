@@ -1,7 +1,7 @@
 <?php
 // =============================================================================
 /**
- * Bitsmist - PHP WebAPI Server Framework
+ * Bitsmist Server - PHP WebAPI Server Framework
  *
  * @copyright		Masaki Yasutake
  * @link			https://bitsmist.com/
@@ -13,16 +13,14 @@ namespace Bitsmist\v1\Middlewares\Authorizer;
 
 use Bitsmist\v1\Exception\HttpException;
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
+use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-// -----------------------------------------------------------------------------
-//	Class
-// -----------------------------------------------------------------------------
+// =============================================================================
+//	Session authorizer class
+// =============================================================================
 
-/**
- * Session authorizer class.
- */
 class SessionAuthorizer extends MiddlewareBase
 {
 
@@ -30,25 +28,28 @@ class SessionAuthorizer extends MiddlewareBase
 	//	Public
 	// -------------------------------------------------------------------------
 
-	public function __invoke(ServerRequestInterface $request, ResponseInterface $response)
+	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
+		$logger = $request->getAttribute("services")["logger"];
 		$isAuthorized = false;
-		if ( isset($_SESSION["USER"]) )
+
+		// Check a session varaiable existence to determine whether user is logged in.
+		// This session variable is set in LoginAuthenticator.
+		$rootName = $request->getAttribute("settings")["options"]["session"]["name"] ?? "";
+		if (isset($_SESSION[$rootName]))
 		{
 			$isAuthorized = true;
 		}
 
 		if (!$isAuthorized)
 		{
-			$method = $request->getMethod();
-			$resource = $request->getAttribute("appInfo")["args"]["resource"];
+			$logger->alert("Not authorized", [ "method"=>__METHOD__]);
 
-			$this->logger->alert("Not authorized: method = {httpmethod}, resource = {resource}", ["method"=>__METHOD__, "httpmethod"=>$method, "resource"=>$resource]);
 			throw new HttpException(HttpException::ERRNO_PARAMETER_NOTAUTHORIZED, HttpException::ERRMSG_PARAMETER_NOTAUTHORIZED);
 		}
 
-		return;
+		return $handler->handle($request);
 
 	}
 
