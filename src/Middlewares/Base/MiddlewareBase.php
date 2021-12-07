@@ -50,4 +50,15 @@ abstract class MiddlewareBase implements MiddlewareInterface
 
 	}
 
+	// -------------------------------------------------------------------------
+	//	Public
+	// -------------------------------------------------------------------------
+
+	public function __invoke(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
+	{
+
+		return $this->process($request, $handler);
+
+	}
+
 }
