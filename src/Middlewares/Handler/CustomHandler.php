@@ -32,14 +32,14 @@ class CustomHandler extends MiddlewareBase
 	{
 
 		// Get a handler
-		$method = strtolower($_SERVER["REQUEST_METHOD"]);
+		$method = strtolower($request->getMethod());
 		$resource = strtolower($request->getAttribute("routeInfo")["args"]["resource"]);
 		$rootDir = $request->getAttribute("appInfo")["rootDir"];
 		$customHandler = $this->loadHandler($this->options["eventName"] ?? "", $method, $resource, $rootDir);
 
 		if ($customHandler)
 		{
-			$func = Closure::bind($customHandler, $this, get_class($this));
+			$func = Closure::bind($customHandler, $this);
 			return $func($request, $handler);
 		}
 		else
