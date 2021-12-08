@@ -9,7 +9,7 @@
  */
 // =============================================================================
 
-namespace Bitsmist\v1\Util;
+namespace Bitsmist\v1\Utils;
 
 use Bitsmist\v1\Plugins\Base\PluginBase;
 

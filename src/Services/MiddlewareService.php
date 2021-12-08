@@ -11,7 +11,7 @@
 
 namespace Bitsmist\v1\Services;
 
-use Bitsmist\v1\Util\Util;
+use Bitsmist\v1\Utils\Util;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;

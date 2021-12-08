@@ -12,7 +12,7 @@
 namespace Bitsmist\v1\Middlewares\Handler;
 
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
-use Bitsmist\v1\Util\DBUtil;
+use Bitsmist\v1\Utils\DBUtil;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;

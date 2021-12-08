@@ -12,7 +12,7 @@
 namespace Bitsmist\v1\Middlewares\Formatter;
 
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
-use Bitsmist\v1\Util\FormatterUtil;
+use Bitsmist\v1\Utils\FormatterUtil;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;

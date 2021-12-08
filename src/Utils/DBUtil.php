@@ -9,7 +9,7 @@
  */
 // =============================================================================
 
-namespace Bitsmist\v1\Util;
+namespace Bitsmist\v1\Utils;
 
 use Psr\Http\Message\ServerRequestInterface;
 
