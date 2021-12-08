@@ -31,14 +31,18 @@ class DBHandler extends MiddlewareBase
 	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
-		// Handle database
-		$db = new DBUtil($this->options);
-		$methodName = strtolower($request->getMethod()) . "Items";
-		$data = $db->$methodName($request);
+		$dbCount = count($request->getAttribute("services")["db"]->getPlugins());
+		if ($dbCount > 0)
+		{
+			// Handle database
+			$db = new DBUtil($this->options);
+			$methodName = strtolower($request->getMethod()) . "Items";
+			$data = $db->$methodName($request);
 
-		$request = $request->withAttribute("data", $data);
-		$request = $request->withAttribute("resultCount", $db->resultCount);
-		$request = $request->withAttribute("totalCount", $db->totalCount);
+			$request = $request->withAttribute("data", $data);
+			$request = $request->withAttribute("resultCount", $db->resultCount);
+			$request = $request->withAttribute("totalCount", $db->totalCount);
+		}
 
 		return $handler->handle($request);
 
