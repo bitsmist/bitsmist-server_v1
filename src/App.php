@@ -79,25 +79,25 @@ class App
 		// Dispatch initializer middleware chain
 		$request = $this->container["request"];
 		$request = $request->withAttribute("container", $this->container);
-		$this->container["services"]["initializeController"]->dispatch($request);
+		$this->container["services"]["setupController"]->dispatch($request);
 
 		try
 		{
 			// Dispatch middleware chain
-			$request = $this->container["services"]["initializeController"]->getRequest();
+			$request = $this->container["services"]["setupController"]->getRequest();
 			$request = $request->withAttribute("container", null); // Remove access to container
 			$request = $request->withAttribute("resultCode", HttpException::ERRNO_NONE);
 			$request = $request->withAttribute("resultMessage", HttpException::ERRMSG_NONE);
 			$request = $request->withAttribute("services", $this->container["services"]);
 			$request = $request->withAttribute("settings", $this->container["settings"]);
-			$response = $this->container["services"]["controller"]->dispatch($request);
+			$response = $this->container["services"]["mainController"]->dispatch($request);
 		}
 		catch (\Throwable $e)
 		{
 			$exception = $e;
 
 			// Dispatch error middleware chain
-			$request = $this->container["services"]["controller"]->getRequest();
+			$request = $this->container["services"]["mainController"]->getRequest();
 			$request = $request->withAttribute("exception", $e);
 			$response = $this->container["services"]["errorController"]->dispatch($request);
 		}
