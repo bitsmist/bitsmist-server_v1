@@ -182,7 +182,7 @@ class App
 	 *
 	 * @return	Response.
 	 */
-	protected function loadResponse(): ResponseInterface
+	protected function loadResponse()
 	{
 
 		$options = $this->container["settings"]["response"];
