@@ -39,7 +39,7 @@ class CustomHandler extends MiddlewareBase
 
 		if ($customHandler)
 		{
-			$func = Closure::bind($customHandler, $this);
+			$func = Closure::bind(Closure::fromCallable($customHandler), $this);
 			return $func($request, $handler);
 		}
 		else
