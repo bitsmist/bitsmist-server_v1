@@ -53,129 +53,6 @@ abstract class CurlDB extends BaseDB
 
 	}
 
-	// -------------------------------------------------------------------------
-
-	public function select($tableName, $fields, $keys = null, $orders = null, $limit = null, $offset = null)
-	{
-
-		list($query) = $this->buildQuerySelect($tableName, $fields, $keys, $orders, $limit, $offset);
-		$cmd = $this->createCommand($query);
-		$cmd["method"] = "GET";
-		$cmd["tableName"] = $tableName;
-		$cmd["url"]  = $this->buildUrl($cmd);
-
-		return $this->getData($cmd);
-
-	}
-
-	// -------------------------------------------------------------------------
-
-	public function selectById($tableName, $fields, $id)
-	{
-
-		list($query) = $this->buildQuerySelect($tableName, $fields);
-		$cmd = $this->createCommand($query);
-		$cmd["method"] = "GET";
-		$cmd["tableName"] = $tableName;
-		$cmd["id"] = $id["value"];
-		$cmd["url"]  = $this->buildUrl($cmd);
-
-		return $this->getData($cmd);
-
-	}
-
-    // -------------------------------------------------------------------------
-
-	public function insert($tableName, $fields)
-	{
-
-		list($query) = $this->buildQueryInsert($tableName, $fields);
-		$cmd = $this->createCommand($query);
-		$cmd["method"] = "POST";
-		$cmd["tableName"] = $tableName;
-		$cmd["url"]  = $this->buildUrl($cmd);
-
-		return $this->execute($cmd);
-
-	}
-
-    // -------------------------------------------------------------------------
-
-	public function insertWithId($tableName, $fields, $id)
-	{
-
-		list($query) = $this->buildQueryInsert($tableName, $fields);
-		$cmd = $this->createCommand($query);
-		$cmd["method"] = "POST";
-		$cmd["tableName"] = $tableName;
-		$cmd["id"] = $id;
-		$cmd["url"]  = $this->buildUrl($cmd);
-
-		return $this->execute($cmd);
-
-	}
-
-	// -------------------------------------------------------------------------
-
-	public function update($tableName, $fields, $keys = null)
-	{
-
-		list($query) = $this->buildQueryUpdate($tableName, $fields, $keys);
-		$cmd = $this->createCommand($query);
-		$cmd["method"] = "POST";
-		$cmd["tableName"] = $tableName;
-		$cmd["url"]  = $this->buildUrl($cmd);
-
-		return $this->execute($cmd);
-
-	}
-
-	// -------------------------------------------------------------------------
-
-	public function updateById($tableName, $fields, $id)
-	{
-
-		list($query) = $this->buildQueryUpdateById($tableName, $fields, $id);
-		$cmd = $this->createCommand($query);
-		$cmd["method"] = "PUT";
-		$cmd["tableName"] = $tableName;
-		$cmd["id"] = $id["value"];
-		$cmd["url"]  = $this->buildUrl($cmd);
-
-		return $this->execute($cmd);
-
-	}
-
-	// -------------------------------------------------------------------------
-
-	public function delete($tableName, $keys)
-	{
-
-		list($query) = $this->buildQueryDelete($tableName, $keys);
-		$cmd = $this->createCommand($query);
-		$cmd["method"] = "POST";
-		$cmd["tableName"] = $tableName;
-		$cmd["url"]  = $this->buildUrl($cmd);
-
-		return $this->execute($cmd);
-
-	}
-
-	// -------------------------------------------------------------------------
-
-	public function deleteById($tableName, $id)
-	{
-
-		$cmd = array();
-		$cmd["method"] = "DELETE";
-		$cmd["tableName"] = $tableName;
-		$cmd["id"] = $id["value"];
-		$cmd["url"]  = $this->buildUrl($cmd);
-
-		return $this->execute($cmd);
-
-	}
-
     // -------------------------------------------------------------------------
 
 	public function execute($cmd, $params = null)
@@ -208,22 +85,6 @@ abstract class CurlDB extends BaseDB
 		$this->checkResponse($cmd, $this->props["lastResponse"]);
 
 		return $this->getResultCount($cmd, $this->props["lastResponse"]);
-
-	}
-
-    // -------------------------------------------------------------------------
-
-	public function createCommand($query = null)
-	{
-
-		$cmd = array();
-
-		if ($query !== null)
-		{
-			$cmd["query"] = json_encode($query);
-		}
-
-		return $cmd;
 
 	}
 
@@ -262,23 +123,14 @@ abstract class CurlDB extends BaseDB
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Build a url.
-	 *
-	 * @param		object			$cmd				Database command object.
-	 *
-	 * @return		string								Url.
-	 */
-	abstract protected function buildUrl($cmd);
-
-	// -------------------------------------------------------------------------
-
-	/**
 	 * Convert response.
 	 *
 	 * @param		object			$cmd				Database command object.
-	 * @param		object			$response			Response.
+	 * @param		string			$response			Response.
+	 *
+	 * @return		object								Converted response.
 	 */
-	protected function convertResponse($cmd, $response)
+	protected function convertResponse($cmd, string $response)
 	{
 
 		return $response;
@@ -303,9 +155,11 @@ abstract class CurlDB extends BaseDB
 	 * Get query result count.
 	 *
 	 * @param		object			$cmd				Database command object.
-	 * @param		object			$response			Response.
+	 * @param		string			$response			Response.
+	 *
+	 * @return		int									Record count.
 	 */
-	protected function getResultCount($cmd, $response)
+	protected function getResultCount($cmd, string $response)
 	{
 
 		return 1;

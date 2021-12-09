@@ -94,28 +94,6 @@ class ElasticsearchDB extends CurlDB
 
 	}
 
-    // -------------------------------------------------------------------------
-
-	public function buildQuery($query, $fields = "*", $keys = null, $order = null, $limit = null, $offset = null)
-	{
-	}
-
-    // -------------------------------------------------------------------------
-
-	public function createCommand($query = null)
-	{
-
-		$cmd = array();
-
-		if ($query !== null)
-		{
-			$cmd["query"] = json_encode($query);
-		}
-
-		return $cmd;
-
-	}
-
 	// -------------------------------------------------------------------------
 	//	Protected
 	// -------------------------------------------------------------------------
@@ -169,7 +147,7 @@ class ElasticsearchDB extends CurlDB
 
 	// -------------------------------------------------------------------------
 
-	protected function convertResponse($cmd, $response)
+	protected function convertResponse($cmd, string $response)
 	{
 
 		return json_decode($response, true);
@@ -276,7 +254,27 @@ class ElasticsearchDB extends CurlDB
 			$query = null;
 		}
 
-		return array($query);
+		$ret = array();
+		$ret["method"] = "GET";
+		$ret["tableName"] = $tableName;
+		$ret["url"]  = $this->buildUrl((array)$ret);
+		$ret["query"] = ( count($query) > 0 ? json_encode($query) : null );
+
+		return array($ret, null);
+
+	}
+
+    // -------------------------------------------------------------------------
+
+	protected function buildQuerySelectById($tableName, $fields = "*", $id)
+	{
+
+		list($query, $params) = $this->buildQuerySelect($tableName, $fields);
+
+		$query["id"] = $id["value"];
+		$query["url"]  = $this->buildUrl((array)$query);
+
+		return array($query, $params);
 
 	}
 
@@ -292,7 +290,27 @@ class ElasticsearchDB extends CurlDB
 			$query[$key] = $this->buildValue($key, $item);
 		}
 
-		return array($query);
+		$ret = array();
+		$ret["method"] = "POST";
+		$ret["tableName"] = $tableName;
+		$ret["url"]  = $this->buildUrl((array)$ret);
+		$ret["query"] = ( count($query) > 0 ? json_encode($query) : null );
+
+		return array($ret, null);
+
+	}
+
+    // -------------------------------------------------------------------------
+
+	protected function buildQueryInsertWithId($tableName, $fields, $id)
+	{
+
+		list($query, $params) = $this->buildQueryInsert($tableName, $fields);
+
+		$query["id"] = $id["value"];
+		$query["url"]  = $this->buildUrl((array)$query);
+
+		return array($query, $params);
 
 	}
 
@@ -321,23 +339,27 @@ class ElasticsearchDB extends CurlDB
 			$query = null;
 		}
 
-		return array($query);
+		$ret = array();
+		$ret["method"] = "POST";
+		$ret["tableName"] = $tableName;
+		$ret["url"]  = $this->buildUrl((array)$ret);
+		$ret["query"] = ( count($query) > 0 ? json_encode($query) : null );
+
+		return array($ret, null);
 
 	}
 
-	// -------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
 	protected function buildQueryUpdateById($tableName, $fields, $id)
 	{
 
-		$query = array();
+		list($query, $params) = $this->buildQueryUpdate($tableName, $fields);
 
-		foreach ($fields as $key => $item)
-		{
-			$query[$key] = $this->buildValue($key, $item);
-		}
+		$query["id"] = $id["value"];
+		$query["url"]  = $this->buildUrl((array)$query);
 
-		return array($query);
+		return array($query, $params);
 
 	}
 
@@ -354,17 +376,25 @@ class ElasticsearchDB extends CurlDB
 			list($where) = $this->buildQueryWhere($keys);
 			$query["query"] = $where;
 		}
+		/*
 		else
 		{
 			$query["query"]["match_all"] = (object)[];
 		}
+		 */
 
 		if (count($query) == 0)
 		{
 			$query = null;
 		}
 
-		return array($query);
+		$ret = array();
+		$ret["method"] = "POST";
+		$ret["tableName"] = $tableName;
+		$ret["url"]  = $this->buildUrl((array)$ret);
+		$ret["query"] = ( count($query) > 0 ? json_encode($query) : null );
+
+		return array($ret, null);
 
 	}
 
@@ -373,25 +403,12 @@ class ElasticsearchDB extends CurlDB
 	protected function buildQueryDeleteById($tableName, $id)
 	{
 
-		$query = array();
+		list($query, $params) = $this->buildQueryDelete($tableName);
 
-		// Key
-		if ($keys !== null && is_array($keys) && count($keys) > 0)
-		{
-			list($where) = $this->buildQueryWhere($keys);
-			$query["query"] = $where;
-		}
-		else
-		{
-			$query["query"]["match_all"] = (object)[];
-		}
+		$query["id"] = $id["value"];
+		$query["url"] = $this->buildUrl((array)$query);
 
-		if (count($query) == 0)
-		{
-			$query = null;
-		}
-
-		return array($query);
+		return array($query, $params);
 
 	}
 
@@ -404,7 +421,8 @@ class ElasticsearchDB extends CurlDB
 
 		foreach ((array)$fields as $key => $item)
 		{
-			$fieldList[] = $this->escape($key);
+			//$fieldList[] = $this->escape($key);
+			$fieldList[] = $key;
 		}
 
 		return $fieldList;
@@ -420,7 +438,8 @@ class ElasticsearchDB extends CurlDB
 
 		foreach ((array)$orders as $key => $value)
 		{
-			$sort[] = array($key => $this->escape($value));
+			//$sort[] = array($key => $this->escape($value));
+			$sort[] = array($key => $value);
 		}
 
 		return $sort;

@@ -165,47 +165,9 @@ class PdoDB extends BaseDB
 
 	}
 
-    // -------------------------------------------------------------------------
-
-	public function buildQuery($query, $fields = "*", $keys = null, $order = null, $limit = null, $offset = null)
-	{
-
-		$params = null;
-		$sql = $query;
-
-		$sqlFields =  ( $limit ? $this->getCountField() . " " : "" ) . $fields;
-
-		list($sqlWhere, $params) = $this->buildQueryWhere($keys);
-		if ($sqlWhere)
-		{
-			$sqlWhere = "WHERE " . $sqlWhere;
-		}
-
-		$sqlOrder = $this->buildQueryOrder($order);
-		if ($sqlOrder)
-		{
-			$sqlOrder = "ORDER BY " . $sqlOrder;
-		}
-
-		if ($limit || $offset)
-		{
-			$sqlPagination = $this->buildQueryPagination($limit, $offset);
-		}
-
-		$sql = str_replace("@FIELDS@", $sqlFields, $sql);
-		$sql = str_replace("@WHERE@", $sqlWhere, $sql);
-		$sql = str_replace("@ORDER@", $sqlOrder, $sql);
-		$sql = str_replace("@PAGINATION@", $sqlPagination, $sql);
-
-		$this->logger->debug("query = {query}", ["method"=>__METHOD__, "query"=>$sql]);
-
-		return array($sql, $params);
-
-	}
-
 	// -------------------------------------------------------------------------
 
-	public function createCommand($sql)
+	protected function createCommand($sql)
 	{
 
 		return ($this->props["connection"]->prepare($sql));
@@ -245,6 +207,13 @@ class PdoDB extends BaseDB
 
 	}
 
+	protected function buildQuerySelectById($tableName, $fields = "*", $id)
+	{
+
+		return $this->buildQuerySelect($tableName, $fields, [["field" => $id["field"], "comparer" => "=", "value" => $id["value"]]]);
+
+	}
+
     // -------------------------------------------------------------------------
 
 	protected function buildQueryInsert($tableName, $fields)
@@ -271,6 +240,13 @@ class PdoDB extends BaseDB
 		$this->logger->debug("query = {query}", ["method"=>__METHOD__, "query"=>$sql]);
 
 		return array($sql, $params);
+
+	}
+
+	protected function buildQueryInsertWithId($tableName, $fields, $id)
+	{
+
+		return $this->buildQueryInsert($tableName, $fields);
 
 	}
 
@@ -303,6 +279,13 @@ class PdoDB extends BaseDB
 
 	}
 
+	protected function buildQueryUpdateById($tableName, $fields, $id)
+	{
+
+		return $this->buildQueryUpdate($tableName, $fields, [["field" => $id["field"], "comparer" => "=", "value" => $id["value"]]]);
+
+	}
+
     // -------------------------------------------------------------------------
 
 	protected function buildQueryDelete($tableName, $keys)
@@ -318,6 +301,13 @@ class PdoDB extends BaseDB
 		$this->logger->debug("query = {query}", ["method"=>__METHOD__, "query"=>$sql]);
 
 		return array($sql, $params);
+
+	}
+
+	protected function buildQueryDeleteById($tableName, $id)
+	{
+
+		return $this->buildQueryDelete($tableName, [["field" => $id["field"], "comparer" => "=", "value" => $id["value"]]]);
 
 	}
 
@@ -359,21 +349,6 @@ class PdoDB extends BaseDB
 		$orderList = rtrim($orderList, ",");
 
 		return $orderList;
-
-	}
-
-    // -------------------------------------------------------------------------
-
-	protected function buildQueryPagination($limit, $offset)
-	{
-
-		$sql = "";
-		if ($limit)
-		{
-			$sql = "LIMIT " . $limit . " OFFSET " . $offset;
-		}
-
-		return $sql;
 
 	}
 

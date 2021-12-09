@@ -125,8 +125,8 @@ class BaseDB extends PluginBase
 	public function select($tableName, $fields, $keys, $orders = null, $limit = null, $offset = null)
 	{
 
-		list($sql, $params) = $this->buildQuerySelect($tableName, $fields, $keys, $orders, $limit, $offset);
-		$cmd = $this->createCommand($sql);
+		list($query, $params) = $this->buildQuerySelect($tableName, $fields, $keys, $orders, $limit, $offset);
+		$cmd = $this->createCommand($query);
 
 		return $this->getData($cmd, $params);
 
@@ -146,8 +146,8 @@ class BaseDB extends PluginBase
 	public function selectById($tableName, $fields, $id)
 	{
 
-		list($sql, $params) = $this->buildQuerySelect($tableName, $fields, [["field" => $id["field"], "comparer" => "=", "value" => $id["value"]]]);
-		$cmd = $this->createCommand($sql);
+		list($query, $params) = $this->buildQuerySelectById($tableName, $fields, $id);
+		$cmd = $this->createCommand($query);
 
 		return $this->getData($cmd, $params);
 
@@ -167,8 +167,8 @@ class BaseDB extends PluginBase
 	public function insert($tableName, $fields)
 	{
 
-		list($sql, $params) = $this->buildQueryInsert($tableName, $fields);
-		$cmd = $this->createCommand($sql);
+		list($query, $params) = $this->buildQueryInsert($tableName, $fields);
+		$cmd = $this->createCommand($query);
 
 		return $this->execute($cmd, $params);
 
@@ -188,8 +188,8 @@ class BaseDB extends PluginBase
 	public function insertWithId($tableName, $fields, $id)
 	{
 
-		list($sql, $params) = $this->buildQueryInsert($tableName, $fields);
-		$cmd = $this->createCommand($sql);
+		list($query, $params) = $this->buildQueryInsertWithId($tableName, $fields, $id);
+		$cmd = $this->createCommand($query);
 
 		return $this->execute($cmd, $params);
 
@@ -209,8 +209,8 @@ class BaseDB extends PluginBase
 	public function update($tableName, $fields, $keys = null)
 	{
 
-		list($sql, $params) = $this->buildQueryUpdate($tableName, $fields, $keys);
-		$cmd = $this->createCommand($sql);
+		list($query, $params) = $this->buildQueryUpdate($tableName, $fields, $keys);
+		$cmd = $this->createCommand($query);
 
 		return $this->execute($cmd, $params);
 
@@ -230,8 +230,8 @@ class BaseDB extends PluginBase
 	public function updateById($tableName, $fields,  $id)
 	{
 
-		list($sql, $params) = $this->buildQueryUpdate($tableName, $fields, [["field" => $id["field"], "comparer" => "=", "value" => $id["value"]]]);
-		$cmd = $this->createCommand($sql);
+		list($query, $params) = $this->buildQueryUpdateById($tableName, $fields, $id);
+		$cmd = $this->createCommand($query);
 
 		return $this->execute($cmd, $params);
 
@@ -250,8 +250,8 @@ class BaseDB extends PluginBase
 	public function delete($tableName, $keys)
 	{
 
-		list($sql, $params) = $this->buildQueryDelete($tableName, $keys);
-		$cmd = $this->createCommand($sql);
+		list($query, $params) = $this->buildQueryDelete($tableName, $keys);
+		$cmd = $this->createCommand($query);
 
 		return $this->execute($cmd, $params);
 
@@ -270,8 +270,8 @@ class BaseDB extends PluginBase
 	public function deleteById($tableName, $id)
 	{
 
-		list($sql, $params) = $this->buildQueryDelete($tableName, [["field" => $id["field"], "comparer" => "=", "value" => $id["value"]]]);
-		$cmd = $this->createCommand($sql);
+		list($query, $params) = $this->buildQueryDeleteById($tableName, $id);
+		$cmd = $this->createCommand($query);
 
 		return $this->execute($cmd, $params);
 
@@ -314,40 +314,25 @@ class BaseDB extends PluginBase
 	{
 	}
 
-    // -------------------------------------------------------------------------
-
-	/**
-	 * Build select query using native query string.
-	 *
-	 * @param       array       	$query				Native query string.
-	 * @param		array			$fields				Fields to retrieve.
-     * @param		array			$keys				Search keys.
-     * @param		array			$orders				Sort order.
-     * @param		int				$limit				Limit.
-     * @param		int				$offset				Offset.
-	 *
-	 * @return 		string								Query string.
-	 */
-	public function buildQuery($query, $fields = "*", $keys = null, $order = null, $limit = null, $offset = null)
-	{
-	}
-
-    // -------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	//	Protected
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Create the database command.
 	 *
-	 * @param		string			$sql				SQL.
+	 * @param		object			$query				Query.
 	 *
 	 * @return		object								Data command.
 	 */
-	public function createCommand($sql)
+	protected function createCommand($query)
 	{
+
+		return $query;
+
 	}
 
-	// -------------------------------------------------------------------------
-	//	Protected
-	// -------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
 	/**
 	 * Build select query.
@@ -365,6 +350,10 @@ class BaseDB extends PluginBase
 	{
 	}
 
+	protected function buildQuerySelectById($tableName, $fields = "*", $id)
+	{
+	}
+
     // -------------------------------------------------------------------------
 
 	/**
@@ -376,6 +365,10 @@ class BaseDB extends PluginBase
 	 * @return 		string								Query string.
 	 */
 	protected function buildQueryInsert($tableName, $fields)
+	{
+	}
+
+	protected function buildQueryInsertWithId($tableName, $fields, $id)
 	{
 	}
 
@@ -395,6 +388,10 @@ class BaseDB extends PluginBase
 	{
 	}
 
+	protected function buildQueryUpdateById($tableName, $fields, $id)
+	{
+	}
+
     // -------------------------------------------------------------------------
 
 	/**
@@ -409,56 +406,7 @@ class BaseDB extends PluginBase
 	{
 	}
 
-    // -------------------------------------------------------------------------
-
-	/**
-	 * Builds the field part of the query.
-	 *
-	 * @param       ?array       	$fields				Fields to retrieve.
-	 *
-	 * @return 		string								Query string.
-	 */
-	protected function buildQueryFields(?array $fields)
-	{
-	}
-
-    // -------------------------------------------------------------------------
-
-	/**
-	 * Build the order part of the query.
-	 *
-	 * @param       ?array     		 $orders			Sort order.
-	 *
-	 * @return 		string								Query string.
-	 */
-	protected function buildQueryOrder(?array $orders)
-	{
-	}
-
-    // -------------------------------------------------------------------------
-
-	/**
-	 * Build the limit and offset part of the query.
-	 *
-	 * @param       int				$limit				Limit.
-	 * @param       int				$offset				Offset.
-	 *
-	 * @return 		string								Query string.
-	 */
-	protected function buildQueryPagination($limit, $offset)
-	{
-	}
-
-    // -------------------------------------------------------------------------
-
-	/**
-	 * Build the where part of the query.
-	 *
-	 * @param       array       	$keys				Search keys.
-	 *
-	 * @return 		string								Query string.
-	 */
-	protected function buildQueryWhere($keys)
+	protected function buildQueryDeleteById($tableName, $id)
 	{
 	}
 
@@ -575,149 +523,13 @@ class BaseDB extends PluginBase
     // -------------------------------------------------------------------------
 
 	/**
-	 * Build the compare query.
-	 *
-	 * @param		array			$field				Field.
-	 * @param		array			$parameter			Bind parameter.
-	 * @param		array			$value				Value.
-	 * @param		array			$comparer			Comparer.
-	 *
-	 * @return		array								Query.
-	 */
-	protected function buildCompare($field, $parameter = "", $value = null, $comparer = "=")
-	{
-	}
-
-    // -------------------------------------------------------------------------
-
-	/**
-	 * Build the query value.
-	 *
-	 * @param		string			$key				Field name.
-	 * @param		object			$item				Field item.
-	 *
-	 * @return		array								Query value.
-	 */
-	protected function buildValue($key, $item)
-	{
-	}
-
-    // -------------------------------------------------------------------------
-
-	/**
-	 * Bind parameters.
-	 *
-	 * @param		object			&$cmd				Database command object.
-	 * @param		array			$params				Parameters and values to bind.
-	 */
-	protected function assignParams(&$cmd, $params)
-	{
-	}
-
-    // -------------------------------------------------------------------------
-
-	/**
-	 * Bind referece to parameters variables.
-	 *
-	 * @param		object			$cmd				Database command.
-	 * @param		string			$name				Field name.
-	 * @param		int				$dataType			Field type.
-	 * @param		object			$value				Variable to bind.
-	 */
-	protected function bindParam($cmd, $name, $dataType, $value = null)
-	{
-	}
-
-    // -------------------------------------------------------------------------
-
-	/**
-	 * Bind parameter values.
-	 *
-	 * @param		object			$cmd				Database command.
-	 * @param		string			$name				Field name.
-	 * @param		int				$dataType			Field type.
-	 * @param		object			$value				Value to bind.
-	 */
-	public function bindValue($cmd, $name, $dataType, $value)
-	{
-	}
-
-    // -------------------------------------------------------------------------
-
-	/**
-	 * Return database dependent command to get database date.
-	 *
-	 * @return		string								Command to get date.
-	 */
-	protected function getDBDate()
-	{
-	}
-
-    // -------------------------------------------------------------------------
-
-	/**
-	 * Return database dependent command to get database date and time.
-	 *
-	 * @return		string								Command to get date.
-	 */
-	protected function getDBDateTime()
-	{
-	}
-
-    // -------------------------------------------------------------------------
-
-	/**
-	 * Return database dependent escaped command.
-	 *
-	 * @return		string								Escaped command.
-	 */
-	protected function escape($sql)
-	{
-
-		return $sql;
-
-	}
-
-    // -------------------------------------------------------------------------
-
-	/**
-	 * Return database dependent escaped keyword for like search.
-	 *
-	 * @param		string			$keyword			Keyword to escape.
-	 *
-	 * @return		string								Escaped keyword.
-	 */
-	protected function escapeLike($keyword)
-	{
-
-		return $sql;
-
-	}
-
-    // -------------------------------------------------------------------------
-
-	/**
-	 * Returns record count field.
-	 *
-	 * @return		string							Record count.
-	 */
-	protected function getCountField()
-	{
-
-		return "";
-
-	}
-
-    // -------------------------------------------------------------------------
-
-	/**
 	 * Check whether the value passed is the database command.
 	 *
 	 * @param		object			$value				Value to examine.
 	 *
 	 * @return		bool								True when value is the database command.
 	 */
-	protected function isDBCommand($value)
+	protected function isDBCommand(string $value)
 	{
 
 		if (substr($value, 0, 1) == "@" && substr($value, -1, 1) == "@")
@@ -739,7 +551,7 @@ class BaseDB extends PluginBase
 	 * @param		object			&$stack				Stack.
 	 * @param		object			$value				Value to push.
 	 */
-	protected function pushStack(&$stack, $value)
+	protected function pushStack(array &$stack, $value)
 	{
 
 		if ($value)
@@ -757,7 +569,7 @@ class BaseDB extends PluginBase
 	 * @param		object			&$stack				Stack.
 	 * @return		object								Value popped from the stack.
 	 */
-	protected function popStack(&$stack)
+	protected function popStack(array &$stack)
 	{
 
 		$value = array_pop($stack);
