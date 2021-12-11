@@ -350,6 +350,17 @@ class BaseDB extends PluginBase
 	{
 	}
 
+    // -------------------------------------------------------------------------
+
+	/**
+	 * Build select by id query.
+	 *
+	 * @param       string			$tableName      	Table name.
+	 * @param		array			$fields				Fields to retrieve.
+	 * @param       array			$id					Target id.
+	 *
+	 * @return 		string								Query string.
+	 */
 	protected function buildQuerySelectById($tableName, $fields = "*", $id)
 	{
 	}
@@ -368,6 +379,17 @@ class BaseDB extends PluginBase
 	{
 	}
 
+    // -------------------------------------------------------------------------
+
+	/**
+	 * Build insert with id query.
+	 *
+	 * @param       string			$tableName      	Table name.
+	 * @param		array			$fields				Fields to retrieve.
+	 * @param       array			$id					Target id.
+	 *
+	 * @return 		string								Query string.
+	 */
 	protected function buildQueryInsertWithId($tableName, $fields, $id)
 	{
 	}
@@ -375,7 +397,7 @@ class BaseDB extends PluginBase
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Create UPDATE query.
+	 * Build update query.
 	 *
 	 * @param       string			$tableName      	Table name.
 	 * @param       array       	$fields				Item data.
@@ -388,6 +410,17 @@ class BaseDB extends PluginBase
 	{
 	}
 
+    // -------------------------------------------------------------------------
+
+	/**
+	 * Build update by id query.
+	 *
+	 * @param       string			$tableName      	Table name.
+	 * @param		array			$fields				Fields to retrieve.
+	 * @param       array			$id					Target id.
+	 *
+	 * @return 		string								Query string.
+	 */
 	protected function buildQueryUpdateById($tableName, $fields, $id)
 	{
 	}
@@ -395,7 +428,7 @@ class BaseDB extends PluginBase
     // -------------------------------------------------------------------------
 
 	/**
-	 * Create DELETE query.
+	 * Build delete query.
 	 *
 	 * @param       string			$tableName      	Table name.
      * @param		array			$keys				Search keys.
@@ -406,6 +439,16 @@ class BaseDB extends PluginBase
 	{
 	}
 
+    // -------------------------------------------------------------------------
+
+	/**
+	 * Build delete by id query.
+	 *
+	 * @param       string			$tableName      	Table name.
+	 * @param       array			$id					Target id.
+	 *
+	 * @return 		string								Query string.
+	 */
 	protected function buildQueryDeleteById($tableName, $id)
 	{
 	}

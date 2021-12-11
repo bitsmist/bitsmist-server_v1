@@ -56,7 +56,7 @@ class PdoDB extends BaseDB
 		// Custom options
 		foreach ((array)($this->options["pdoOptions"] ?? null) as $key => $value)
 		{
-			$value = ( is_string($value) && substr($value, 0, 5) == "PDO::" ? constant($value) : $value);
+			$value = ( is_string($value) && substr($value, 0, 5) == "PDO::" ? constant($value) : $value );
 			$options[constant($key)] = $value;
 		}
 
@@ -207,6 +207,8 @@ class PdoDB extends BaseDB
 
 	}
 
+    // -------------------------------------------------------------------------
+
 	protected function buildQuerySelectById($tableName, $fields = "*", $id)
 	{
 
@@ -242,6 +244,8 @@ class PdoDB extends BaseDB
 		return array($sql, $params);
 
 	}
+
+    // -------------------------------------------------------------------------
 
 	protected function buildQueryInsertWithId($tableName, $fields, $id)
 	{
@@ -279,6 +283,8 @@ class PdoDB extends BaseDB
 
 	}
 
+    // -------------------------------------------------------------------------
+
 	protected function buildQueryUpdateById($tableName, $fields, $id)
 	{
 
@@ -303,6 +309,8 @@ class PdoDB extends BaseDB
 		return array($sql, $params);
 
 	}
+
+    // -------------------------------------------------------------------------
 
 	protected function buildQueryDeleteById($tableName, $id)
 	{
