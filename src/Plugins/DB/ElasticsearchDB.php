@@ -258,7 +258,7 @@ class ElasticsearchDB extends CurlDB
 		$ret["method"] = "GET";
 		$ret["tableName"] = $tableName;
 		$ret["url"]  = $this->buildUrl((array)$ret);
-		$ret["query"] = ( count($query) > 0 ? json_encode($query) : null );
+		$ret["query"] = ( $query ? json_encode($query) : null );
 
 		return array($ret, null);
 
@@ -294,7 +294,7 @@ class ElasticsearchDB extends CurlDB
 		$ret["method"] = "POST";
 		$ret["tableName"] = $tableName;
 		$ret["url"]  = $this->buildUrl((array)$ret);
-		$ret["query"] = ( count($query) > 0 ? json_encode($query) : null );
+		$ret["query"] = ( $query ? json_encode($query) : null );
 
 		return array($ret, null);
 
@@ -340,10 +340,10 @@ class ElasticsearchDB extends CurlDB
 		}
 
 		$ret = array();
-		$ret["method"] = "POST";
+		$ret["method"] = "PUT";
 		$ret["tableName"] = $tableName;
 		$ret["url"]  = $this->buildUrl((array)$ret);
-		$ret["query"] = ( count($query) > 0 ? json_encode($query) : null );
+		$ret["query"] = ( $query ? json_encode($query) : null );
 
 		return array($ret, null);
 
@@ -354,8 +354,22 @@ class ElasticsearchDB extends CurlDB
 	protected function buildQueryUpdateById($tableName, $fields, $id)
 	{
 
-		list($query, $params) = $this->buildQueryUpdate($tableName, $fields);
+		$query = array();
 
+		foreach ($fields as $key => $item)
+		{
+			$query[$key] = $this->buildValue($key, $item);
+		}
+
+		if (count($query) == 0)
+		{
+			$query = null;
+		}
+
+		$ret = array();
+		$ret["method"] = "PUT";
+		$ret["tableName"] = $tableName;
+		$ret["query"] = ( count($query) > 0 ? json_encode($query) : null );
 		$query["id"] = $id["value"];
 		$query["url"]  = $this->buildUrl((array)$query);
 
@@ -389,10 +403,10 @@ class ElasticsearchDB extends CurlDB
 		}
 
 		$ret = array();
-		$ret["method"] = "POST";
+		$ret["method"] = "DELETE";
 		$ret["tableName"] = $tableName;
 		$ret["url"]  = $this->buildUrl((array)$ret);
-		$ret["query"] = ( count($query) > 0 ? json_encode($query) : null );
+		$ret["query"] = ( $query ? json_encode($query) : null );
 
 		return array($ret, null);
 
