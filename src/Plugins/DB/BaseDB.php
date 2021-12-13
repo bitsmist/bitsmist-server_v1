@@ -17,7 +17,7 @@ use Bitsmist\v1\Plugins\Base\PluginBase;
 //	Base Database class
 // =============================================================================
 
-class BaseDB extends PluginBase
+abstract class BaseDB extends PluginBase
 {
 
 	// -------------------------------------------------------------------------
@@ -122,7 +122,7 @@ class BaseDB extends PluginBase
 	 *
 	 * @return		int									Record count.
 	 */
-	public function select($tableName, $fields, $keys, $orders = null, $limit = null, $offset = null)
+	public function select(string $tableName, ?array $fields = null, ?array $keys = null, ?array $orders = null, ?int $limit = null, ?int $offset = null)
 	{
 
 		list($query, $params) = $this->buildQuerySelect($tableName, $fields, $keys, $orders, $limit, $offset);
@@ -139,11 +139,11 @@ class BaseDB extends PluginBase
 	 *
 	 * @param       string			$tableName      	Table name.
 	 * @param		array			$fields				Fields to retrieve.
-	 * @param       string			$id					Target id.
+	 * @param       array			$id					Target id.
 	 *
 	 * @return		int									Record count.
 	 */
-	public function selectById($tableName, $fields, $id)
+	public function selectById(string $tableName, ?array $fields = null, array $id)
 	{
 
 		list($query, $params) = $this->buildQuerySelectById($tableName, $fields, $id);
@@ -160,11 +160,10 @@ class BaseDB extends PluginBase
 	 *
 	 * @param       string			$tableName      	Table name.
 	 * @param       array       	$fields				Data to insert.
-	 * @param       string			$id					Target id.
 	 *
 	 * @return		int									Record count.
 	 */
-	public function insert($tableName, $fields)
+	public function insert(string $tableName, array $fields)
 	{
 
 		list($query, $params) = $this->buildQueryInsert($tableName, $fields);
@@ -181,11 +180,11 @@ class BaseDB extends PluginBase
 	 *
 	 * @param       string			$tableName      	Table name.
 	 * @param       array       	$fields				Data to insert.
-	 * @param       string			$id					Target id.
+	 * @param       array			$id					Target id.
 	 *
 	 * @return		int									Record count.
 	 */
-	public function insertWithId($tableName, $fields, $id)
+	public function insertWithId(string $tableName, array $fields, array $id)
 	{
 
 		list($query, $params) = $this->buildQueryInsertWithId($tableName, $fields, $id);
@@ -206,7 +205,7 @@ class BaseDB extends PluginBase
 	 *
 	 * @return		int									Record count.
 	 */
-	public function update($tableName, $fields, $keys = null)
+	public function update(string $tableName, array $fields, ?array $keys = null)
 	{
 
 		list($query, $params) = $this->buildQueryUpdate($tableName, $fields, $keys);
@@ -227,7 +226,7 @@ class BaseDB extends PluginBase
 	 *
 	 * @return		int									Record count.
 	 */
-	public function updateById($tableName, $fields,  $id)
+	public function updateById(string $tableName, array $fields,  array $id)
 	{
 
 		list($query, $params) = $this->buildQueryUpdateById($tableName, $fields, $id);
@@ -247,7 +246,7 @@ class BaseDB extends PluginBase
 	 *
 	 * @return		int									Record count.
 	 */
-	public function delete($tableName, $keys)
+	public function delete(string $tableName, ?array $keys = null)
 	{
 
 		list($query, $params) = $this->buildQueryDelete($tableName, $keys);
@@ -263,11 +262,11 @@ class BaseDB extends PluginBase
 	 * Delete data by id.
 	 *
 	 * @param       string			$tableName      	Table name.
-	 * @param       string			$id					Target id.
+	 * @param       array			$id					Target id.
 	 *
 	 * @return		int									Result count.
 	 */
-	public function deleteById($tableName, $id)
+	public function deleteById(string $tableName, array $id)
 	{
 
 		list($query, $params) = $this->buildQueryDeleteById($tableName, $id);
@@ -346,9 +345,7 @@ class BaseDB extends PluginBase
 	 *
 	 * @return 		string								Query string.
 	 */
-	protected function buildQuerySelect($tableName, $fields = "*", $keys = null, $orders = null, $limit = null, $offset = null)
-	{
-	}
+	abstract protected function buildQuerySelect(string $tableName, ?array $fields = null, ?array $keys = null, ?array $orders = null, ?int $limit = null, ?int $offset = null);
 
     // -------------------------------------------------------------------------
 
@@ -361,9 +358,7 @@ class BaseDB extends PluginBase
 	 *
 	 * @return 		string								Query string.
 	 */
-	protected function buildQuerySelectById($tableName, $fields = "*", $id)
-	{
-	}
+	abstract protected function buildQuerySelectById(string $tableName, ?array $fields = null, $id);
 
     // -------------------------------------------------------------------------
 
@@ -375,9 +370,7 @@ class BaseDB extends PluginBase
 	 *
 	 * @return 		string								Query string.
 	 */
-	protected function buildQueryInsert($tableName, $fields)
-	{
-	}
+	abstract protected function buildQueryInsert(string $tableName, ?array $fields = null);
 
     // -------------------------------------------------------------------------
 
@@ -390,9 +383,7 @@ class BaseDB extends PluginBase
 	 *
 	 * @return 		string								Query string.
 	 */
-	protected function buildQueryInsertWithId($tableName, $fields, $id)
-	{
-	}
+	abstract protected function buildQueryInsertWithId(string $tableName, ?array $fields = null, $id);
 
 	// -------------------------------------------------------------------------
 
@@ -406,9 +397,7 @@ class BaseDB extends PluginBase
 	 * @return 		string								Query string.
 	 *
 	 */
-	protected function buildQueryUpdate($tableName, $fields, $keys)
-	{
-	}
+	abstract protected function buildQueryUpdate(string $tableName, ?array $fields = null, ?array $keys = null);
 
     // -------------------------------------------------------------------------
 
@@ -421,9 +410,7 @@ class BaseDB extends PluginBase
 	 *
 	 * @return 		string								Query string.
 	 */
-	protected function buildQueryUpdateById($tableName, $fields, $id)
-	{
-	}
+	abstract protected function buildQueryUpdateById(string $tableName, ?array $fields = null, $id);
 
     // -------------------------------------------------------------------------
 
@@ -435,9 +422,7 @@ class BaseDB extends PluginBase
 	 *
 	 * @return 		string								Query string.
 	 */
-	protected function buildQueryDelete($tableName, $keys)
-	{
-	}
+	abstract protected function buildQueryDelete(string $tableName, ?array $keys = null);
 
     // -------------------------------------------------------------------------
 
@@ -449,9 +434,7 @@ class BaseDB extends PluginBase
 	 *
 	 * @return 		string								Query string.
 	 */
-	protected function buildQueryDeleteById($tableName, $id)
-	{
-	}
+	abstract protected function buildQueryDeleteById(string $tableName, $id);
 
     // -------------------------------------------------------------------------
 
