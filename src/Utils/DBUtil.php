@@ -71,7 +71,7 @@ class DBUtil
 		$id = $request->getAttribute("routeInfo")["args"]["id"];
 		$gets = $request->getQueryParams();
 		$settings = $request->getAttribute("settings");
-		$fields = $this->buildFields($this->options["fields"] ?? null, $gets);
+		$fields = ($this->options["fields"] ?? null ? $this->buildFields($this->options["fields"]) : null);
 		$searches = $this->options["searches"] ?? null;
 		$orders = $this->options["orders"] ?? null;
 		$limitParamName = $this->options["specialParameters"]["limit"] ?? "_limit";
@@ -108,7 +108,7 @@ class DBUtil
 
 				break;
 			default:
-				$data = $db->selectById($settings[$dbName]["tableName"], $fields, [ "field" => $settings[$dbName]["keyName"], "value" => $id ]);
+				$data = $db->selectById($settings[$dbName]["tableName"], $fields, [ "field" => $settings[$dbName]["keyName"] ?? "", "value" => $id ]);
 				$this->resultCount = count($data);
 				$this->totalCount = count($data);
 				break;
@@ -133,7 +133,7 @@ class DBUtil
 
 		$id = $request->getAttribute("routeInfo")["args"]["id"];
 		$settings = $request->getAttribute("settings");
-		$fields = $this->options["fields"] ?? "*";
+		$fields = $this->options["fields"] ?? null;
 		$newIdName = $this->options["specialParameters"]["new"] ?? "new";
 		$items = $this->getParamsFromBody($request, $settings["options"] ?? null);
 
@@ -157,7 +157,7 @@ class DBUtil
 						break;
 					default:
 						$item = $this->buildFields($fields, $items[$i]);
-						$cnt += $db->insertWithId($settings[$dbName]["tableName"], $item, $items[$i][$settings[$dbName]["keyName"]]);
+						$cnt += $db->insertWithId($settings[$dbName]["tableName"], $item, ["field" => $settings[$dbName]["keyName"] ?? "", "value" => $id]);
 						break;
 					}
 				}
@@ -191,7 +191,7 @@ class DBUtil
 		$id = $request->getAttribute("routeInfo")["args"]["id"];
 		$gets = $request->getQueryParams();
 		$settings = $request->getAttribute("settings");
-		$fields = $this->options["fields"] ?? "*";
+		$fields = $this->options["fields"] ?? null;
 		$searches = $this->options["searches"] ?? null;
 		$listIdName = $this->options["specialParameters"]["list"] ?? "list";
 		$items = $this->getParamsFromBody($request, $settings["options"] ?? null);
@@ -213,9 +213,10 @@ class DBUtil
 					break;
 				default:
 					$item = $this->buildFields($fields, $items[0]);
-					$cnt = $db->updateById($settings[$dbName]["tableName"], $item, ["field" => $settings[$dbName]["keyName"], "value" => $id]);
+					$cnt = $db->updateById($settings[$dbName]["tableName"], $item, ["field" => $settings[$dbName]["keyName"] ?? "", "value" => $id]);
 					break;
 				}
+				$this->resultCount = $cnt;
 
 				// commitTrans();
 			}
@@ -248,7 +249,6 @@ class DBUtil
 		$searches = $this->options["searches"] ?? null;
 		$listIdName = $this->options["specialParameters"]["list"] ?? "list";
 
-		//$dbs = $this->loader->getService("db")->getPlugins();
 		$dbs = $request->getAttribute("services")["db"]->getPlugins();
 		foreach ($dbs as $dbName => $db)
 		{
@@ -264,9 +264,10 @@ class DBUtil
 						$cnt = $db->delete($settings[$dbName]["tableName"], $search);
 						break;
 					default:
-						$cnt = $db->deleteById($settings[$dbName]["tableName"], ["field" => $settings[$dbName]["keyName"], "value" => $id]);
+						$cnt = $db->deleteById($settings[$dbName]["tableName"], ["field" => $settings[$dbName]["keyName"] ?? "", "value" => $id]);
 						break;
 				}
+				$this->resultCount = $cnt;
 
 				// commitTrans();
 			}
@@ -370,14 +371,38 @@ class DBUtil
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Build parameter array for fields from HTTP parameters and the spec.
+	 * Dispatch buildFieldsFromList() or buildFieldsAll() depending on a parameter.
 	 *
-	 * @param	$fields		Fields spec.
+	 * @param	$fields			Fields spec.
 	 * @param	$parameters		URL parameters.
 	 *
 	 * @return	Parameter array.
 	 */
 	private function buildFields(?array $fields, array $parameters): array
+	{
+
+		if ($fields)
+		{
+			return $this->buildFieldsFromList($fields, $parameters);
+		}
+		else
+		{
+			return $this->buildFieldsAll($fields, $parameters);
+		}
+
+	}
+
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Build parameter array for fields from HTTP parameters and the spec.
+	 *
+	 * @param	$fields			Fields spec.
+	 * @param	$parameters		URL parameters.
+	 *
+	 * @return	Parameter array.
+	 */
+	private function buildFieldsFromList(?array $fields, array $parameters): array
 	{
 
 		$result = array();
@@ -399,6 +424,34 @@ class DBUtil
 			if (array_key_exists($parameterName, $parameters))
 			{
 				$result[$key]["value"] = $parameters[$parameterName];
+			}
+		}
+
+		return $result;
+
+	}
+
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Build parameter array for fields from HTTP parameters and the spec.
+	 *
+	 * @param	$fields			Fields spec.
+	 * @param	$parameters		URL parameters.
+	 *
+	 * @return	Parameter array.
+	 */
+	private function buildFieldsAll(?array $fields, array $parameters): array
+	{
+
+		$result = array();
+
+		foreach ((array)$parameters as $key => $value)
+		{
+			if ($fields == null || array_key_exists($key, $fields))
+			{
+				$result[$key] = array();
+				$result[$key]["value"] = $value;
 			}
 		}
 
