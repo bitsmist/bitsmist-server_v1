@@ -369,11 +369,11 @@ class ElasticsearchDB extends CurlDB
 		$ret = array();
 		$ret["method"] = "PUT";
 		$ret["tableName"] = $tableName;
-		$ret["query"] = ( count($query) > 0 ? json_encode($query) : null );
-		$query["id"] = $id["value"];
-		$query["url"]  = $this->buildUrl((array)$query);
+		$ret["query"] = ( $query ? json_encode($query) : null );
+		$ret["id"] = $id["value"];
+		$ret["url"]  = $this->buildUrl((array)$ret);
 
-		return array($query, $params);
+		return array($ret, null);
 
 	}
 
