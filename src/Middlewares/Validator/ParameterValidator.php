@@ -69,12 +69,13 @@ class ParameterValidator extends MiddlewareBase
 	 *
 	 * @param	$target			Array to convert.
 	 *
-	 * @return	string			Converted array.
+	 * @return	array			Converted array.
      */
-	private function alignArray($target): array
+	private function alignArray(array $target): array
 	{
 
 		$result = array();
+
 		foreach ($target as $key => $value)
 		{
 			if (is_numeric($key))

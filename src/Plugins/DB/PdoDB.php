@@ -182,7 +182,7 @@ class PdoDB extends BaseDB
 	//	Protected
 	// -------------------------------------------------------------------------
 
-	function buildQuerySelect(string $tableName, ?array $fields = null, ?array $keys = null, ?array $orders = null, ?int $limit = null, ?int $offset = null)
+	protected function buildQuerySelect(string $tableName, ?array $fields = null, ?array $keys = null, ?array $orders = null, ?int $limit = null, ?int $offset = null)
 	{
 
 		// Escape
@@ -213,7 +213,7 @@ class PdoDB extends BaseDB
 
     // -------------------------------------------------------------------------
 
-	protected function buildQuerySelectById(string $tableName, ?array $fields = null, $id)
+	protected function buildQuerySelectById(string $tableName, ?array $fields = null, array $id)
 	{
 
 		return $this->buildQuerySelect($tableName, $fields, [["field" => $id["field"], "comparer" => "=", "value" => $id["value"]]]);
@@ -222,7 +222,7 @@ class PdoDB extends BaseDB
 
     // -------------------------------------------------------------------------
 
-	protected function buildQueryInsert(string $tableName, ?array $fields = null)
+	protected function buildQueryInsert(string $tableName, array $fields)
 	{
 
 		// Escape
@@ -251,7 +251,7 @@ class PdoDB extends BaseDB
 
     // -------------------------------------------------------------------------
 
-	protected function buildQueryInsertWithId(string $tableName, ?array $fields = null, $id)
+	protected function buildQueryInsertWithId(string $tableName, array $fields, array $id)
 	{
 
 		$fields[$id["field"]] = array();
@@ -263,7 +263,7 @@ class PdoDB extends BaseDB
 
 	// -------------------------------------------------------------------------
 
-	protected function buildQueryUpdate(string $tableName, ?array $fields = null, ?array $keys = null)
+	protected function buildQueryUpdate(string $tableName, array $fields, ?array $keys = null)
 	{
 
 		// Escape
@@ -292,7 +292,7 @@ class PdoDB extends BaseDB
 
     // -------------------------------------------------------------------------
 
-	protected function buildQueryUpdateById(string $tableName, ?array $fields = null, $id)
+	protected function buildQueryUpdateById(string $tableName, array $fields, array $id)
 	{
 
 		return $this->buildQueryUpdate($tableName, $fields, [["field" => $id["field"], "comparer" => "=", "value" => $id["value"]]]);
@@ -319,7 +319,7 @@ class PdoDB extends BaseDB
 
     // -------------------------------------------------------------------------
 
-	protected function buildQueryDeleteById(string $tableName, $id)
+	protected function buildQueryDeleteById(string $tableName, array $id)
 	{
 
 		return $this->buildQueryDelete($tableName, [["field" => $id["field"], "comparer" => "=", "value" => $id["value"]]]);

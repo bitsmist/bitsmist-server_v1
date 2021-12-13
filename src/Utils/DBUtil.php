@@ -71,7 +71,7 @@ class DBUtil
 		$id = $request->getAttribute("routeInfo")["args"]["id"];
 		$gets = $request->getQueryParams();
 		$settings = $request->getAttribute("settings");
-		$fields = ($this->options["fields"] ?? null ? $this->buildFields($this->options["fields"]) : null);
+		$fields = ($this->options["fields"] ?? null ? $this->buildFields($this->options["fields"], $gets) : null);
 		$searches = $this->options["searches"] ?? null;
 		$orders = $this->options["orders"] ?? null;
 		$limitParamName = $this->options["specialParameters"]["limit"] ?? "_limit";
@@ -325,7 +325,7 @@ class DBUtil
 	 * @param	&$search		Search spec.
 	 * @param	$parameters		URL parameters.
 	 *
-	 * @return	Parameter array.
+	 * @return	array			Parameter array.
 	 */
 	private function buildSearchKeys(?array &$search, array $parameters): ?array
 	{
@@ -376,7 +376,7 @@ class DBUtil
 	 * @param	$fields			Fields spec.
 	 * @param	$parameters		URL parameters.
 	 *
-	 * @return	Parameter array.
+	 * @return	array			Parameter array.
 	 */
 	private function buildFields(?array $fields, array $parameters): array
 	{
@@ -400,7 +400,7 @@ class DBUtil
 	 * @param	$fields			Fields spec.
 	 * @param	$parameters		URL parameters.
 	 *
-	 * @return	Parameter array.
+	 * @return	array			Parameter array.
 	 */
 	private function buildFieldsFromList(?array $fields, array $parameters): array
 	{

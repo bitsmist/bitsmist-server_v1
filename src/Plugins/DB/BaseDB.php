@@ -358,7 +358,7 @@ abstract class BaseDB extends PluginBase
 	 *
 	 * @return 		string								Query string.
 	 */
-	abstract protected function buildQuerySelectById(string $tableName, ?array $fields = null, $id);
+	abstract protected function buildQuerySelectById(string $tableName, ?array $fields = null, array $id);
 
     // -------------------------------------------------------------------------
 
@@ -370,7 +370,7 @@ abstract class BaseDB extends PluginBase
 	 *
 	 * @return 		string								Query string.
 	 */
-	abstract protected function buildQueryInsert(string $tableName, ?array $fields = null);
+	abstract protected function buildQueryInsert(string $tableName, array $fields);
 
     // -------------------------------------------------------------------------
 
@@ -383,7 +383,7 @@ abstract class BaseDB extends PluginBase
 	 *
 	 * @return 		string								Query string.
 	 */
-	abstract protected function buildQueryInsertWithId(string $tableName, ?array $fields = null, $id);
+	abstract protected function buildQueryInsertWithId(string $tableName, array $fields, array $id);
 
 	// -------------------------------------------------------------------------
 
@@ -397,7 +397,7 @@ abstract class BaseDB extends PluginBase
 	 * @return 		string								Query string.
 	 *
 	 */
-	abstract protected function buildQueryUpdate(string $tableName, ?array $fields = null, ?array $keys = null);
+	abstract protected function buildQueryUpdate(string $tableName, array $fields, ?array $keys = null);
 
     // -------------------------------------------------------------------------
 
@@ -410,7 +410,7 @@ abstract class BaseDB extends PluginBase
 	 *
 	 * @return 		string								Query string.
 	 */
-	abstract protected function buildQueryUpdateById(string $tableName, ?array $fields = null, $id);
+	abstract protected function buildQueryUpdateById(string $tableName, array $fields, array $id);
 
     // -------------------------------------------------------------------------
 
@@ -434,7 +434,7 @@ abstract class BaseDB extends PluginBase
 	 *
 	 * @return 		string								Query string.
 	 */
-	abstract protected function buildQueryDeleteById(string $tableName, $id);
+	abstract protected function buildQueryDeleteById(string $tableName, array $id);
 
     // -------------------------------------------------------------------------
 
