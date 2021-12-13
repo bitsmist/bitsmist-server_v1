@@ -159,7 +159,11 @@ class PdoDB extends BaseDB
 		$this->assignParams($cmd, $params);
 
 		// Execute
-		$cnt = (int)$cmd->execute();
+		$cnt = 0;
+		if ($cmd->execute())
+		{
+			$cnt = $cmd->rowCount();
+		}
 
 		return $cnt;
 
@@ -177,8 +181,8 @@ class PdoDB extends BaseDB
 	// -------------------------------------------------------------------------
 	//	Protected
 	// -------------------------------------------------------------------------
-	//
-	protected function buildQuerySelect($tableName, $fields = "*", $keys = null, $orders = null, $limit = null, $offset = null)
+
+	function buildQuerySelect(string $tableName, ?array $fields = null, ?array $keys = null, ?array $orders = null, ?int $limit = null, ?int $offset = null)
 	{
 
 		// Escape
@@ -190,7 +194,7 @@ class PdoDB extends BaseDB
 		list($where, $params) = $this->buildQueryWhere($keys);
 
 		$sql =
-			"SELECT " . ( $limit ? $this->getCountField() . " " : "" ) . $this->buildQueryFields($fields) .
+			"SELECT " . ( $limit ? $this->getCountField() . " " : "" ) . ($fields == null ? "*" : $this->buildQueryFields($fields)) .
 			" FROM `" . $tableName . "`".
 			( $where ? " WHERE " . $where : "" ) .
 			( $orders ? " ORDER BY " . $this->buildQueryOrder($orders) : "" ) .
@@ -209,7 +213,7 @@ class PdoDB extends BaseDB
 
     // -------------------------------------------------------------------------
 
-	protected function buildQuerySelectById($tableName, $fields = "*", $id)
+	protected function buildQuerySelectById(string $tableName, ?array $fields = null, $id)
 	{
 
 		return $this->buildQuerySelect($tableName, $fields, [["field" => $id["field"], "comparer" => "=", "value" => $id["value"]]]);
@@ -218,7 +222,7 @@ class PdoDB extends BaseDB
 
     // -------------------------------------------------------------------------
 
-	protected function buildQueryInsert($tableName, $fields)
+	protected function buildQueryInsert(string $tableName, ?array $fields = null)
 	{
 
 		// Escape
@@ -247,8 +251,11 @@ class PdoDB extends BaseDB
 
     // -------------------------------------------------------------------------
 
-	protected function buildQueryInsertWithId($tableName, $fields, $id)
+	protected function buildQueryInsertWithId(string $tableName, ?array $fields = null, $id)
 	{
+
+		$fields[$id["field"]] = array();
+		$fields[$id["field"]]["value"] = $id["value"];
 
 		return $this->buildQueryInsert($tableName, $fields);
 
@@ -256,7 +263,7 @@ class PdoDB extends BaseDB
 
 	// -------------------------------------------------------------------------
 
-	protected function buildQueryUpdate($tableName, $fields, $keys)
+	protected function buildQueryUpdate(string $tableName, ?array $fields = null, ?array $keys = null)
 	{
 
 		// Escape
@@ -275,7 +282,7 @@ class PdoDB extends BaseDB
 		// Key
 		list($where, $params) = $this->buildQueryWhere($keys);
 
-		$sql = "UPDATE `" . $tableName . "` SET " . $fieldList . " WHERE " . $where ;
+		$sql = "UPDATE `" . $tableName . "` SET " . $fieldList . ( $where ? " WHERE " . $where : "" );
 
 		$this->logger->debug("query = {query}", ["method"=>__METHOD__, "query"=>$sql]);
 
@@ -285,7 +292,7 @@ class PdoDB extends BaseDB
 
     // -------------------------------------------------------------------------
 
-	protected function buildQueryUpdateById($tableName, $fields, $id)
+	protected function buildQueryUpdateById(string $tableName, ?array $fields = null, $id)
 	{
 
 		return $this->buildQueryUpdate($tableName, $fields, [["field" => $id["field"], "comparer" => "=", "value" => $id["value"]]]);
@@ -294,7 +301,7 @@ class PdoDB extends BaseDB
 
     // -------------------------------------------------------------------------
 
-	protected function buildQueryDelete($tableName, $keys)
+	protected function buildQueryDelete(string $tableName, ?array $keys = null)
 	{
 
 		// Escape
@@ -302,7 +309,7 @@ class PdoDB extends BaseDB
 
 		list($where, $params) = $this->buildQueryWhere($keys);
 
-		$sql = "DELETE FROM `" . $tableName . "` WHERE " . $where;
+		$sql = "DELETE FROM `" . $tableName . "`" . ( $where ? " WHERE " . $where : "" );
 
 		$this->logger->debug("query = {query}", ["method"=>__METHOD__, "query"=>$sql]);
 
@@ -312,7 +319,7 @@ class PdoDB extends BaseDB
 
     // -------------------------------------------------------------------------
 
-	protected function buildQueryDeleteById($tableName, $id)
+	protected function buildQueryDeleteById(string $tableName, $id)
 	{
 
 		return $this->buildQueryDelete($tableName, [["field" => $id["field"], "comparer" => "=", "value" => $id["value"]]]);
