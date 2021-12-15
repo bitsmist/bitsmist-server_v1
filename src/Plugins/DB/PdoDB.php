@@ -216,7 +216,7 @@ class PdoDB extends BaseDB
 	protected function buildQuerySelectById(string $tableName, ?array $fields = null, array $id)
 	{
 
-		return $this->buildQuerySelect($tableName, $fields, [["field" => $id["field"], "comparer" => "=", "value" => $id["value"]]]);
+		return $this->buildQuerySelect($tableName, $fields, [["fieldName" => $id["fieldName"], "comparer" => "=", "value" => $id["value"]]]);
 
 	}
 
@@ -254,8 +254,8 @@ class PdoDB extends BaseDB
 	protected function buildQueryInsertWithId(string $tableName, array $fields, array $id)
 	{
 
-		$fields[$id["field"]] = array();
-		$fields[$id["field"]]["value"] = $id["value"];
+		$fields[$id["fieldName"]] = array();
+		$fields[$id["fieldName"]]["value"] = $id["value"];
 
 		return $this->buildQueryInsert($tableName, $fields);
 
@@ -295,7 +295,7 @@ class PdoDB extends BaseDB
 	protected function buildQueryUpdateById(string $tableName, array $fields, array $id)
 	{
 
-		return $this->buildQueryUpdate($tableName, $fields, [["field" => $id["field"], "comparer" => "=", "value" => $id["value"]]]);
+		return $this->buildQueryUpdate($tableName, $fields, [["fieldName" => $id["fieldName"], "comparer" => "=", "value" => $id["value"]]]);
 
 	}
 
@@ -322,7 +322,7 @@ class PdoDB extends BaseDB
 	protected function buildQueryDeleteById(string $tableName, array $id)
 	{
 
-		return $this->buildQueryDelete($tableName, [["field" => $id["field"], "comparer" => "=", "value" => $id["value"]]]);
+		return $this->buildQueryDelete($tableName, [["fieldName" => $id["fieldName"], "comparer" => "=", "value" => $id["value"]]]);
 
 	}
 
@@ -442,13 +442,13 @@ class PdoDB extends BaseDB
 	protected function buildQueryWhereItem($item, &$params = null)
 	{
 
-		$comparer	= $item["comparer"] ?? "=";
-		$field		= $item["field"] ?? "";
-		$parameter	= $item["parameter"] ?? $field;
-		$value		= $item["value"] ?? "";
-		$sql		= "";
+		$comparer		= $item["comparer"] ?? "=";
+		$fieldName		= $item["fieldName"] ?? "";
+		$parameterName	= $item["parameterName"] ?? $fieldName;
+		$value			= $item["value"] ?? "";
+		$sql			= "";
 
-		$comp = $this->buildCompare($field, "key_" . $parameter, $value, $comparer, $params);
+		$comp = $this->buildCompare($fieldName, "key_" . $parameterName, $value, $comparer, $params);
 		if ($comp)
 		{
 			$sql = "(" . $comp . ")";
@@ -465,19 +465,18 @@ class PdoDB extends BaseDB
 	protected function buildQueryWhereItems($item, &$params = null)
 	{
 
-		$comparer	= $item["comparer"] ?? "=";
-		$field		= $item["field"] ?? null;
-		$op			= $item["operator"] ?? "OR";
-		$parameter	= $item["parameter"] ?? $field;
-		$value		= $item["value"] ?? "";
-
-		$items		= explode(",", $value);
+		$comparer		= $item["comparer"] ?? "=";
+		$fieldName		= $item["fieldName"] ?? "";
+		$op				= $item["operator"] ?? "OR";
+		$parameterName	= $item["parameterName"] ?? $fieldName;
+		$value			= $item["value"] ?? "";
+		$items			= explode(",", $value);
 
 		$sql = "";
 		for ($i = 0; $i < count($items); $i++)
 		{
-			$sql .= $field . $comparer . ":" . "key_" . $parameter . "_" . $i . " " . $op . " ";
-			$params["key_" . $parameter ."_" . $i] = $items[$i];
+			$sql .= $fieldName . $comparer . ":" . "key_" . $parameterName . "_" . $i . " " . $op . " ";
+			$params["key_" . $parameterName ."_" . $i] = $items[$i];
 		}
 		if ($sql)
 		{
@@ -495,7 +494,7 @@ class PdoDB extends BaseDB
 	protected function buildQueryWhereMatch($item, &$params = null)
 	{
 
-		$field		= $item["field"] ?? null;
+		$fieldName	= $item["fieldName"] ?? null;
 		$value		= $item["value"] ?? null;
 
 		$search = "";
@@ -511,8 +510,8 @@ class PdoDB extends BaseDB
 				$search .= " +" . trim($words[$i]);
 			}
 		}
-		$sql = "(match(" . $field . ") against(:" . "key_" . $field . " in boolean mode))";
-		$params["key_" . $field] = $search;
+		$sql = "(match(" . $fieldName . ") against(:" . "key_" . $fieldName . " in boolean mode))";
+		$params["key_" . $fieldName] = $search;
 
 		$this->logger->debug("search = {search}, sql = {sql}", ["method"=>__METHOD__, "search"=>$search, "sql"=>$sql]);
 
@@ -525,13 +524,13 @@ class PdoDB extends BaseDB
 	protected function buildQueryWhereFlag($item, &$params = null)
 	{
 
-		$comparer	= $item["comparer"] ?? "=";
-		$field		= $item["field"] ?? "";
-		$parameter	= $item["parameter"] ?? $field;
-		$value		= $item["value"] ?? "";
-		$sql		= "";
+		$comparer		= $item["comparer"] ?? "=";
+		$fieldName		= $item["fieldName"] ?? "";
+		$parameterName	= $item["parameterName"] ?? $fieldName;
+		$value			= $item["value"] ?? "";
+		$sql			= "";
 
-		$comp = $this->buildCompare($field, "key_" . $parameter, $value, $comparer, $params);
+		$comp = $this->buildCompare($fieldName, "key_" . $parameterName, $value, $comparer, $params);
 		if ($comp)
 		{
 			$sql = "(" . $comp . ")";
@@ -560,7 +559,7 @@ class PdoDB extends BaseDB
 		{
 			if (in_array($key, $attrs))
 			{
-				$comp = $this->buildCompare($item["field"], "key_" . $item["field"], $item["value"], $item["comparer"], $params);
+				$comp = $this->buildCompare($item["fieldName"], "key_" . $item["fieldName"], $item["value"], $item["comparer"], $params);
 				if ($comp)
 				{
 					$sql = $comp . " " . $op . " ";
@@ -580,7 +579,7 @@ class PdoDB extends BaseDB
 
     // -------------------------------------------------------------------------
 
-	protected function buildCompare($field, $parameter = "", $value = null, $comparer = "=", &$params = null)
+	protected function buildCompare($fieldName, $parameterName = "", $value = null, $comparer = "=", &$params = null)
 	{
 
 		$ret = "";
@@ -590,34 +589,34 @@ class PdoDB extends BaseDB
 			$ret = "";
 			break;
 		case "@NOTNULL@":
-			$ret = $field . " IS NOT NULL";
+			$ret = $fieldName . " IS NOT NULL";
 			break;
 		case "@NULL@":
 			if ($comparer == "=")
 			{
-				$ret = $field . " IS NULL";
+				$ret = $fieldName . " IS NULL";
 			}
 			else if ($comparer == "!=")
 			{
-				$ret = $field . " IS NOT NULL";
+				$ret = $fieldName . " IS NOT NULL";
 			}
 			break;
 		case "@CURRENT_DATETIME@":
-			$ret = $field . " " . $comparer . " " . $this->getDBDateTime();
+			$ret = $fieldName . " " . $comparer . " " . $this->getDBDateTime();
 			break;
 		case "@SESSION_USER_ID@":
-			$ret = $field . " " . $comparer . " :" . $this->escape($parameter);
-			$params[$parameter] = $_SESSION["USER"]["ID"];
+			$ret = $fieldName . " " . $comparer . " :" . $this->escape($parameterName);
+			$params[$parameterName] = $_SESSION["USER"]["ID"];
 			break;
 		default:
-			$ret = $field . " " . $comparer . " :" . $this->escape($parameter);
+			$ret = $fieldName . " " . $comparer . " :" . $this->escape($parameterName);
 			if ($comparer == "like")
 			{
-				$params[$parameter] = "%" . $value . "%";
+				$params[$parameterName] = "%" . $value . "%";
 			}
 			else
 			{
-				$params[$parameter] = $value;
+				$params[$parameterName] = $value;
 			}
 			break;
 		}

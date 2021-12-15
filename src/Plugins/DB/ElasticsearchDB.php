@@ -554,12 +554,12 @@ class ElasticsearchDB extends CurlDB
 	protected function buildQueryWhereItem($item, &$params = null)
 	{
 
-		$comparer	= $item["comparer"] ?? "=";
-		$field		= $item["field"] ?? "";
-		$parameter	= $item["parameter"] ?? $field;
-		$value		= $item["value"] ?? "";
+		$comparer		= $item["comparer"] ?? "=";
+		$fieldName		= $item["fieldName"] ?? "";
+		$parameterName	= $item["parameterName"] ?? $fieldName;
+		$value			= $item["value"] ?? "";
 
-		$query = $this->buildCompare($field, $parameter, $value, $comparer);
+		$query = $this->buildCompare($fieldName, $parameterName, $value, $comparer);
 
 		return $query;
 
@@ -570,18 +570,18 @@ class ElasticsearchDB extends CurlDB
 	protected function buildQueryWhereItems($item, &$params = null)
 	{
 
-		$comparer	= $item["comparer"] ?? "=";
-		$field		= $item["field"] ?? null;
-		$op			= $item["operator"] ?? "OR";
-		$bool		= $this->bools[$op] ?? null;
-		$parameter	= $item["parameter"] ?? $field;
-		$value		= $item["value"] ?? "";
-		$items		= explode(",", $value);
+		$comparer		= $item["comparer"] ?? "=";
+		$fieldName		= $item["fieldName"] ?? "";
+		$op				= $item["operator"] ?? "OR";
+		$bool			= $this->bools[$op] ?? null;
+		$parameterName	= $item["parameterName"] ?? $fieldName;
+		$value			= $item["value"] ?? "";
+		$items			= explode(",", $value);
 
 		$query = array();
 		for ($i = 0; $i < count($items); $i++)
 		{
-			$query["bool"][$bool][] = $this->buildCompare($field, null, $items[$i], $comparer);
+			$query["bool"][$bool][] = $this->buildCompare($fieldName, null, $items[$i], $comparer);
 		}
 
 		return $query;
@@ -594,7 +594,7 @@ class ElasticsearchDB extends CurlDB
 	{
 
 		$comparer	= $item["comparer"] ?? "=";
-		$field		= $item["field"] ?? null;
+		$fieldName	= $item["fieldName"] ?? "";
 		$op			= $item["operator"] ?? "OR";
 		$bool		= $this->bools[$op] ?? null;
 		$value		= $item["value"] ?? null;
@@ -603,7 +603,7 @@ class ElasticsearchDB extends CurlDB
 		$items = preg_split("/ /", trim($value));
 		for ($i = 0; $i < count($items); $i++)
 		{
-			$query["bool"][$bool][] = $this->buildCompare($field, null, $items[$i], $comparer);
+			$query["bool"][$bool][] = $this->buildCompare($fieldName, null, $items[$i], $comparer);
 		}
 
 		return $query;
@@ -627,7 +627,7 @@ class ElasticsearchDB extends CurlDB
 		{
 			if (in_array($key, $attrs))
 			{
-				$query["bool"][$bool][] = $this->buildCompare($item["field"], null, $item["value"], $item["comparer"]);
+				$query["bool"][$bool][] = $this->buildCompare($item["fieldName"], null, $item["value"], $item["comparer"]);
 			}
 		}
 
@@ -640,12 +640,12 @@ class ElasticsearchDB extends CurlDB
 	protected function buildQueryWhereFlag($item, &$params = null)
 	{
 
-		$comparer	= $item["comparer"] ?? "=";
-		$field		= $item["field"] ?? "";
-		$parameter	= $item["parameter"] ?? $field;
-		$value		= $item["value"] ?? "";
+		$comparer		= $item["comparer"] ?? "=";
+		$fieldName		= $item["fieldName"] ?? "";
+		$parameterName	= $item["parameterName"] ?? $fieldName;
+		$value			= $item["value"] ?? "";
 
-		$query = $this->buildCompare($field, $parameter, $value, $comparer);
+		$query = $this->buildCompare($fieldName, $parameterName, $value, $comparer);
 
 		return $query;
 
@@ -653,7 +653,7 @@ class ElasticsearchDB extends CurlDB
 
 	// -------------------------------------------------------------------------
 
-	protected function buildCompare($field, $parameter = "", $value = null, $comparer = "=")
+	protected function buildCompare($fieldName, $parameterName = "", $value = null, $comparer = "=")
 	{
 
 		$value = str_replace("@CURRENT_DATETIME@", "now", $value);
@@ -665,10 +665,10 @@ class ElasticsearchDB extends CurlDB
 			switch ($comparer)
 			{
 			case "=":
-				$ret["bool"]["must_not"] = ["exists" => ["field" => $field]];
+				$ret["bool"]["must_not"] = ["exists" => ["field" => $fieldName]];
 				break;
 			case "!":
-				$ret["bool"]["must_not"] = ["exists" => ["field" => $field]];
+				$ret["bool"]["must_not"] = ["exists" => ["field" => $fieldName]];
 				break;
 			}
 			break;
@@ -676,23 +676,23 @@ class ElasticsearchDB extends CurlDB
 			switch ($comparer)
 			{
 			case "<=":
-				$ret["range"][$field]["lte"] = $value;
+				$ret["range"][$fieldName]["lte"] = $value;
 				break;
 			case "<":
-				$ret["range"][$field]["lt"] = $value;
+				$ret["range"][$fieldName]["lt"] = $value;
 				break;
 			case ">=":
-				$ret["range"][$field]["gte"] = $value;
+				$ret["range"][$fieldName]["gte"] = $value;
 				break;
 			case ">":
-				$ret["range"][$field]["gt"] = $value;
+				$ret["range"][$fieldName]["gt"] = $value;
 				break;
 			case "like":
 				//$ret["match"][$field] = $value;
-				$ret["match_phrase"][$field] = $value;
+				$ret["match_phrase"][$fieldName] = $value;
 				break;
 			default:
-				$ret["term"][$field] = $value;
+				$ret["term"][$fieldName] = $value;
 				break;
 			}
 			break;
