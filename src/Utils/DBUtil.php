@@ -25,18 +25,39 @@ class DBUtil
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Returned records count.
+	 * Record count of the last DB.
 	 *
-	 * @var		Returned record count
+	 * @var	int		Record count
 	 */
 	public $resultCount = 0;
 
 	/**
-	 * Total records count.
+	 * Record counts.
 	 *
-	 * @var		Total record count
+	 * @var	array	Record counts
+	 */
+	public $resultCounts;
+
+	/**
+	 * Total record count of the last DB.
+	 *
+	 * @var	int	Total record count
 	 */
 	public $totalCount = 0;
+
+	/**
+	 * Total record counts.
+	 *
+	 * @var	array	Total record count
+	 */
+	public $totalCounts;
+
+	/**
+	 * Data retrieved from DB.
+	 *
+	 * @var	array	Total record count
+	 */
+	public $data;
 
 	// -------------------------------------------------------------------------
 	//	Constructor, Destructor
@@ -67,6 +88,12 @@ class DBUtil
 	 */
 	public function getItems(ServerRequestInterface $request): ?array
 	{
+
+		$this->resultCount = 0;
+		$this->totalCount = 0;
+		$this->resultCounts = array();
+		$this->totalCounts = array();
+		$this->data = array();
 
 		$id = $request->getAttribute("routeInfo")["args"]["id"];
 		$gets = $request->getQueryParams();
@@ -100,19 +127,22 @@ class DBUtil
 					$this->totalCount = count($data);
 				}
 
+				// Get total count
 				if ($limit)
 				{
-					// Get total count
 					$this->totalCount = $db->getTotalCount();
 				}
-
 				break;
 			default:
-				$data = $db->selectById($settings[$dbName]["tableName"], $fields, [ "field" => $settings[$dbName]["keyName"] ?? "", "value" => $id ]);
+				$data = $db->selectById($settings[$dbName]["tableName"], $fields, [ "fieldName" => $settings[$dbName]["keyName"] ?? "", "value" => $id ]);
 				$this->resultCount = count($data);
 				$this->totalCount = count($data);
 				break;
 			}
+
+			$this->resultCounts[] = $this->resultCount;
+			$this->totalCounts[] = $this->totalCount;
+			$this->data[] = $data;
 		}
 
 		return $data;
@@ -130,6 +160,11 @@ class DBUtil
 	 */
 	public function postItems(ServerRequestInterface $request): ?array
 	{
+
+		$this->resultCount = 0;
+		$this->totalCount = 0;
+		$this->resultCounts = array();
+		$this->totalCounts = array();
 
 		$id = $request->getAttribute("routeInfo")["args"]["id"];
 		$settings = $request->getAttribute("settings");
@@ -157,11 +192,12 @@ class DBUtil
 						break;
 					default:
 						$item = $this->buildFields($fields, $items[$i]);
-						$cnt += $db->insertWithId($settings[$dbName]["tableName"], $item, ["field" => $settings[$dbName]["keyName"] ?? "", "value" => $id]);
+						$cnt += $db->insertWithId($settings[$dbName]["tableName"], $item, ["fieldName" => $settings[$dbName]["keyName"] ?? "", "value" => $id]);
 						break;
 					}
 				}
 				$this->resultCount = $cnt;
+				$this->totalCount = $cnt;
 
 				// commitTrans($dbName);
 			}
@@ -170,6 +206,9 @@ class DBUtil
 				// rollbackTrans();
 				throw $e;
 			}
+
+			$this->resultCounts[] = $this->resultCount;
+			$this->totalCounts[] = $this->totalCount;
 		}
 
         return null;
@@ -187,6 +226,11 @@ class DBUtil
 	 */
 	public function putItems(ServerRequestInterface $request): ?array
 	{
+
+		$this->resultCount = 0;
+		$this->totalCount = 0;
+		$this->resultCounts = array();
+		$this->totalCounts = array();
 
 		$id = $request->getAttribute("routeInfo")["args"]["id"];
 		$gets = $request->getQueryParams();
@@ -213,10 +257,11 @@ class DBUtil
 					break;
 				default:
 					$item = $this->buildFields($fields, $items[0]);
-					$cnt = $db->updateById($settings[$dbName]["tableName"], $item, ["field" => $settings[$dbName]["keyName"] ?? "", "value" => $id]);
+					$cnt = $db->updateById($settings[$dbName]["tableName"], $item, ["fieldName" => $settings[$dbName]["keyName"] ?? "", "value" => $id]);
 					break;
 				}
 				$this->resultCount = $cnt;
+				$this->totalCount = $cnt;
 
 				// commitTrans();
 			}
@@ -225,6 +270,9 @@ class DBUtil
 				// rollbackTrans();
 				throw $e;
 			}
+
+			$this->resultCounts[] = $this->resultCount;
+			$this->totalCounts[] = $this->totalCount;
 		}
 
         return null;
@@ -242,6 +290,11 @@ class DBUtil
 	 */
 	public function deleteItems(ServerRequestInterface $request): ?array
 	{
+
+		$this->resultCount = 0;
+		$this->totalCount = 0;
+		$this->resultCounts = array();
+		$this->totalCounts = array();
 
 		$id = $request->getAttribute("routeInfo")["args"]["id"];
 		$gets = $request->getQueryParams();
@@ -264,10 +317,11 @@ class DBUtil
 						$cnt = $db->delete($settings[$dbName]["tableName"], $search);
 						break;
 					default:
-						$cnt = $db->deleteById($settings[$dbName]["tableName"], ["field" => $settings[$dbName]["keyName"] ?? "", "value" => $id]);
+						$cnt = $db->deleteById($settings[$dbName]["tableName"], ["fieldName" => $settings[$dbName]["keyName"] ?? "", "value" => $id]);
 						break;
 				}
 				$this->resultCount = $cnt;
+				$this->totalCount = $cnt;
 
 				// commitTrans();
 			}
@@ -276,6 +330,9 @@ class DBUtil
 				// rollbackTrans();
 				throw $e;
 			}
+
+			$this->resultCounts[] = $this->resultCount;
+			$this->totalCounts[] = $this->totalCount;
 		}
 
         return null;
@@ -341,15 +398,15 @@ class DBUtil
 			}
 			else
 			{
-				$parameter = $search[$i]["parameter"] ?? null;
-				if ($parameter)
+				$parameterName = $search[$i]["parameterName"] ?? null;
+				if ($parameterName)
 				{
-					$value  = $parameters[$parameter] ?? null;
+					$value  = $parameters[$parameterName] ?? null;
 					$compareType = $search[$i]["compareType"] ?? null;
 					switch ($compareType)
 					{
 					case "flag":
-						if (($parameters[$parameter] ?? null) === null || $value == 0 || $value == "off")
+						if (($parameters[$parameterName] ?? null) === null || $value == 0 || $value == "off")
 						{
 							$search[$i]["value"] = $search[$i]["defaultValue"] ?? null;
 						}
@@ -420,7 +477,7 @@ class DBUtil
 			}
 
 			// Get a value from URL parameter if exists
-			$parameterName = $item["parameter"] ?? $key;
+			$parameterName = $item["parameterName"] ?? $key;
 			if (array_key_exists($parameterName, $parameters))
 			{
 				$result[$key]["value"] = $parameters[$parameterName];
