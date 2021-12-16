@@ -11,6 +11,7 @@
 
 namespace Bitsmist\v1\Services;
 
+use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
 use Bitsmist\v1\Utils\Util;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -114,7 +115,7 @@ class MiddlewareService extends PluginService implements  RequestHandlerInterfac
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Handle an request.
+	 * Handle a request.
 	 *
 	 * @param	$request		Request.
 	 *
@@ -125,8 +126,14 @@ class MiddlewareService extends PluginService implements  RequestHandlerInterfac
 
 		$this->request = $request;
 
-		$middleware = current($this->plugins);
-		next($this->plugins);
+		// Get next enabled middleware
+		do {
+			$middleware = current($this->plugins);
+			next($this->plugins);
+		} while (
+			$middleware !== false &&
+			($middleware instanceof MiddlewareBase && $middleware->getOption("enabled") === false)
+		);
 
 		// Execute
 		if ($middleware instanceof MiddlewareInterface)
