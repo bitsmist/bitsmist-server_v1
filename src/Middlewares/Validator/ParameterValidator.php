@@ -34,26 +34,19 @@ class ParameterValidator extends MiddlewareBase
 		$options = $request->getAttribute("settings")["options"];
 
 		// Check query parameters
-		$allowedList = $options["query"]["parameters"] ?? null;
-		if ($allowedList)
-		{
-			$allowedList = $this->alignArray($allowedList);
-			$this->checkMissing($request, $request->getQueryParams(), $allowedList);
-			$this->checkValidity($request, $request->getQueryParams(), $allowedList);
-		}
+		$allowedList = $options["query"]["parameters"] ?? array();
+		$allowedList = $this->alignArray($allowedList);
+		$this->checkMissing($request, $request->getQueryParams(), $allowedList);
+		$this->checkValidity($request, $request->getQueryParams(), $allowedList);
 
 		// Check body parameters
-		$allowedList = $options["body"]["parameters"] ?? null;
-		if ($allowedList)
+		$allowedList = $options["body"]["parameters"] ?? array();
+		$allowedList = $this->alignArray($allowedList);
+		$items = $this->getParamsFromBody($request, $options);
+		foreach ((array)$items as $item)
 		{
-			$allowedList = $this->alignArray($allowedList);
-			$items = $this->getParamsFromBody($request, $options);
-
-			foreach ((array)$items as $item)
-			{
-				$this->checkMissing($request, $item, $allowedList);
-				$this->checkValidity($request, $item, $allowedList);
-			}
+			$this->checkMissing($request, $item, $allowedList);
+			$this->checkValidity($request, $item, $allowedList);
 		}
 
 		return $handler->handle($request);
@@ -170,10 +163,12 @@ class ParameterValidator extends MiddlewareBase
 	private function checkValidity(ServerRequestInterface $request, ?array $target, array $allowedList)
 	{
 
+		$ignoreExtraParams = $this->getOption("ignoreExtraParams", false);
+
 		foreach ((array)$target as $key => $value)
 		{
-			// Check whether a parameter is in the allowed list
-			if (!array_key_exists($key, $allowedList))
+			// Check whether a parameter is in the list
+			if (!$ignoreExtraParams && !array_key_exists($key, $allowedList))
 			{
 				$request->getAttribute("services")["logger"]->alert("Invaild parameter: parameter = {key}, value = {value}", [
 					"method" => __METHOD__,
