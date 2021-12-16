@@ -31,7 +31,6 @@ class StatuscodeHandler extends MiddlewareBase
 	{
 
 		$response = $handler->handle($request);
-
 		$resultCode = $request->getAttribute("resultCode");
 
 		switch (strtolower($request->getMethod()))
@@ -43,7 +42,6 @@ class StatuscodeHandler extends MiddlewareBase
 				}
 				break;
 		}
-
 
 		$response = $response->withStatus((int)$resultCode);
 

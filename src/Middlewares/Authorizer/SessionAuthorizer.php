@@ -44,7 +44,7 @@ class SessionAuthorizer extends MiddlewareBase
 
 		if (!$isAuthorized)
 		{
-			$logger->alert("Not authorized", [ "method"=>__METHOD__]);
+			$logger->alert("Not authorized", ["method"=>__METHOD__]);
 
 			throw new HttpException(HttpException::ERRNO_PARAMETER_NOTAUTHORIZED, HttpException::ERRMSG_PARAMETER_NOTAUTHORIZED);
 		}

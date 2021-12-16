@@ -30,18 +30,20 @@ class PaginationHandler extends MiddlewareBase
 	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
-		$method = strtolower($request->getMethod());
-		$gets = $request->getQueryParams();
 		$limit = 0;
 		$offset = 0;
 		$pagination = null;
+		$settings = $request->getAttribute("settings");
+		$limitParameterName = $settings["specialParameters"]["limit"] ?? "_limit";
+		$offsetParameterName = $settings["specialParameters"]["offset"] ?? "_offset";
+		$gets = $request->getQueryParams();
 
-		if ($method == "get")
+		if (strtolower($request->getMethod()) == "get")
 		{
-			$limit = $gets["_limit"] ?? null;
+			$limit = $gets[$limitParameterName] ?? null;
 			if($limit)
 			{
-				$offset = $gets["_offset"] ?? 0;
+				$offset = $gets[$offsetParameterName] ?? 0;
 				list($page, $pageMax) = $this->getPagination($request->getAttribute("totalCount"), $limit, $offset);
 				$pagination = array("limit" => $limit, "offset" => $offset, "pageCurrent" => $page, "pageLast" => $pageMax);
 			}

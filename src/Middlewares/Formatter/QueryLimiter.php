@@ -31,26 +31,34 @@ class QueryLimiter extends MiddlewareBase
 	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
-		$options = $this->options ?? array();
 		$gets = $request->getQueryParams();
 
-		// Limit
-		if (array_key_exists("maxLimit", $options))
+		foreach ((array)($this->options["parameters"] ?? null) as $parameterName => $rules)
 		{
-			$limit = $gets["_limit"] ?? 0;
-			if ($limit > $options["maxLimit"])
+			// Skip to next rule if the parameter doesn't exists in URL parameters
+			if (!array_key_exists($parameterName, $gets))
 			{
-				$gets["_limit"] = $options["maxLimit"];
+				continue;
 			}
-		}
 
-		// Offset
-		if (array_key_exists("maxOffset", $options))
-		{
-			$limit = $gets["_offset"] ?? 0;
-			if ($limit > $options["maxOffset"])
+			// Check each rules for this parameter
+			foreach ((array)$rules as $ruleName  => $ruleValue)
 			{
-				$gets["_offset"] = $options["maxOffset"];
+				switch($ruleName)
+				{
+				case "min":
+					if ($get[$parameterName] < $ruleValue)
+					{
+						$gets[$parameterName] = $ruleValue;
+					}
+					break;
+				case "max":
+					if ($gets[$parameterName] > $ruleValue)
+					{
+						$gets[$parameterName] = $ruleValue;
+					}
+					break;
+				}
 			}
 		}
 

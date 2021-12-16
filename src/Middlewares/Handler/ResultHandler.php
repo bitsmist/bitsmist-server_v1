@@ -44,7 +44,6 @@ class ResultHandler extends MiddlewareBase
 
 		return $handler->handle($request);
 
-
 	}
 
 	// -----------------------------------------------------------------------------

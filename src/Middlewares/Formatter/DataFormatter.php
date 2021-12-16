@@ -32,7 +32,6 @@ class DataFormatter extends MiddlewareBase
 	{
 
 		$fields = $this->options["fields"] ?? array();
-		$params = $request->getAttribute("settings")["options"]["parameters"] ?? array();
 		$data = $request->getAttribute("data");
 
 		if ($data)

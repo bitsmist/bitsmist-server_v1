@@ -152,7 +152,7 @@ class ParameterValidator extends MiddlewareBase
 	// -------------------------------------------------------------------------
 
 	/**
-  	 * Check parameters against white list.
+  	 * Check parameters against the list.
 	 *
 	 * @param	$appInfo		Application information.
 	 * @param	$method			Method.

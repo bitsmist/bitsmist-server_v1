@@ -31,23 +31,29 @@ class QueryFormatter extends MiddlewareBase
 	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
-		$params = $request->getAttribute("settings")["options"]["parameters"] ?? array();
+		$params = $request->getAttribute("settings")["options"]["query"]["parameters"] ?? array();
 		$gets = $request->getQueryParams();
 
-		foreach ($params as $param => $spec)
+		foreach ($params as $parameterName => $options)
 		{
-			$type = $spec["options"]["fieldType"] ?? null;
-			$format = $spec["options"]["format"] ?? null;
-			$value = $gets[$param] ?? null;
+			if (!is_array($options))
+			{
+				continue;
+			}
+
+			$type = $options["type"] ?? null;
+			$format = $options["format"] ?? null;
+			$value = $gets[$parameterName] ?? null;
 			if ($type && $format && $value !== null)
 			{
-				$gets[$param] = FormatterUtil::format($value, strtolower($type), $format);
+				$gets[$parameterName] = FormatterUtil::format($value, strtolower($type), $format);
 			}
 		}
 
 		$request = $request->withQueryParams($gets);
 
 		return $handler->handle($request);
+
 	 }
 
 }
