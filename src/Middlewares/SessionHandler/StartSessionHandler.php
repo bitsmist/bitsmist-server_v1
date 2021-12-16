@@ -34,10 +34,10 @@ class StartSessionHandler extends MiddlewareBase
 		if (session_status() != PHP_SESSION_ACTIVE)
 		{
 			// Set session name
-			$sessionName = $request->getAttribute("settings")["options"]["session"]["name"] ?? null;
-			if ($sessionName)
+			$cookieName = $request->getAttribute("settings")["options"]["session"]["cookieName"] ?? "";
+			if ($cookieName)
 			{
-				session_name($sessionName);
+				session_name($cookieName);
 			}
 
 			// Set cookie options
