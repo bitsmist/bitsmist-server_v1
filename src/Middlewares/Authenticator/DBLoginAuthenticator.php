@@ -40,13 +40,9 @@ class DBLoginAuthenticator extends MiddlewareBase
 		if ($db->resultCount == 1)
 		{
 			// Found
-			$rootName = $request->getAttribute("settings")["options"]["session"]["name"] ?? "";
-			$root = &$_SESSION;
-			if ($rootName)
-			{
-				$_SESSION[$rootName] = array();
-				$root = &$_SESSION[$rootName];
-			}
+			$rootName = $request->getAttribute("settings")["options"]["session"]["name"] ?? "authInfo";
+			$_SESSION[$rootName] = array();
+			$root = &$_SESSION[$rootName];
 
 			// Store info from DB to session variables.
 			foreach ($data[0] as $key => $value)

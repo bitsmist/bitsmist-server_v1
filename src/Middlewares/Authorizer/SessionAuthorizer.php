@@ -33,13 +33,15 @@ class SessionAuthorizer extends MiddlewareBase
 
 		$logger = $request->getAttribute("services")["logger"];
 		$isAuthorized = false;
+		$authInfo = null;
 
 		// Check a session varaiable existence to determine whether user is logged in.
 		// This session variable is set in LoginAuthenticator.
-		$rootName = $request->getAttribute("settings")["options"]["session"]["name"] ?? "";
+		$rootName = $request->getAttribute("settings")["options"]["session"]["name"] ?? "authInfo";
 		if (isset($_SESSION[$rootName]))
 		{
 			$isAuthorized = true;
+			$authInfo = $_SESSION[$rootName];
 		}
 
 		if (!$isAuthorized)
@@ -48,6 +50,8 @@ class SessionAuthorizer extends MiddlewareBase
 
 			throw new HttpException(HttpException::ERRNO_PARAMETER_NOTAUTHORIZED, HttpException::ERRMSG_PARAMETER_NOTAUTHORIZED);
 		}
+
+		$request->withAttribute("authInfo", $authInfo);
 
 		return $handler->handle($request);
 
