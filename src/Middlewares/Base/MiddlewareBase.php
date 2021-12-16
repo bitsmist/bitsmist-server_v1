@@ -41,7 +41,7 @@ abstract class MiddlewareBase implements MiddlewareInterface
 	/**
 	 * Constructor.
 	 *
-	 * @param	options			Middleware options.
+	 * @param	?array		$options			Middleware options.
 	 */
 	public function __construct(?array $options)
 	{
@@ -54,6 +54,31 @@ abstract class MiddlewareBase implements MiddlewareInterface
 	//	Public
 	// -------------------------------------------------------------------------
 
+	/**
+	 * Get a specified middleware option.
+	 *
+	 * @param	string		$optionsName		Option name to get.
+	 * @param	object		$default			A value to return when no option is set.
+	 *
+	 * @return	Object
+	 */
+	public function getOption(string $optionName, $default = null)
+	{
+
+		return $this->options[$optionName] ?? $default;
+
+	}
+
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Handle a request by calling process method.
+	 *
+	 * @param	RequestHandlerInterface	$request	Request.
+	 * @param	RequestHandlerInterface	$handler	Handler.
+	 *
+	 * @return	ResponseInterface
+	 */
 	public function __invoke(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
