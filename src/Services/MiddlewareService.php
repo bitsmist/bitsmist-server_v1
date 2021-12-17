@@ -85,7 +85,7 @@ class MiddlewareService extends PluginService implements  RequestHandlerInterfac
 			$options = array_merge($this->container["settings"][$middleware] ?? array(), $options ?? array());
 
 			// Create an instance
-			$this->plugins[] = Util::resolveInstance($options, $options);
+			$this->plugins[] = Util::resolveInstance($options, $middleware, $options);
 		}
 		else
 		{

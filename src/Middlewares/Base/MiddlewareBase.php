@@ -28,6 +28,13 @@ abstract class MiddlewareBase implements MiddlewareInterface
 	// -------------------------------------------------------------------------
 
 	/**
+	 * Name.
+	 *
+	 * @var		string
+	 */
+	protected $name = "";
+
+	/**
 	 * Options.
 	 *
 	 * @var		array
@@ -41,11 +48,13 @@ abstract class MiddlewareBase implements MiddlewareInterface
 	/**
 	 * Constructor.
 	 *
+	 * @param	string		$name				Middleware name.
 	 * @param	?array		$options			Middleware options.
 	 */
-	public function __construct(?array $options)
+	public function __construct($name, ?array $options)
 	{
 
+		$this->name = $name;
 		$this->options = $options;
 
 	}
