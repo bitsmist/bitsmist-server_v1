@@ -65,10 +65,10 @@ class BaseLogger extends PluginBase
 	//	Constructor, Destructor
 	// -------------------------------------------------------------------------
 
-	public function __construct($container, ?array $options)
+	public function __construct($name, ?array $options, $container)
 	{
 
-		parent::__construct($container, $options);
+		parent::__construct($name, $options, $container);
 
 		$this->level = $options["level"] ?? "info";
 		$this->fileName = $options["baseDir"] . basename($options["fileName"]);

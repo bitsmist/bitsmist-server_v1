@@ -25,6 +25,13 @@ class PluginService
 	// -------------------------------------------------------------------------
 
 	/**
+	 * Name.
+	 *
+	 * @var		string
+	 */
+	protected $name = "";
+
+	/**
 	 * Container.
 	 *
 	 * @var		Container
@@ -52,10 +59,11 @@ class PluginService
 	/**
 	 * Constructor.
 	 *
-	 * @param	$container		Container.
+	 * @param	$name			Plugin name.
 	 * @param	$options		Options.
+	 * @param	$container		Container.
 	 */
-	public function __construct($container, array $options = null)
+	public function __construct($name, array $options = null, $container)
 	{
 
 		$this->container = $container;
@@ -115,7 +123,7 @@ class PluginService
 		$options = array_merge($this->container["settings"][$title] ?? array(), $options ?? array());
 
 		// Create an instance
-		$this->plugins[$title] = Util::resolveInstance($options, $this->container, $options);
+		$this->plugins[$title] = Util::resolveInstance($options, $title, $options, $this->container);
 
 		return $this->plugins[$title];
 

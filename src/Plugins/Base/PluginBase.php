@@ -23,6 +23,13 @@ class PluginBase
 	// -------------------------------------------------------------------------
 
 	/**
+	 * Name.
+	 *
+	 * @var		string
+	 */
+	protected $name = "";
+
+	/**
 	 * Container.
 	 *
 	 * @var		Container
@@ -50,14 +57,16 @@ class PluginBase
 	/**
 	 * Constructor.
 	 *
-	 * @param	$container		Container.
+	 * @param	$name			Plugin name.
 	 * @param	$options		Plugin options.
+	 * @param	$container		Container.
 	 */
-	public function __construct($container, ?array $options)
+	public function __construct($name, ?array $options, $container)
 	{
 
-		$this->container = $container;
+		$this->name = $name;
 		$this->options = $options;
+		$this->container = $container;
 
 	}
 

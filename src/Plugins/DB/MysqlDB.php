@@ -22,10 +22,10 @@ class MysqlDB extends PdoDB
     //  Constructor, Destructor
     // -------------------------------------------------------------------------
 
-	public function __construct($container, ?array $options)
+	public function __construct($name, array $options = null, $container)
     {
 
-		parent::__construct($container, $options);
+		parent::__construct($name, $options, $container);
 
         $this->props["dbType"] = "MYSQL";
 

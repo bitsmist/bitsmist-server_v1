@@ -126,7 +126,7 @@ class ServiceManager implements \ArrayAccess
 				$options = array_merge($options1, $options2);
 
 				// Get instance
-				return Util::resolveInstance($options, $this->container, $options);
+				return Util::resolveInstance($options, $serviceName, $options, $this->container);
 			};
 		}
 
