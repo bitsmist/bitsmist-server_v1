@@ -95,7 +95,7 @@ class DBUtil
 		$this->totalCounts = array();
 		$this->data = array();
 
-		$id = $request->getAttribute("routeInfo")["args"]["id"];
+		$id = $request->getAttribute("routeInfo")["args"]["id"] ?? "";
 		$gets = $request->getQueryParams();
 		$settings = $request->getAttribute("settings");
 		$fields = ($this->options["fields"] ?? null ? $this->buildFields($this->options["fields"], $gets) : null);
@@ -117,6 +117,7 @@ class DBUtil
 		{
 			switch ($id)
 			{
+			case "":
 			case $listIdName:
 				$search = $this->buildSearchKeys($search, $gets);
 
@@ -166,7 +167,7 @@ class DBUtil
 		$this->resultCounts = array();
 		$this->totalCounts = array();
 
-		$id = $request->getAttribute("routeInfo")["args"]["id"];
+		$id = $request->getAttribute("routeInfo")["args"]["id"] ?? "";
 		$settings = $request->getAttribute("settings");
 		$fields = $this->options["fields"] ?? null;
 		$newIdName = $this->options["specialParameters"]["new"] ?? "new";
@@ -185,8 +186,8 @@ class DBUtil
 				{
 					switch ($id)
 					{
+					case "":
 					case $newIdName:
-					case null:
 						$item = $this->buildFields($fields, $items[$i]);
 						$cnt += $db->insert($settings[$dbName]["tableName"], $item);
 						break;
@@ -232,7 +233,7 @@ class DBUtil
 		$this->resultCounts = array();
 		$this->totalCounts = array();
 
-		$id = $request->getAttribute("routeInfo")["args"]["id"];
+		$id = $request->getAttribute("routeInfo")["args"]["id"] ?? "";
 		$gets = $request->getQueryParams();
 		$settings = $request->getAttribute("settings");
 		$fields = $this->options["fields"] ?? null;
@@ -249,6 +250,7 @@ class DBUtil
 			{
 				switch ($id)
 				{
+				case "":
 				case $listIdName:
 					$item = $this->buildFields($fields, $items[0]);
 					$search = $searches[($gets["_search"] ?? "default")] ?? null;
@@ -296,7 +298,7 @@ class DBUtil
 		$this->resultCounts = array();
 		$this->totalCounts = array();
 
-		$id = $request->getAttribute("routeInfo")["args"]["id"];
+		$id = $request->getAttribute("routeInfo")["args"]["id"] ?? "";
 		$gets = $request->getQueryParams();
 		$settings = $request->getAttribute("settings");
 		$searches = $this->options["searches"] ?? null;
@@ -311,6 +313,7 @@ class DBUtil
 			{
 				switch ($id)
 				{
+					case "":
 					case $listIdName:
 						$search = $searches[($gets["_search"] ?? "default")] ?? null;
 						$search = $this->buildSearchKeys($search, $gets);
