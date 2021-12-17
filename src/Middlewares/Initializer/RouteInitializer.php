@@ -66,7 +66,8 @@ class RouteInitializer extends MiddlewareBase
 		$dispatcher = \FastRoute\simpleDispatcher(function(\FastRoute\RouteCollector $r) use ($routes) {
 			foreach ($routes as $routeName => $route)
 			{
-				$r->addRoute(['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], $route["route"], $routeName);
+				$methods = explode(",", $route["method"] ?? "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+				$r->addRoute($methods, $route["route"], $routeName);
 			}
 		});
 
