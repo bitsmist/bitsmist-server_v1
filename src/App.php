@@ -29,6 +29,13 @@ class App
 	// -------------------------------------------------------------------------
 
 	/**
+	 * Version number.
+	 *
+	 * @var		string
+	 */
+	protected $version = "1";
+
+	/**
 	 * Container.
 	 *
 	 * @var		Container
@@ -68,6 +75,20 @@ class App
 	// -------------------------------------------------------------------------
 
 	/**
+	 * Get application version number.
+	 *
+	 * @return	string
+	 */
+	public function getVersion()
+	{
+
+		return $this->version;
+
+	}
+
+	// -------------------------------------------------------------------------
+
+	/**
 	 * Start the application.
 	 */
 	public function run()
@@ -78,6 +99,7 @@ class App
 
 		// Dispatch initializer middleware chain
 		$request = $this->container["request"];
+		$request = $request->withAttribute("app", $this);
 		$request = $request->withAttribute("container", $this->container);
 		$this->container["services"]["setupController"]->dispatch($request);
 
@@ -85,6 +107,7 @@ class App
 		{
 			// Dispatch middleware chain
 			$request = $this->container["services"]["setupController"]->getRequest();
+			$request = $request->withAttribute("app", null); // Remove access to app
 			$request = $request->withAttribute("container", null); // Remove access to container
 			$request = $request->withAttribute("resultCode", HttpException::ERRNO_NONE);
 			$request = $request->withAttribute("resultMessage", HttpException::ERRMSG_NONE);
