@@ -24,6 +24,17 @@ class SettingsInitializer extends MiddlewareBase
 {
 
 	// -------------------------------------------------------------------------
+	//	Constants, Variables
+	// -------------------------------------------------------------------------
+
+	/**
+	 * List of setting files that are alread imported.
+	 *
+	 * @var		array
+	 */
+	protected $doneFiles = array();
+
+	// -------------------------------------------------------------------------
 	//	Public
 	// -------------------------------------------------------------------------
 
@@ -34,11 +45,13 @@ class SettingsInitializer extends MiddlewareBase
 		$settings = $container["settings"];
 		$args = $request->getAttribute("routeInfo")["args"];
 
+		// System info
 		$sysInfo = array();
-		$sysInfo["version"] = $settings["version"];
+		$sysInfo["version"] = $request->getAttribute("app")->getVersion();
 		$sysInfo["rootDir"] = $settings["options"]["rootDir"];
 		$sysInfo["sitesDir"] = $settings["options"]["sitesDir"];
 
+		// App Info
 		$appInfo = array();
 		$appInfo["domain"] = $args["appDomain"] ?? $_SERVER["HTTP_HOST"];
 		$appInfo["name"] = $args["appName"] ?? $appInfo["domain"];
@@ -49,108 +62,82 @@ class SettingsInitializer extends MiddlewareBase
 		$request = $request->withAttribute("appInfo", $appInfo);
 		$request = $request->withAttribute("sysInfo", $sysInfo);
 
-		$container["settings"] = $this->loadSetting($request);
+		// Load extra setting files
+		$files = $this->replaceVars($request, $this->getOption("settings"));
+		$settings = $this->loadSettings($files, $settings);
+
+		// Reload my settings and do it again
+		// since settings might be added in the extra setting files
+		$this->options = $settings[$this->name];
+		$files = $this->replaceVars($request, $this->getOption("settings"));
+		$settings = $this->loadSettings($files, $settings);
+
+		$container["settings"] = $settings;
 
 		return $handler->handle($request);
 
 	}
 
-	// -----------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
 
 	/**
-  	 * Load the global and local settings and merge them.
+  	 * Replace variables in setting file names.
+	 *
+	 * @param	$request		Request.
+	 * @param	$files			Setting file names.
+	 *
+	 * @return	Replaced file names.
+     */
+	protected function replaceVars($request, $files)
+	{
+
+		$sysInfo = $request->getAttribute("sysInfo");
+		$appInfo = $request->getAttribute("appInfo");
+		$args = $request->getAttribute("routeInfo")["args"];
+		$sysRoot = $sysInfo["rootDir"];
+		$appRoot = $appInfo["rootDir"];
+
+		$from = ["{sysRoot}", "{appRoot}", "{sysVer}", "{appVer}", "{method}", "{resource}"];
+		$to = [$sysRoot, $appRoot, $sysInfo["version"], $appInfo["version"], $request->getMethod(), $args["resource"] ?? ""];
+
+		return str_replace($from, $to, $files);
+
+	}
+
+	// -------------------------------------------------------------------------
+
+	/**
+  	 * Load setting files and merge them.
 	 *
 	 * @param	$request		Request.
 	 *
 	 * @return	Settings.
      */
-	protected function loadSetting($request): ?array
+	protected function loadSettings($files, $curSettings)
 	{
 
-		$sysInfo = $request->getAttribute("sysInfo");
-		$appInfo = $request->getAttribute("appInfo");
-		$routeInfo = $request->getAttribute("routeInfo");
+		foreach ((array)$files as $fileName)
+		{
+			if (!array_key_exists($fileName, $this->doneFiles))
+			{
+				$spec = $this->loadSettingFile($fileName, $curSettings);
+				$curSettings = array_replace_recursive($curSettings, $spec);
 
-		$spec = $this->loadSettingFile($sysInfo["rootDir"] . "conf/v" . $sysInfo["version"] . "/settings.php");
-		$curSpec = $spec;
-		$spec = $this->loadSettingFile($appInfo["rootDir"] . "conf/settings.php");
-		$curSpec = array_replace_recursive($curSpec, $spec);
+				$this->doneFiles[$fileName] = true;
+			}
+		}
 
-		$sysBaseDir = $sysInfo["rootDir"] . "specs/v" . $sysInfo["version"] . "/";
-		$appBaseDir = $appInfo["rootDir"] . "specs/";
-		$method = strtolower($_SERVER["REQUEST_METHOD"]);
-		$resource = strtolower($routeInfo["args"]["resource"]);
-
-		$spec = $this->loadSettingFile($sysBaseDir . "common.php");
-		//$curSpec = $spec;
-		$curSpec = array_replace_recursive($curSpec, $spec);
-		$spec = $this->loadSettingFile($appBaseDir . "common.php", $curSpec);
-		$curSpec = array_replace_recursive($curSpec, $spec);
-		$spec = $this->loadSettingFile($sysBaseDir . $method . ".php", $curSpec);
-		$curSpec = array_replace_recursive($curSpec, $spec);
-		$spec = $this->loadSettingFile($appBaseDir . $method . ".php", $curSpec);
-		$curSpec = array_replace_recursive($curSpec, $spec);
-		$spec = $this->loadSettingFile($sysBaseDir . $resource . ".php", $curSpec);
-		$curSpec = array_replace_recursive($curSpec, $spec);
-		$spec = $this->loadSettingFile($appBaseDir . $resource . ".php", $curSpec);
-		$curSpec = array_replace_recursive($curSpec, $spec);
-		$spec = $this->loadSettingFile($sysBaseDir . $method . "_" . $resource . ".php", $curSpec);
-		$curSpec = array_replace_recursive($curSpec, $spec);
-		$spec = $this->loadSettingFile($appBaseDir . $method . "_" . $resource . ".php", $curSpec);
-		$curSpec = array_replace_recursive($curSpec, $spec);
-
-		return $curSpec;
+		return $curSettings;
 
 	}
 
 	// -----------------------------------------------------------------------------
 
 	/**
-  	 * Load specs and merge them.
+  	 * Load a setting file.
 	 *
-	 * @param	$request		Request.
-	 *
-	 * @return	Specs.
-     */
-	protected function loadSpec($request): ?array
-	{
-
-		$sysInfo = $request->getAttribute("sysInfo");
-		$appInfo = $request->getAttribute("appInfo");
-		$routeInfo = $request->getAttribute("routeInfo");
-
-		$sysBaseDir = $sysInfo["rootDir"] . "specs/v" . $sysInfo["version"] . "/";
-		$appBaseDir = $appInfo["rootDir"] . "specs/";
-		$method = strtolower($_SERVER["REQUEST_METHOD"]);
-		$resource = strtolower($routeInfo["args"]["resource"]);
-
-		$spec = $this->loadSettingFile($sysBaseDir . "common.php");
-		$curSpec = $spec;
-		$spec = $this->loadSettingFile($appBaseDir . "common.php", $curSpec);
-		$curSpec = array_replace_recursive($curSpec, $spec);
-		$spec = $this->loadSettingFile($sysBaseDir . $method . ".php", $curSpec);
-		$curSpec = array_replace_recursive($curSpec, $spec);
-		$spec = $this->loadSettingFile($appBaseDir . $method . ".php", $curSpec);
-		$curSpec = array_replace_recursive($curSpec, $spec);
-		$spec = $this->loadSettingFile($sysBaseDir . $resource . ".php", $curSpec);
-		$curSpec = array_replace_recursive($curSpec, $spec);
-		$spec = $this->loadSettingFile($appBaseDir . $resource . ".php", $curSpec);
-		$curSpec = array_replace_recursive($curSpec, $spec);
-		$spec = $this->loadSettingFile($sysBaseDir . $method . "_" . $resource . ".php", $curSpec);
-		$curSpec = array_replace_recursive($curSpec, $spec);
-		$spec = $this->loadSettingFile($appBaseDir . $method . "_" . $resource . ".php", $curSpec);
-		$curSpec = array_replace_recursive($curSpec, $spec);
-
-		return $curSpec;
-
-	}
-
-	// -----------------------------------------------------------------------------
-
-	/**
-  	 * Load the spec file and merge to current spec.
-	 *
-	 * @param	$path			Path to a setting file.
+	 * @param	string		$path			Path to a setting file.
+	 * @param	array		$current		Current merged settings.
 	 *
 	 * @return	Settings array.
      */
@@ -170,6 +157,5 @@ class SettingsInitializer extends MiddlewareBase
 		return $settings;
 
 	}
-
 
 }
