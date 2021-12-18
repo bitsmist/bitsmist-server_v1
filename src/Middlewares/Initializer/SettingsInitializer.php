@@ -48,8 +48,8 @@ class SettingsInitializer extends MiddlewareBase
 		// System info
 		$sysInfo = array();
 		$sysInfo["version"] = $request->getAttribute("app")->getVersion();
-		$sysInfo["rootDir"] = $settings["options"]["rootDir"];
-		$sysInfo["sitesDir"] = $settings["options"]["sitesDir"];
+		$sysInfo["rootDir"] = rtrim($settings["options"]["rootDir"], "/");
+		$sysInfo["sitesDir"] = rtrim($settings["options"]["sitesDir"], "/");
 
 		// App Info
 		$appInfo = array();
@@ -57,7 +57,7 @@ class SettingsInitializer extends MiddlewareBase
 		$appInfo["name"] = $args["appName"] ?? $appInfo["domain"];
 		$appInfo["version"] = $args["appVersion"] ?? 1;
 		$appInfo["lang"] = $args["appLang"] ?? "ja";
-		$appInfo["rootDir"] = $sysInfo["sitesDir"] . $appInfo["name"] . "/";
+		$appInfo["rootDir"] = $sysInfo["sitesDir"] . "/" . $appInfo["name"];
 
 		$request = $request->withAttribute("appInfo", $appInfo);
 		$request = $request->withAttribute("sysInfo", $sysInfo);

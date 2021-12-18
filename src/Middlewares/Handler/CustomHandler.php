@@ -63,7 +63,7 @@ class CustomHandler extends MiddlewareBase
 
 		$ret = null;
 
-		$fileName = $rootDir . "handlers/" . $method . "_" . $resource . ($eventName ? "_" : "") . $eventName . ".php";
+		$fileName = rtrim($rootDir, "/") . "/handlers/" . $method . "_" . $resource . ($eventName ? "_" : "") . $eventName . ".php";
 		if (file_exists($fileName))
 		{
 			$ret  = require $fileName;
