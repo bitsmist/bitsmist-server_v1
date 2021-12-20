@@ -97,7 +97,7 @@ class App
 		$response = null;
 		$exception = null;
 
-		// Dispatch initializer middleware chain
+		// Dispatch initializing middleware chain
 		$request = $this->container["request"];
 		$request = $request->withAttribute("app", $this);
 		$request = $request->withAttribute("container", $this->container);
@@ -105,7 +105,7 @@ class App
 
 		try
 		{
-			// Dispatch middleware chain
+			// Dispatch main middleware chain
 			$request = $this->container["services"]["setupController"]->getRequest();
 			$request = $request->withAttribute("app", null); // Remove access to app
 			$request = $request->withAttribute("container", null); // Remove access to container
