@@ -79,6 +79,8 @@ class SettingsInitializer extends MiddlewareBase
 	}
 
 	// -------------------------------------------------------------------------
+	//	Protected
+	// -------------------------------------------------------------------------
 
 	/**
   	 * Replace variables in setting file names.
@@ -97,8 +99,9 @@ class SettingsInitializer extends MiddlewareBase
 		$sysRoot = $sysInfo["rootDir"];
 		$appRoot = $appInfo["rootDir"];
 
-		$from = ["{sysRoot}", "{appRoot}", "{sysVer}", "{appVer}", "{method}", "{resource}"];
-		$to = [$sysRoot, $appRoot, $sysInfo["version"], $appInfo["version"], $request->getMethod(), $args["resource"] ?? ""];
+		$argKeys = array_map(function($x){return "{" . $x . "}";}, array_keys($args));
+		$from = array_merge(["{sysRoot}", "{appRoot}", "{sysVer}", "{appVer}", "{method}"], $argKeys);
+		$to = array_merge([$sysRoot, $appRoot, $sysInfo["version"], $appInfo["version"], $request->getMethod()], array_values($args));
 
 		return str_replace($from, $to, $files);
 
