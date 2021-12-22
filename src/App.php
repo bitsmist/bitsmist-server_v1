@@ -115,18 +115,32 @@ class App
 			$request = $request->withAttribute("settings", $this->container["settings"]);
 			$response = $this->container["services"]["mainController"]->dispatch($request);
 		}
-		catch (\Throwable $e)
+		catch (\Throwable $e1)
 		{
-			$exception = $e;
+			$exception = $e1;
 
 			// Dispatch error middleware chain
-			$request = $this->container["services"]["mainController"]->getRequest();
-			$request = $request->withAttribute("exception", $e);
-			$response = $this->container["services"]["errorController"]->dispatch($request);
+			try
+			{
+				$request = $this->container["services"]["mainController"]->getRequest();
+				$request = $request->withAttribute("exception", $e);
+				$response = $this->container["services"]["errorController"]->dispatch($request);
+			}
+			catch (\Throwable $e2)
+			{
+				throw $e1;
+			}
 		}
 
 		// Send response
-		$this->container["services"]["emitter"]->emit($response);
+		try
+		{
+			$this->container["services"]["emitter"]->emit($response);
+		}
+		catch (\Throwable $e3)
+		{
+			$exception = ($exception ?? $e3);
+		}
 
 		// Re-throw an exception during middleware handling to show error messages
 		if ($exception)
