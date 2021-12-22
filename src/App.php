@@ -123,7 +123,7 @@ class App
 			try
 			{
 				$request = $this->container["services"]["mainController"]->getRequest();
-				$request = $request->withAttribute("exception", $e);
+				$request = $request->withAttribute("exception", $e1);
 				$response = $this->container["services"]["errorController"]->dispatch($request);
 			}
 			catch (\Throwable $e2)
