@@ -12,6 +12,7 @@
 namespace Bitsmist\v1\Middlewares\Initializer;
 
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
+use Bitsmist\v1\Utils\Util;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -48,28 +49,37 @@ class SettingsInitializer extends MiddlewareBase
 		// System info
 		$sysInfo = array();
 		$sysInfo["version"] = $request->getAttribute("app")->getVersion();
-		$sysInfo["rootDir"] = rtrim($settings["options"]["rootDir"], "/");
-		$sysInfo["sitesDir"] = rtrim($settings["options"]["sitesDir"], "/");
+		$sysInfo["rootDir"] = rtrim($settings["options"]["sysRoot"], "/");
 
 		// App Info
 		$appInfo = array();
 		$appInfo["domain"] = $args["appDomain"] ?? $_SERVER["HTTP_HOST"];
 		$appInfo["name"] = $args["appName"] ?? $appInfo["domain"];
-		$appInfo["version"] = $args["appVersion"] ?? 1;
-		$appInfo["lang"] = $args["appLang"] ?? "ja";
-		$appInfo["rootDir"] = $sysInfo["sitesDir"] . "/" . $appInfo["name"];
+		$appInfo["version"] = $args["appVer"] ?? 1;
+		$appInfo["lang"] = $args["appLang"] ?? "en";
+
+		// App Info (appRoot)
+		Util::$replaceDic = array_merge([
+			"sysRoot" => $sysInfo["rootDir"],
+			"sysVer" => $sysInfo["version"],
+			"appVer" => $appInfo["version"],
+			"appName" => $appInfo["name"],
+			"method" => $request->getMethod()
+		], $args);
+		$appInfo["rootDir"] = Util::replaceVars($settings["options"]["appRoot"] ?? "{sysRoot}/sites/v{appVer}/{appName}");
+		Util::$replaceDic["appRoot"] = $appInfo["rootDir"];
 
 		$request = $request->withAttribute("appInfo", $appInfo);
 		$request = $request->withAttribute("sysInfo", $sysInfo);
 
 		// Load extra setting files
-		$files = $this->replaceVars($request, $this->getOption("uses"));
+		$files = Util::replaceVars($this->getOption("uses"));
 		$settings = $this->loadSettings($files, $settings);
 
 		// Reload my settings and do it again
 		// since settings might be added in the extra setting files
 		$this->options = $settings[$this->name];
-		$files = $this->replaceVars($request, $this->getOption("uses"));
+		$files = Util::replaceVars($this->getOption("uses"));
 		$settings = $this->loadSettings($files, $settings);
 
 		$container["settings"] = $settings;
@@ -80,33 +90,6 @@ class SettingsInitializer extends MiddlewareBase
 
 	// -------------------------------------------------------------------------
 	//	Protected
-	// -------------------------------------------------------------------------
-
-	/**
-  	 * Replace variables in setting file names.
-	 *
-	 * @param	$request		Request.
-	 * @param	$files			Setting file names.
-	 *
-	 * @return	Replaced file names.
-     */
-	protected function replaceVars($request, $files)
-	{
-
-		$sysInfo = $request->getAttribute("sysInfo");
-		$appInfo = $request->getAttribute("appInfo");
-		$args = $request->getAttribute("routeInfo")["args"];
-		$sysRoot = $sysInfo["rootDir"];
-		$appRoot = $appInfo["rootDir"];
-
-		$argKeys = array_map(function($x){return "{" . $x . "}";}, array_keys($args));
-		$from = array_merge(["{sysRoot}", "{appRoot}", "{sysVer}", "{appVer}", "{method}"], $argKeys);
-		$to = array_merge([$sysRoot, $appRoot, $sysInfo["version"], $appInfo["version"], $request->getMethod()], array_values($args));
-
-		return str_replace($from, $to, $files);
-
-	}
-
 	// -------------------------------------------------------------------------
 
 	/**
