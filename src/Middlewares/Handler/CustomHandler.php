@@ -18,7 +18,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 // =============================================================================
-//	Custom request handler class
+//	Custom handler class
 // =============================================================================
 
 class CustomHandler extends MiddlewareBase
@@ -31,45 +31,106 @@ class CustomHandler extends MiddlewareBase
 	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
-		// Get a handler
-		$method = strtolower($request->getMethod());
-		$resource = strtolower($request->getAttribute("routeInfo")["args"]["resource"]);
-		$rootDir = $request->getAttribute("appInfo")["rootDir"];
-		$customHandler = $this->loadHandler($this->options["eventName"] ?? "", $method, $resource, $rootDir);
+		$files = $this->replaceVars($request, $this->getOption("uses"));
+		list ($reqHandlers, $resHandlers) = $this->getHandlers($files);
 
-		if ($customHandler)
-		{
-			$func = Closure::bind(Closure::fromCallable($customHandler), $this);
-			return $func($request, $handler);
-		}
-		else
-		{
-			return $handler->handle($request);
-		}
+		// Handle request
+		$request = $this->execHandlers($reqHandlers, $request);
+
+		// Call middleware chain
+		$response = $handler->handle($request);
+
+		// Handle response
+		$response = $this->execHandlers($resHandlers, $response);
+
+		return $response;
 
 	}
 
-	// -----------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	//	Protected
+	// -------------------------------------------------------------------------
 
 	/**
-  	 * Load the request handler according to method, resource and event.
+  	 * Replace variables in file names.
 	 *
-	 * @param	$eventName		An event name.
+	 * @param	$request		Request.
+	 * @param	$files			Setting file names.
 	 *
-	 * @return	Handler.
+	 * @return	Replaced file names.
      */
-	private function loadHandler(?string $eventName = "", $method, $resource, $rootDir): ?callable
+	protected function replaceVars($request, $files)
 	{
 
-		$ret = null;
+		$sysInfo = $request->getAttribute("sysInfo");
+		$appInfo = $request->getAttribute("appInfo");
+		$args = $request->getAttribute("routeInfo")["args"];
+		$sysRoot = $sysInfo["rootDir"];
+		$appRoot = $appInfo["rootDir"];
 
-		$fileName = rtrim($rootDir, "/") . "/handlers/" . $method . "_" . $resource . ($eventName ? "_" : "") . $eventName . ".php";
-		if (file_exists($fileName))
+		$argKeys = array_map(function($x){return "{" . $x . "}";}, array_keys($args));
+		$from = array_merge(["{sysRoot}", "{appRoot}", "{sysVer}", "{appVer}", "{method}"], $argKeys);
+		$to = array_merge([$sysRoot, $appRoot, $sysInfo["version"], $appInfo["version"], $request->getMethod()], array_values($args));
+
+		return str_replace($from, $to, $files);
+
+	}
+
+	// -------------------------------------------------------------------------
+
+	/**
+  	 * Get request/response handlers.
+	 *
+	 * @param	$files			Handler file names.
+	 *
+	 * @return	array.
+     */
+	protected function getHandlers($files)
+	{
+
+		$reqHandlers = array();
+		$resHandlers = array();
+
+		foreach ((array)$files as $fileName)
 		{
-			$ret  = require $fileName;
+			if (file_exists($fileName))
+			{
+				$handlers = require $fileName;
+
+				if ($handlers[0])
+				{
+					$reqHandlers[] = $handlers[0];
+				}
+
+				if ($handlers[1])
+				{
+					$resHandlers[] = $handlers[1];
+				}
+			}
 		}
 
-		return $ret;
+		return array($reqHandlers, $resHandlers);
+
+	}
+
+	// -------------------------------------------------------------------------
+
+	/**
+  	 * Load handler files and execute them.
+	 *
+	 * @param	$request		Request.
+     */
+	protected function execHandlers($handlers, $target = null)
+	{
+
+		foreach ((array)$handlers as $handler)
+		{
+			$ret = $handler($target);
+
+			$target = ($ret ?? $target);
+		}
+
+		return $target;
 
 	}
 
