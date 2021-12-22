@@ -33,7 +33,7 @@ class CustomRequestHandler extends CustomHandler
 	{
 
 		// Get handlers
-		$files = $this->replaceVars($request, $this->getOption("uses"));
+		$files = $this->replaceVars($this->getOption("uses"));
 		$handlers = $this->getHandlers($files);
 
 		// Handle request

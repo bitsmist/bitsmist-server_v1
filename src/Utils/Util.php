@@ -22,7 +22,18 @@ class Util extends PluginBase
 {
 
 	// -------------------------------------------------------------------------
-	//	Static
+	//	Constants, Variables
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Dictionary for replacing variables.
+	 *
+	 * @var	array
+	 */
+	static public $replaceDic = null;
+
+	// -------------------------------------------------------------------------
+	//	public
 	// -------------------------------------------------------------------------
 
 	/**
@@ -66,6 +77,33 @@ class Util extends PluginBase
 		}
 
 		return $obj;
+
+	}
+
+	// -------------------------------------------------------------------------
+
+	/**
+  	 * Replace variables in target strings.
+	 *
+	 * @param	$targets		Target (array of) strings.
+	 * @param	$dics			Additional dictionaries.
+	 *
+	 * @return	Replaced strings.
+     */
+	static public function replaceVars($targets, ?array $dics = null)
+	{
+
+		$from = array();
+		$to = array();
+
+		foreach ([(array)Util::$replaceDic, (array)$dics] as $dic)
+		{
+			$keys = array_map(function($x){return "{" . $x . "}";}, array_keys($dic));
+			$from = array_merge($from, $keys);
+			$to = array_merge($to, array_values($dic));
+		}
+
+		return str_replace($from, $to, $targets);
 
 	}
 
