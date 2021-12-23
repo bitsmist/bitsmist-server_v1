@@ -82,7 +82,7 @@ class LoggingExceptionHandler extends MiddlewareBase
     	if (is_array($msg)) {
     		$msgs = $msg;
     	} else {
-	    	str_replace("\r\n", "\n", $msg);
+	    	str_replace("\r\n", "\n", $msg ?? "");
 	    	$msgs = explode("\n", $msg);
     	}
 

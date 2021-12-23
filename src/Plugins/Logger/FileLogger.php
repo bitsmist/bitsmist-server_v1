@@ -63,7 +63,7 @@ class FileLogger extends BaseLogger
 
 		foreach ($context as $key => $value)
 		{
-			$line = str_replace("{" . $key . "}", $value, $line);
+			$line = str_replace("{" . $key . "}", $value ?? "", $line ?? "");
 		}
 	    $line = date('Y/m/d H:i:s') . " " .$level . " " . $_SERVER["REMOTE_ADDR"] . " " . substr(session_id(), -8) . " " . ( array_key_exists("method", $context) ? $context["method"] . "() " : "" ) . $line . "\r\n";
 

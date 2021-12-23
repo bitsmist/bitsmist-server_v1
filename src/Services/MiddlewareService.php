@@ -59,7 +59,7 @@ class MiddlewareService extends PluginService implements  RequestHandlerInterfac
 	 *
 	 * @return	Request object.
 	 */
-	public function getRequest(): ServerRequestInterface
+	public function getRequest(): ?ServerRequestInterface
 	{
 
 		return $this->request;

@@ -288,7 +288,7 @@ class ElasticsearchDB extends CurlDB
 
     // -------------------------------------------------------------------------
 
-	protected function buildQuerySelectById(string $tableName, ?array $fields = null, array $id)
+	protected function buildQuerySelectById(string $tableName, array $fields, array $id)
 	{
 
 		list($query, $params) = $this->buildQuerySelect($tableName, $fields);
@@ -656,7 +656,7 @@ class ElasticsearchDB extends CurlDB
 	protected function buildCompare($fieldName, $parameterName = "", $value = null, $comparer = "=")
 	{
 
-		$value = str_replace("@CURRENT_DATETIME@", "now", $value);
+		$value = str_replace("@CURRENT_DATETIME@", "now", $value ?? "");
 
 		$ret = [];
 		switch((string)$value)

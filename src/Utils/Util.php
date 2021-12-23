@@ -103,7 +103,7 @@ class Util extends PluginBase
 			$to = array_merge($to, array_values($dic));
 		}
 
-		return str_replace($from, $to, $targets);
+		return str_replace($from, $to, $targets ?? "");
 
 	}
 

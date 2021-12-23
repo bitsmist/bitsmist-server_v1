@@ -42,7 +42,12 @@ class PdoDB extends BaseDB
 	{
 
 		$this->logger->debug(
-			"dsn = {dsn}, user = {user}, password = {password}", ["method"=>__METHOD__, "dsn"=>$this->props["dsn"], "user"=>$this->props["user"], "password"=>substr($this->props["password"], 0, 1) . "*******"]
+			"dsn = {dsn}, user = {user}, password = {password}", [
+				"method" => __METHOD__,
+				"dsn" => $this->props["dsn"],
+				"user" => $this->props["user"],
+				"password" => substr($this->props["password"] ?? "", 0, 1) . "*******"
+			]
 		);
 
 		// Default options
@@ -213,7 +218,7 @@ class PdoDB extends BaseDB
 
     // -------------------------------------------------------------------------
 
-	protected function buildQuerySelectById(string $tableName, ?array $fields = null, array $id)
+	protected function buildQuerySelectById(string $tableName, array $fields, array $id)
 	{
 
 		return $this->buildQuerySelect($tableName, $fields, [["fieldName" => $id["fieldName"], "comparer" => "=", "value" => $id["value"]]]);
@@ -777,7 +782,7 @@ class PdoDB extends BaseDB
 		{
 			case "SQLITE":
 			case "MYSQL":
-				$result = str_replace("\\", "\\\\", str_replace("'", "''", $sql));
+				$result = str_replace("\\", "\\\\", str_replace("'", "''", $sql ?? ""));
 				break;
 		}
 

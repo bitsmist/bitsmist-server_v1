@@ -31,7 +31,12 @@ abstract class CurlDB extends BaseDB
 		$this->props["connection"] = curl_init();
 
 		$this->logger->debug(
-			"dsn = {dsn}, user = {user}, password = {password}", ["method"=>__METHOD__, "dsn"=>$this->props["dsn"], "user"=>$this->props["user"], "password"=>substr($this->props["password"], 0, 1) . "*******"]
+			"dsn = {dsn}, user = {user}, password = {password}", [
+				"method" => __METHOD__,
+				"dsn" => $this->props["dsn"],
+				"user" => $this->props["user"],
+				"password" => substr($this->props["password"] ?? "", 0, 1) . "*******"
+			]
 		);
 
 		return $this->props["connection"];
