@@ -44,7 +44,8 @@ class LoggingExceptionHandler extends MiddlewareBase
 		case "Bitsmist\\v1\Exception\HttpException":
 			break;
 		default:
-			$this->add("code = " . $exception->getCode() . ", message = ". $exception->getMessage() . ", file = " . $exception->getFile() . ", lineno = " . $exception->getLine());
+			$this->add("code=" . $exception->getCode() . ", message=". $exception->getMessage() . ", file=" . $exception->getFile() . ", lineno=" . $exception->getLine());
+			$this->add("url=" . $request->getUri() . ", method=" . $request->getMethod());
 			$this->add($exception->getTraceAsString());
 			break;
 		}
@@ -107,8 +108,9 @@ class LoggingExceptionHandler extends MiddlewareBase
 
 		for ($i = 0; $i < count($this->messages); $i++)
 		{
-			$logger->error("Exception: {message}", ["message"=>$this->messages[$i]]);
+			$logger->error("{message}", ["message"=>$this->messages[$i]]);
 		}
+
 		$this->clear();
 
 	}

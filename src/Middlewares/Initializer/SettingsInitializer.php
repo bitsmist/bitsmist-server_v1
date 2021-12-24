@@ -11,6 +11,7 @@
 
 namespace Bitsmist\v1\Middlewares\Initializer;
 
+use Bitsmist\v1\Exception\HttpException;
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
 use Bitsmist\v1\Utils\Util;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -68,6 +69,12 @@ class SettingsInitializer extends MiddlewareBase
 		], $args);
 		$appInfo["rootDir"] = Util::replaceVars($settings["options"]["appRoot"] ?? "{sysRoot}/sites/v{appVer}/{appName}");
 		Util::$replaceDic["appRoot"] = $appInfo["rootDir"];
+
+		// check app root
+		if (!file_exists($appInfo["rootDir"]))
+		{
+			throw new \RuntimeException(sprintf("App root dir does not exist. rootDir=%s", $appInfo["rootDir"]));
+		}
 
 		$request = $request->withAttribute("appInfo", $appInfo);
 		$request = $request->withAttribute("sysInfo", $sysInfo);

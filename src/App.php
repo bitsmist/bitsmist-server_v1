@@ -42,6 +42,13 @@ class App
 	 */
 	protected $container = null;
 
+	/**
+	 * Caught exception.
+	 *
+	 * @var		Throwable
+	 */
+	protected $exception = null;
+
 	// -------------------------------------------------------------------------
 	//	Constructor, Destructor
 	// -------------------------------------------------------------------------
@@ -94,17 +101,14 @@ class App
 	public function run()
 	{
 
-		$response = null;
-		$exception = null;
-
-		// Dispatch initializing middleware chain
-		$request = $this->container["request"];
-		$request = $request->withAttribute("app", $this);
-		$request = $request->withAttribute("container", $this->container);
-		$this->container["services"]["setupController"]->dispatch($request);
-
 		try
 		{
+			// Dispatch initializing middleware chain
+			$request = $this->container["request"];
+			$request = $request->withAttribute("app", $this);
+			$request = $request->withAttribute("container", $this->container);
+			$this->container["services"]["setupController"]->dispatch($request);
+
 			// Dispatch main middleware chain
 			$request = $this->container["services"]["setupController"]->getRequest();
 			$request = $request->withAttribute("app", null); // Remove access to app
@@ -114,38 +118,14 @@ class App
 			$request = $request->withAttribute("services", $this->container["services"]);
 			$request = $request->withAttribute("settings", $this->container["settings"]);
 			$response = $this->container["services"]["mainController"]->dispatch($request);
-		}
-		catch (\Throwable $e1)
-		{
-			$exception = $e1;
 
-			// Dispatch error middleware chain
-			try
-			{
-				$request = $this->container["services"]["mainController"]->getRequest();
-				$request = $request->withAttribute("exception", $e1);
-				$response = $this->container["services"]["errorController"]->dispatch($request);
-			}
-			catch (\Throwable $e2)
-			{
-				throw $e1;
-			}
-		}
-
-		// Send response
-		try
-		{
+			// Emit
 			$this->container["services"]["emitter"]->emit($response);
 		}
-		catch (\Throwable $e3)
+		catch (\Throwable $e)
 		{
-			$exception = ($exception ?? $e3);
-		}
-
-		// Re-throw an exception during middleware handling to show error messages
-		if ($exception)
-		{
-			throw $exception;
+			$this->exception = $e;
+			throw $e;
 		}
 
 	}
@@ -244,44 +224,59 @@ class App
 	private function initError()
 	{
 
-		// Convert an error to the exception
-		set_error_handler(function ($severity, $message, $file, $line) {
-			if (error_reporting() & $severity) {
-				throw new \ErrorException($message, 0, $severity, $file, $line);
-			}
-		});
-
-		// Handle an uncaught error
 		register_shutdown_function(function () {
 			$e = error_get_last();
-			if ($e)
+			$type = $e["type"] ?? null;
+			if( $type == E_ERROR || $type == E_PARSE || $type == E_CORE_ERROR || $type == E_COMPILE_ERROR || $type == E_USER_ERROR )
 			{
-				$type = $e["type"] ?? null;
-				if( $type == E_ERROR || $type == E_PARSE || $type == E_CORE_ERROR || $type == E_COMPILE_ERROR || $type == E_USER_ERROR )
+				// Default response code
+				// Can be modified in error handling middlewares
+				http_response_code(500);
+
+				if (!$this->exception)
 				{
-					if ($this->container["settings"]["options"]["showErrors"] ?? false)
+					$this->exception = new \ErrorException($e["message"], 0, $e["type"], $e["file"], $e["line"]);
+				}
+
+				try
+				{
+					// Dispatch error middleware chain
+					$request = $this->container["services"]["mainController"]->getRequest() ?? $this->container["request"];
+					$request = $request->withAttribute("exception", $this->exception);
+					$request = $request->withAttribute("services", $this->container["services"]);
+					$request = $request->withAttribute("settings", $this->container["settings"]);
+					$response = $this->container["services"]["errorController"]->dispatch($request);
+					$this->container["services"]["emitter"]->emit($response);
+				}
+				catch (\Throwable $ex)
+				{
+					if (ini_get("display_errors"))
 					{
-						$msg = $e["message"];
-						echo "\n\n";
-						echo "Error type:\t {$e['type']}\n";
-						echo "Error message:\t {$msg}\n";
-						echo "Error file:\t {$e['file']}\n";
-						echo "Error line:\t {$e['line']}\n";
-					}
-					if ($this->container["settings"]["options"]["showErrorsInHTML"] ?? false)
-					{
-						$msg = str_replace('Stack trace:', '<br>Stack trace:', $e['message']);
-						$msg = str_replace('#', '<br>#', $msg);
-						echo "<br><br><table>";
-						echo "<tr><td>Error type</td><td>{$e['type']}</td></tr>";
-						echo "<tr><td style='vertical-align:top'>Error message</td><td>{$msg}</td></tr>";
-						echo "<tr><td>Error file</td><td>{$e['file']}</td></tr>";
-						echo "<tr><td>Error line</td><td>{$e['line']}</td></tr>";
-						echo "</table>";
+						$this->showError($ex);
 					}
 				}
 			}
 		});
+	}
+
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Show error.
+	 *
+	 * @param	$ex				Exception to show.
+	 */
+	private function showError($ex)
+	{
+
+		if (ini_get("html_errors"))
+		{
+			echo "<b>Fatal error</b>: " . $ex->getMessage() . " in <b>" . $ex->getFile() . "</b> on line <b>". $ex->getLine() . "</b><br>";
+		}
+		else
+		{
+			echo "Fatal error: " . $ex->getMessage() . " in " . $ex->getFile() . " on line ". $ex->getLine();
+		}
 
 	}
 

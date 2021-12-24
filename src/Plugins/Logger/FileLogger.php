@@ -60,12 +60,13 @@ class FileLogger extends BaseLogger
 	{
 
 		$line = $message;
+		$sid = ( session_id() ? substr(session_id(), -8) : "________" );
 
 		foreach ($context as $key => $value)
 		{
 			$line = str_replace("{" . $key . "}", $value ?? "", $line ?? "");
 		}
-	    $line = date('Y/m/d H:i:s') . " " .$level . " " . $_SERVER["REMOTE_ADDR"] . " " . substr(session_id(), -8) . " " . ( array_key_exists("method", $context) ? $context["method"] . "() " : "" ) . $line . "\r\n";
+	    $line = date('Y/m/d H:i:s') . " " .$level . " " . $_SERVER["REMOTE_ADDR"] . " " . $sid . " " . ( array_key_exists("method", $context) ? $context["method"] . "() " : "" ) . $line . "\r\n";
 
 		return $line;
 
