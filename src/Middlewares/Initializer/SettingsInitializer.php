@@ -65,7 +65,7 @@ class SettingsInitializer extends MiddlewareBase
 			"sysVer" => $sysInfo["version"],
 			"appVer" => $appInfo["version"],
 			"appName" => $appInfo["name"],
-			"method" => $request->getMethod()
+			"method" => strtolower($request->getMethod()),
 		], $args);
 		$appInfo["rootDir"] = Util::replaceVars($settings["options"]["appRoot"] ?? "{sysRoot}/sites/v{appVer}/{appName}");
 		Util::$replaceDic["appRoot"] = $appInfo["rootDir"];
