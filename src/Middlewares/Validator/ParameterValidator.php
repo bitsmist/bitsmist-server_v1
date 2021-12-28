@@ -138,9 +138,11 @@ class ParameterValidator extends MiddlewareBase
 			$validations = $allowedList[$key]["validator"] ?? [];
 			if (in_array("REQUIRED", $validations) && !array_key_exists($key, $target))
 			{
-				$request->getAttribute("services")["logger"]->alert("Parameter is missing: parameter = {key}", [
+				$request->getAttribute("services")["logger"]->alert("Parameter is missing: parameter={key}, method={httpMethod}, resource={resource}", [
 					"method" => __METHOD__,
 					"key" => $key,
+					"httpMethod" => $request->getMethod(),
+					"resource" => $request->getAttribute("routeInfo")["args"]["resource"] ?? ""
 				]);
 
 				throw new HttpException(HttpException::ERRNO_PARAMETER, HttpException::ERRMSG_PARAMETER);
@@ -170,10 +172,12 @@ class ParameterValidator extends MiddlewareBase
 			// Check whether a parameter is in the list
 			if (!$ignoreExtraParams && !array_key_exists($key, $allowedList))
 			{
-				$request->getAttribute("services")["logger"]->alert("Invaild parameter: parameter = {key}, value = {value}", [
+				$request->getAttribute("services")["logger"]->alert("Invaild parameter: parameter = {key}, method={httpMethod}, resource={resource}", [
 					"method" => __METHOD__,
 					"key" => $key,
-					"value" => $value,
+//					"value" => $value,
+					"httpMethod" => $request->getMethod(),
+					"resource" => $request->getAttribute("routeInfo")["args"]["resource"] ?? ""
 				]);
 
 				throw new HttpException(HttpException::ERRNO_PARAMETER, HttpException::ERRMSG_PARAMETER);
