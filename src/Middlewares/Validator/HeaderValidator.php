@@ -38,15 +38,19 @@ class HeaderValidator extends MiddlewareBase
 		$headers = $request->getHeaders();
 		$settings = $request->getAttribute("settings");
 
+		/*
 		// check host
+		//if ($headers["host"][0] != $_SERVER["HTTP_HOST"])
 		if ($headers["host"][0] != $_SERVER["SERVER_NAME"])
 		{
-			$logger->alert("Invalid host: host = {host}", [
+			$logger->alert("Invalid host: header={headerHost}, host={host}", [
 				"method"=>__METHOD__,
-				"host"=>$headers["host"][0]
+				"headerHost"=>$headers["host"][0],
+				"host"=>$_SERVER["SERVER_NAME"],
 			]);
 			throw new HttpException(HttpException::ERRNO_PARAMETER, HttpException::ERRMSG_PARAMETER);
 		}
+		 */
 
 		// check if origin is set
 		if ($settings["options"]["needOrigin"] ?? false)
@@ -61,7 +65,7 @@ class HeaderValidator extends MiddlewareBase
 		// check if origin is in allowed origins list
 		if (isset($headers["origin"][0]) && !in_array($headers["origin"][0], $settings["options"]["allowedOrigins"]))
 		{
-			$logger->alert("Invalid origin: origin = {origin}", [
+			$logger->alert("Invalid origin: origin={origin}", [
 				"method"=>__METHOD__,
 				"origin"=>($headers["origin"][0] ?? "")
 			]);
@@ -73,7 +77,7 @@ class HeaderValidator extends MiddlewareBase
 		{
 			if (!isset($headers[strtolower($headerName)][0]))
 			{
-				$logger->alert("Required header doesn't exist: headerName = {headerName}", [
+				$logger->alert("Required header doesn't exist: headerName={headerName}", [
 					"method"=>__METHOD__,
 					"headerName"=>$headerName,
 				]);
@@ -87,7 +91,7 @@ class HeaderValidator extends MiddlewareBase
 			$headerName = (is_string($settings["options"]["needPreflight"]) ? $settings["options"]["needPreflight"] : "X-From");
 			if (!isset($headers[strtolower($headerName)][0]))
 			{
-				$logger->alert("Required header for preflight doesn't exist: headerName = {headerName}", [
+				$logger->alert("Required header for preflight doesn't exist: headerName={headerName}", [
 					"method"=>__METHOD__,
 					"headerName"=>$headerName,
 				]);
