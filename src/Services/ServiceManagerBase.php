@@ -15,10 +15,10 @@ use Bitsmist\v1\Utils\Util;
 use Pimple\Container;
 
 // =============================================================================
-//	Service manager class
+//	Service Manager Base Class
 // =============================================================================
 
-class ServiceManager implements \ArrayAccess
+class ServiceManagerBase
 {
 
 	// -------------------------------------------------------------------------
@@ -97,7 +97,7 @@ class ServiceManager implements \ArrayAccess
 
 	// -------------------------------------------------------------------------
 
-	public function offsetGet($offset): mixed
+	public function offsetGet($offset)
 	{
 
 		return $this->get($offset);
@@ -126,7 +126,14 @@ class ServiceManager implements \ArrayAccess
 				$options = array_merge($options1, $options2);
 
 				// Get instance
-				return Util::resolveInstance($options, $serviceName, $options, $this->container);
+				try
+				{
+					return Util::resolveInstance($options, $serviceName, $options, $this->container);
+				}
+				catch (\Throwable $e)
+				{
+					throw new \RuntimeException("Failed to create a service. serviceName=" . $serviceName . ", reason=" . $e->getMessage());
+				}
 			};
 		}
 

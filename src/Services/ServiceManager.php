@@ -11,11 +11,23 @@
 
 namespace Bitsmist\v1\Services;
 
+use Bitsmist\v1\Services\ServiceManagerBase;
+
 if (PHP_VERSION_ID < 80100)
 {
-	require __DIR__ . "/ServiceManager7.php";
+	class ServiceManager extends ServiceManagerBase implements \ArrayAccess {};
 }
 else
 {
-	require __DIR__ . "/ServiceManager8.php";
+	class ServiceManager extends ServiceManagerBase implements \ArrayAccess
+	{
+
+		public function offsetGet($offset): mixed
+		{
+
+			return $this->get($offset);
+
+		}
+
+	}
 }
