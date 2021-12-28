@@ -143,7 +143,7 @@ abstract class BaseDB extends PluginBase
 	 *
 	 * @return		int									Record count.
 	 */
-	public function selectById(string $tableName, array $fields, array $id)
+	public function selectById(string $tableName, ?array $fields = null, array $id)
 	{
 
 		list($query, $params) = $this->buildQuerySelectById($tableName, $fields, $id);
@@ -358,7 +358,7 @@ abstract class BaseDB extends PluginBase
 	 *
 	 * @return 		string								Query string.
 	 */
-	abstract protected function buildQuerySelectById(string $tableName, array $fields, array $id);
+	abstract protected function buildQuerySelectById(string $tableName, ?array $fields = null, array $id);
 
     // -------------------------------------------------------------------------
 

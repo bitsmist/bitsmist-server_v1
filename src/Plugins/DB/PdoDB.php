@@ -218,7 +218,7 @@ class PdoDB extends BaseDB
 
     // -------------------------------------------------------------------------
 
-	protected function buildQuerySelectById(string $tableName, array $fields, array $id)
+	protected function buildQuerySelectById(string $tableName, ?array $fields = null, array $id)
 	{
 
 		return $this->buildQuerySelect($tableName, $fields, [["fieldName" => $id["fieldName"], "comparer" => "=", "value" => $id["value"]]]);

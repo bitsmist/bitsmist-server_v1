@@ -288,7 +288,7 @@ class ElasticsearchDB extends CurlDB
 
     // -------------------------------------------------------------------------
 
-	protected function buildQuerySelectById(string $tableName, array $fields, array $id)
+	protected function buildQuerySelectById(string $tableName, ?array $fields, array $id)
 	{
 
 		list($query, $params) = $this->buildQuerySelect($tableName, $fields);
