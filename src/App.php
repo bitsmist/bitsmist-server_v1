@@ -11,7 +11,7 @@
 
 namespace Bitsmist\v1;
 
-use Bitsmist\v1\Exception\HttpException;
+use Bitsmist\v1\Exceptions\HttpException;
 use Bitsmist\v1\Utils\Util;
 use Pimple\Container;
 use Psr\Http\Message\ResponseInterface;

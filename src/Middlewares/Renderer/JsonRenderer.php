@@ -11,7 +11,6 @@
 
 namespace Bitsmist\v1\Middlewares\Renderer;
 
-use Bitsmist\v1\Exception\HttpException;
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -40,7 +39,6 @@ class JsonRenderer extends MiddlewareBase
 		}
 
 		return $response;
-
 
 	}
 

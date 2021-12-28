@@ -9,7 +9,7 @@
  */
 // =============================================================================
 
-namespace Bitsmist\v1\Exception;
+namespace Bitsmist\v1\Exceptions;
 
 use Exception;
 

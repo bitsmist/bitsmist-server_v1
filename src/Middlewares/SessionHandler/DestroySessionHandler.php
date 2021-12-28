@@ -11,7 +11,6 @@
 
 namespace Bitsmist\v1\Middlewares\SessionHandler;
 
-use Bitsmist\v1\Exception\HttpException;
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;

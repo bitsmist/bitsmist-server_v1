@@ -11,7 +11,7 @@
 
 namespace Bitsmist\v1\Middlewares\ExceptionHandler;
 
-use Bitsmist\v1\Exception\HttpException;
+use Bitsmist\v1\Exceptions\HttpException;
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -35,7 +35,7 @@ class BasicExceptionHandler extends MiddlewareBase
 
 		switch (get_class($exception))
 		{
-		case "Bitsmist\\v1\Exception\HttpException":
+		case "Bitsmist\\v1\Exceptions\HttpException":
 			$resultCode = $exception->getCode();
 			$resultMessage = $exception->getMessage();
 			break;
