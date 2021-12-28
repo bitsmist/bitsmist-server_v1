@@ -34,7 +34,7 @@ class PluginBase
 	 *
 	 * @var		Container
 	 */
-	protected $contaier = null;
+	protected $container = null;
 
 	/**
 	 * Options.
