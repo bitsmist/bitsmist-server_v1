@@ -75,6 +75,10 @@ class Util extends PluginBase
 		{
 			$obj = $options["class"];
 		}
+		else
+		{
+			throw new \RuntimeException("Can not resolve an instance because no class/className is specified.");
+		}
 
 		return $obj;
 
