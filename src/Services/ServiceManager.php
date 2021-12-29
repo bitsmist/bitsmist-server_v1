@@ -11,23 +11,38 @@
 
 namespace Bitsmist\v1\Services;
 
-use Bitsmist\v1\Services\ServiceManagerBase;
+use Bitsmist\v1\Services\PluginService;
+use Bitsmist\v1\Utils\Util;
+use Pimple\Container;
 
-if (PHP_VERSION_ID < 80100)
+// =============================================================================
+//	Service manager class
+// =============================================================================
+
+class ServiceManager extends PluginService
 {
-	class ServiceManager extends ServiceManagerBase implements \ArrayAccess {};
-}
-else
-{
-	class ServiceManager extends ServiceManagerBase implements \ArrayAccess
+
+	/**
+	 * Get a service.
+	 *
+	 * @param	$serviceName	Service nam.
+	 *
+	 * @return	Service.
+	 */
+	public function get($serviceName)
 	{
 
-		public function offsetGet($offset): mixed
+		if (!$this->plugins->offsetExists($serviceName))
 		{
+			$options1 = $this->container["settings"][$serviceName] ?? array();
+			$options2 = $this->container["settings"]["services"]["uses"][$serviceName] ?? array();
+			$options = array_merge($options1, $options2);
 
-			return $this->get($offset);
-
+			$this->add($serviceName, $options);
 		}
 
+		return $this->plugins[$serviceName];
+
 	}
+
 }

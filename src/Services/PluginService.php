@@ -12,12 +12,14 @@
 namespace Bitsmist\v1\Services;
 
 use Bitsmist\v1\Utils\Util;
+use Bitsmist\v1\Utils\BitsmistContainer;
+use Pimple\Container;
 
 // =============================================================================
 //	Plugin service class
 // =============================================================================
 
-class PluginService
+class PluginService implements \ArrayAccess, \Countable, \IteratorAggregate
 {
 
 	// -------------------------------------------------------------------------
@@ -48,9 +50,9 @@ class PluginService
 	/**
 	 * Plugins.
 	 *
-	 * @var		array
+	 * @var		Container.
 	 */
-	protected $plugins = array();
+	protected $plugins = null;
 
 	// -------------------------------------------------------------------------
 	//	Constructor, Destructor
@@ -63,12 +65,12 @@ class PluginService
 	 * @param	$options		Options.
 	 * @param	$container		Container.
 	 */
-	public function __construct($name, array $options = null, $container)
+	public function __construct(string $name, array $options = null, $container)
 	{
 
 		$this->container = $container;
 		$this->options = $options;
-		$this->plugins = array();
+		$this->plugins = new Container();
 
 		foreach ((array)($this->options["uses"] ?? null) as $key => $value)
 		{
@@ -95,20 +97,6 @@ class PluginService
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Get plugins.
-	 *
-	 * @return	Plugins.
-	 */
-	public function getPlugins(): array
-	{
-
-		return $this->plugins;
-
-	}
-
-	// -------------------------------------------------------------------------
-
-	/**
 	 * Add a plugin.
 	 *
 	 * @param	$title			Plugin name.
@@ -116,16 +104,39 @@ class PluginService
 	 *
 	 * @return	Added plugin.
 	 */
-	public function add($title, ?array $options)
+	public function add(string $title, ?array $options)
 	{
 
-		// Merge settings
-		$options = array_merge($this->container["settings"][$title] ?? array(), $options ?? array());
+		$this->plugins[$title] = function ($c) use ($title, $options) {
+			try
+			{
+				// Merge settings
+				$options = array_merge($this->container["settings"][$title] ?? array(), $options ?? array());
 
-		// Create an instance
-		$this->plugins[$title] = Util::resolveInstance($options, $title, $options, $this->container);
+				// Get instance
+				return Util::resolveInstance($options, $title, $options, $this->container);
+			}
+			catch (\Throwable $e)
+			{
+				throw new \RuntimeException("Failed to create a plugin. pluginName=" . $title . ", reason=" . $e->getMessage());
+			}
+		};
 
-		return $this->plugins[$title];
+	}
+
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Get a plugin.
+	 *
+	 * @param	$pluginName		Plugin name.
+	 *
+	 * @return	Object.
+	 */
+	public function get($pluginName)
+	{
+
+		return $this->plugins[$pluginName];
 
 	}
 
@@ -144,13 +155,70 @@ class PluginService
 
 		$ret = array();
 
-		foreach ($this->plugins as $plugin)
+		foreach ($this->plugins->keys() as $pluginName)
 		{
+			$plugin = $this->plugins[$pluginName];
 			$ret[] = call_user_func_array(array($plugin, $name), $args);
 		}
 
 		return $ret;
 
 	}
+	// -------------------------------------------------------------------------
+
+	public function count(): int
+	{
+
+		return count($this->plugins->keys());
+
+	}
+	// -------------------------------------------------------------------------
+
+	public function getIterator(): \Traversable
+	{
+
+		foreach ($this->plugins->keys() as $key)
+		{
+			yield $key => $this->plugins[$key];
+		}
+
+	}
+
+	// -------------------------------------------------------------------------
+
+	public function offsetExists($offset): bool
+	{
+
+		return $this->plugins->offsetExists($offset);
+
+    }
+
+	// -------------------------------------------------------------------------
+
+	#[\ReturnTypeWillChange]
+	public function offsetGet($offset)
+	{
+
+		return $this->get($offset);
+
+	}
+
+	// -------------------------------------------------------------------------
+
+	public function offsetSet($offset, $value): void
+	{
+
+		$this->plugins->offsetSet($offset, $value);
+
+    }
+
+	// -------------------------------------------------------------------------
+
+	public function offsetUnset($offset): void
+	{
+
+		$this->plugins->offsetUnset($offset);
+
+    }
 
 }

@@ -31,7 +31,7 @@ class DBHandler extends MiddlewareBase
 	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
-		$dbCount = count($request->getAttribute("services")["db"]->getPlugins());
+		$dbCount = count($request->getAttribute("services")["db"]);
 		if ($dbCount > 0)
 		{
 			// Handle database

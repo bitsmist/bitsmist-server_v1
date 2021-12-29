@@ -36,22 +36,15 @@ class MiddlewareService extends PluginService implements  RequestHandlerInterfac
 	 */
 	protected ?ServerRequestInterface $request = null;
 
+	/**
+	 * Plugin names to iterate.
+	 *
+	 * @var		array
+	 */
+	protected $pluginNames = null;
+
 	// -------------------------------------------------------------------------
 	//	Public
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Get middlewares.
-	 *
-	 * @return	Middlewares.
-	 */
-	public function getMiddlewares(): array
-	{
-
-		return $this->plugins;
-
-	}
-
 	// -------------------------------------------------------------------------
 
 	/**
@@ -81,15 +74,25 @@ class MiddlewareService extends PluginService implements  RequestHandlerInterfac
 
 		if (is_string($middleware))
 		{
-			// Merge settings
-			$options = array_merge($this->container["settings"][$middleware] ?? array(), $options ?? array());
+			$this->plugins[$middleware] = function ($c) use ($middleware, $options) {
+				try
+				{
+					// Merge settings
+					$options = array_merge($this->container["settings"][$middleware] ?? array(), $options ?? array());
 
-			// Create an instance
-			$this->plugins[] = Util::resolveInstance($options, $middleware, $options);
+					// Get instance
+					return Util::resolveInstance($options, $middleware, $options, $this->container);
+				}
+				catch (\Throwable $e)
+				{
+					throw new \RuntimeException("Failed to create a middleware. middlewearName=" . $middleware . ", reason=" . $e->getMessage());
+				}
+			};
 		}
 		else
 		{
-			$this->plugins[] = $middleware;
+			$hash = spl_object_hash($middleware);
+			$this->plugins[$hash] = $middleware;
 		}
 
 	}
@@ -106,7 +109,8 @@ class MiddlewareService extends PluginService implements  RequestHandlerInterfac
 	public function dispatch(ServerRequestInterface $request): ResponseInterface
 	{
 
-		reset($this->plugins);
+		$this->pluginNames = $this->plugins->keys();
+		reset($this->pluginNames);
 
 		return $this->handle($request);
 
@@ -128,12 +132,10 @@ class MiddlewareService extends PluginService implements  RequestHandlerInterfac
 
 		// Get next enabled middleware
 		do {
-			$middleware = current($this->plugins);
-			next($this->plugins);
-		} while (
-			$middleware !== false &&
-			($middleware instanceof MiddlewareBase && $middleware->getOption("enabled") === false)
-		);
+			$middlewareName = current($this->pluginNames);
+			$middleware = ( $middlewareName ? $this->plugins[$middlewareName] : null );
+			next($this->pluginNames);
+		} while ($middleware instanceof MiddlewareBase && $middleware->getOption("enabled") === false);
 
 		// Execute
 		if ($middleware instanceof MiddlewareInterface)

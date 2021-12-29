@@ -150,7 +150,7 @@ class App
 			$options["className"] = "Bitsmist\\v1\Services\ServiceManager";
 		}
 
-		return Util::resolveInstance($options, $this->container);
+		return Util::resolveInstance($options, "services", $options, $this->container);
 
 	}
 
