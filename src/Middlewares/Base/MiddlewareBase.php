@@ -81,6 +81,18 @@ abstract class MiddlewareBase implements MiddlewareInterface
 	// -------------------------------------------------------------------------
 
 	/**
+	 * Handle a request.
+	 *
+	 * @param	RequestHandlerInterface	$request	Request.
+	 * @param	RequestHandlerInterface	$handler	Handler.
+	 *
+	 * @return	ResponseInterface
+	 */
+	abstract public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface;
+
+	// -------------------------------------------------------------------------
+
+	/**
 	 * Handle a request by calling process method.
 	 *
 	 * @param	RequestHandlerInterface	$request	Request.
