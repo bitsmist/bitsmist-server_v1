@@ -218,7 +218,7 @@ class PdoDB extends BaseDB
 
     // -------------------------------------------------------------------------
 
-	protected function buildQuerySelectById(string $tableName, ?array $fields = null, array $id)
+	protected function buildQuerySelectById(string $tableName, array $fields = null, array $id)
 	{
 
 		return $this->buildQuerySelect($tableName, $fields, [["fieldName" => $id["fieldName"], "comparer" => "=", "value" => $id["value"]]]);
@@ -235,7 +235,7 @@ class PdoDB extends BaseDB
 
 		$sqlFields = "";
 		$sqlValues = "";
-		$parmas = array();
+		$params = array();
 		foreach ($fields as $key => $item)
 		{
 			$key = $this->escape($key);
