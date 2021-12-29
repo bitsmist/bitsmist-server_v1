@@ -428,7 +428,7 @@ class DBUtil
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Build parameter array for fields from HTTP parameters and the spec.
+	 * Dispatch buildFieldsFromList() or buildFieldsFromParameters() depending on a parameter.
 	 *
 	 * @param	$fields			Fields spec.
 	 * @param	$parameters		URL parameters.
@@ -436,6 +436,30 @@ class DBUtil
 	 * @return	array			Parameter array.
 	 */
 	private function buildFields(?array $fields, array $parameters): array
+	{
+
+		if ($fields)
+		{
+			return $this->buildFieldsFromList($fields, $parameters);
+		}
+		else
+		{
+			return $this->buildFieldsFromParameters($parameters);
+		}
+
+	}
+
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Build parameter array from both parameters and settings.
+	 *
+	 * @param	$fields			Fields spec.
+	 * @param	$parameters		URL parameters.
+	 *
+	 * @return	array			Parameter array.
+	 */
+	private function buildFieldsFromList(?array $fields, array $parameters): array
 	{
 
 		$result = array();
@@ -459,6 +483,35 @@ class DBUtil
 			{
 				$result[$key] = $item;
 			}
+		}
+
+		return $result;
+
+	}
+
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Build fields array from parameters.
+	 *
+	 * @param	$fields			Fields spec.
+	 *
+	 * @return	Parameter array.
+	 */
+	private function buildFieldsFromParameters(array $parameters): ?array
+	{
+
+		$result = array();
+
+		foreach ((array)$parameters as $key => $value)
+		{
+			if (is_numeric($key))
+			{
+				$key = $value;
+				$value = null;
+			}
+
+			$result[$key] = array("value" => $value);
 		}
 
 		return $result;
