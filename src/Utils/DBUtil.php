@@ -14,7 +14,7 @@ namespace Bitsmist\v1\Utils;
 use Psr\Http\Message\ServerRequestInterface;
 
 // =============================================================================
-//	Database handler class
+//	Database utility class
 // =============================================================================
 
 class DBUtil
@@ -98,7 +98,7 @@ class DBUtil
 		$id = $request->getAttribute("routeInfo")["args"]["id"] ?? "";
 		$gets = $request->getQueryParams();
 		$settings = $request->getAttribute("settings");
-		$fields = ($this->options["fields"] ?? null ? $this->buildFields($this->options["fields"], $gets) : null);
+		$fields = $this->buildFieldsSelect($this->options["fields"] ?? null);
 		$searches = $this->options["searches"] ?? null;
 		$orders = $this->options["orders"] ?? null;
 		$limitParamName = $this->options["specialParameters"]["limit"] ?? "_limit";
@@ -112,8 +112,7 @@ class DBUtil
 		$order = $orders[($gets[$orderParamName] ?? "default")] ?? null;
 
 		$data = null;
-		$dbs = $request->getAttribute("services")["db"]->getPlugins();
-		foreach ($dbs as $dbName => $db)
+		foreach ($request->getAttribute("services")["db"] as $dbName => $db)
 		{
 			switch ($id)
 			{
@@ -174,8 +173,7 @@ class DBUtil
 		$items = $this->getParamsFromBody($request, $settings["options"] ?? null);
 
 		$data = null;
-		$dbs = $request->getAttribute("services")["db"]->getPlugins();
-		foreach ($dbs as $dbName => $db)
+		foreach ($request->getAttribute("services")["db"] as $dbName => $db)
 		{
 			// beginTrans()
 
@@ -241,11 +239,11 @@ class DBUtil
 		$listIdName = $this->options["specialParameters"]["list"] ?? "list";
 		$items = $this->getParamsFromBody($request, $settings["options"] ?? null);
 
-		$dbs = $request->getAttribute("services")["db"]->getPlugins();
-		foreach ($dbs as $dbName => $db)
+		foreach ($request->getAttribute("services")["db"] as $dbName => $db)
 		{
 			// beginTrans();
 
+			$cnt = 0;
 			try
 			{
 				switch ($id)
@@ -304,8 +302,7 @@ class DBUtil
 		$searches = $this->options["searches"] ?? null;
 		$listIdName = $this->options["specialParameters"]["list"] ?? "list";
 
-		$dbs = $request->getAttribute("services")["db"]->getPlugins();
-		foreach ($dbs as $dbName => $db)
+		foreach ($request->getAttribute("services")["db"] as $dbName => $db)
 		{
 			// beginTrans();
 
@@ -431,7 +428,7 @@ class DBUtil
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Dispatch buildFieldsFromList() or buildFieldsAll() depending on a parameter.
+	 * Build parameter array for fields from HTTP parameters and the spec.
 	 *
 	 * @param	$fields			Fields spec.
 	 * @param	$parameters		URL parameters.
@@ -441,30 +438,6 @@ class DBUtil
 	private function buildFields(?array $fields, array $parameters): array
 	{
 
-		if ($fields)
-		{
-			return $this->buildFieldsFromList($fields, $parameters);
-		}
-		else
-		{
-			return $this->buildFieldsAll($fields, $parameters);
-		}
-
-	}
-
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Build parameter array for fields from HTTP parameters and the spec.
-	 *
-	 * @param	$fields			Fields spec.
-	 * @param	$parameters		URL parameters.
-	 *
-	 * @return	array			Parameter array.
-	 */
-	private function buildFieldsFromList(?array $fields, array $parameters): array
-	{
-
 		$result = array();
 
 		foreach ((array)$fields as $key => $item)
@@ -472,18 +445,19 @@ class DBUtil
 			if (is_numeric($key))
 			{
 				$key = $item;
-				$result[$key] = array();
-			}
-			else
-			{
-				$result[$key] = $item;
+				$item = array();
 			}
 
 			// Get a value from URL parameter if exists
 			$parameterName = $item["parameterName"] ?? $key;
 			if (array_key_exists($parameterName, $parameters))
 			{
-				$result[$key]["value"] = $parameters[$parameterName];
+				$item["value"] = $parameters[$parameterName];
+			}
+
+			if ($item["value"] ?? null)
+			{
+				$result[$key] = $item;
 			}
 		}
 
@@ -494,24 +468,31 @@ class DBUtil
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Build parameter array for fields from HTTP parameters and the spec.
+	 * Build fields array for select.
 	 *
 	 * @param	$fields			Fields spec.
-	 * @param	$parameters		URL parameters.
 	 *
 	 * @return	Parameter array.
 	 */
-	private function buildFieldsAll(?array $fields, array $parameters): array
+	private function buildFieldsSelect(?array $fields): ?array
 	{
 
-		$result = array();
+		$result = null;
 
-		foreach ((array)$parameters as $key => $value)
+		if ($fields)
 		{
-			if ($fields == null || array_key_exists($key, $fields))
+			$result = array();
+			foreach ((array)$fields as $key => $item)
 			{
-				$result[$key] = array();
-				$result[$key]["value"] = $value;
+				if (is_numeric($key))
+				{
+					$key = $item;
+					$result[$key] = array();
+				}
+				else
+				{
+					$result[$key] = $item;
+				}
 			}
 		}
 
