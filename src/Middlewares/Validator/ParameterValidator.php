@@ -36,8 +36,8 @@ class ParameterValidator extends MiddlewareBase
 		// Check query parameters
 		$allowedList = $options["query"]["parameters"] ?? array();
 		$allowedList = $this->alignArray($allowedList);
-		$this->checkMissing($request, $request->getQueryParams(), $allowedList);
-		$this->checkValidity($request, $request->getQueryParams(), $allowedList);
+		$this->checkMissing($request, $request->getQueryParams(), $allowedList, "query");
+		$this->checkValidity($request, $request->getQueryParams(), $allowedList, "query");
 
 		// Check body parameters
 		$allowedList = $options["body"]["parameters"] ?? array();
@@ -45,8 +45,8 @@ class ParameterValidator extends MiddlewareBase
 		$items = $this->getParamsFromBody($request, $options);
 		foreach ((array)$items as $item)
 		{
-			$this->checkMissing($request, $item, $allowedList);
-			$this->checkValidity($request, $item, $allowedList);
+			$this->checkMissing($request, $item, $allowedList, "body");
+			$this->checkValidity($request, $item, $allowedList, "body");
 		}
 
 		return $handler->handle($request);
@@ -130,7 +130,7 @@ class ParameterValidator extends MiddlewareBase
 	 *
 	 * @throws	HttpException
      */
-	private function checkMissing(ServerRequestInterface $request, ?array $target, array $allowedList)
+	private function checkMissing(ServerRequestInterface $request, ?array $target, array $allowedList, $type)
 	{
 
 		foreach ($allowedList as $key => $value)
@@ -138,8 +138,9 @@ class ParameterValidator extends MiddlewareBase
 			$validations = $allowedList[$key]["validator"] ?? [];
 			if (in_array("REQUIRED", $validations) && !array_key_exists($key, $target))
 			{
-				$request->getAttribute("services")["logger"]->alert("Parameter is missing: parameter={key}, method={httpMethod}, resource={resource}", [
+				$request->getAttribute("services")["logger"]->alert("Missing {type} parameter. parameter={key}, method={httpMethod}, resource={resource}", [
 					"method" => __METHOD__,
+					"type" => $type,
 					"key" => $key,
 					"httpMethod" => $request->getMethod(),
 					"resource" => $request->getAttribute("routeInfo")["args"]["resource"] ?? ""
@@ -162,7 +163,7 @@ class ParameterValidator extends MiddlewareBase
 	 *
 	 * @throws	HttpException
      */
-	private function checkValidity(ServerRequestInterface $request, ?array $target, array $allowedList)
+	private function checkValidity(ServerRequestInterface $request, ?array $target, array $allowedList, $type)
 	{
 
 		$ignoreExtraParams = $this->getOption("ignoreExtraParams", false);
@@ -172,8 +173,9 @@ class ParameterValidator extends MiddlewareBase
 			// Check whether a parameter is in the list
 			if (!$ignoreExtraParams && !array_key_exists($key, $allowedList))
 			{
-				$request->getAttribute("services")["logger"]->alert("Invaild parameter: parameter = {key}, method={httpMethod}, resource={resource}", [
+				$request->getAttribute("services")["logger"]->alert("Invaild {type} parameter. parameter={key}, method={httpMethod}, resource={resource}", [
 					"method" => __METHOD__,
+					"type" => $type,
 					"key" => $key,
 //					"value" => $value,
 					"httpMethod" => $request->getMethod(),

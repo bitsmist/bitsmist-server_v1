@@ -42,7 +42,7 @@ class PdoDB extends BaseDB
 	{
 
 		$this->logger->debug(
-			"dsn = {dsn}, user = {user}, password = {password}", [
+			"dsn={dsn}, user={user}, password={password}", [
 				"method" => __METHOD__,
 				"dsn" => $this->props["dsn"],
 				"user" => $this->props["user"],
@@ -79,7 +79,7 @@ class PdoDB extends BaseDB
 
 		$this->props["connection"] = null;
 
-		$this->logger->debug("dsn = {dsn}", ["method"=>__METHOD__, "dsn"=>$this->props["dsn"]]);
+		$this->logger->debug("dsn={dsn}", ["method"=>__METHOD__, "dsn"=>$this->props["dsn"]]);
 
 	}
 
@@ -121,7 +121,7 @@ class PdoDB extends BaseDB
 	public function getData($cmd, $params = null)
 	{
 
-		$this->logger->info("query = {query}", ["method"=>__METHOD__, "query"=>$cmd->queryString]);
+		$this->logger->info("query={query}", ["method"=>__METHOD__, "query"=>$cmd->queryString]);
 
 		// Bind params
 		$this->assignParams($cmd, $params);
@@ -141,7 +141,7 @@ class PdoDB extends BaseDB
 
 		$result = 0;
 
-		$this->logger->debug("query = {query}", ["method"=>__METHOD__, "query"=>$this->props["totalCountSql"]]);
+		$this->logger->debug("query={query}", ["method"=>__METHOD__, "query"=>$this->props["totalCountSql"]]);
 
 		$cmd = $this->createCommand($this->props["totalCountSql"]);
 		$this->assignParams($cmd, $this->props["totalCountParams"]);
@@ -158,7 +158,7 @@ class PdoDB extends BaseDB
 	public function execute($cmd, $params = null)
 	{
 
-		$this->logger->info("query = {query}", ["method"=>__METHOD__, "query"=>$cmd->queryString]);
+		$this->logger->info("query={query}", ["method"=>__METHOD__, "query"=>$cmd->queryString]);
 
 		// Bind params
 		$this->assignParams($cmd, $params);
@@ -210,7 +210,7 @@ class PdoDB extends BaseDB
 		$this->props["totalCountSql"] = "SELECT COUNT(*) FROM `" . $tableName . ( $where ? "` WHERE " . $where : "" );
 		$this->props["totalCountParams"] = $params;
 
-		$this->logger->debug("query = {query}", ["method"=>__METHOD__, "query"=>$sql]);
+		$this->logger->debug("query={query}", ["method"=>__METHOD__, "query"=>$sql]);
 
 		return array($sql, $params);
 
@@ -248,7 +248,7 @@ class PdoDB extends BaseDB
 
 		$sql = "INSERT INTO `" .$tableName . "` (" . $sqlFields . ") VALUES (" . $sqlValues . ") ";
 
-		$this->logger->debug("query = {query}", ["method"=>__METHOD__, "query"=>$sql]);
+		$this->logger->debug("query={query}", ["method"=>__METHOD__, "query"=>$sql]);
 
 		return array($sql, $params);
 
@@ -289,7 +289,7 @@ class PdoDB extends BaseDB
 
 		$sql = "UPDATE `" . $tableName . "` SET " . $fieldList . ( $where ? " WHERE " . $where : "" );
 
-		$this->logger->debug("query = {query}", ["method"=>__METHOD__, "query"=>$sql]);
+		$this->logger->debug("query={query}", ["method"=>__METHOD__, "query"=>$sql]);
 
 		return array($sql, array_merge($params, $fieldParams));
 
@@ -316,7 +316,7 @@ class PdoDB extends BaseDB
 
 		$sql = "DELETE FROM `" . $tableName . "`" . ( $where ? " WHERE " . $where : "" );
 
-		$this->logger->debug("query = {query}", ["method"=>__METHOD__, "query"=>$sql]);
+		$this->logger->debug("query={query}", ["method"=>__METHOD__, "query"=>$sql]);
 
 		return array($sql, $params);
 
@@ -459,7 +459,7 @@ class PdoDB extends BaseDB
 			$sql = "(" . $comp . ")";
 		}
 
-		$this->logger->debug("query = {query}", ["method"=>__METHOD__, "query"=>$sql]);
+		$this->logger->debug("query={query}", ["method"=>__METHOD__, "query"=>$sql]);
 
 		return $sql;
 
@@ -488,7 +488,7 @@ class PdoDB extends BaseDB
 			$sql = "(" . rtrim($sql, " " . $op . " ") . ")";
 		}
 
-		$this->logger->debug("query = {query}", ["method"=>__METHOD__, "query"=>$sql]);
+		$this->logger->debug("query={query}", ["method"=>__METHOD__, "query"=>$sql]);
 
 		return $sql;
 
@@ -518,7 +518,7 @@ class PdoDB extends BaseDB
 		$sql = "(match(" . $fieldName . ") against(:" . "key_" . $fieldName . " in boolean mode))";
 		$params["key_" . $fieldName] = $search;
 
-		$this->logger->debug("search = {search}, sql = {sql}", ["method"=>__METHOD__, "search"=>$search, "sql"=>$sql]);
+		$this->logger->debug("search={search}, sql={sql}", ["method"=>__METHOD__, "search"=>$search, "sql"=>$sql]);
 
 		return $sql;
 
@@ -541,7 +541,7 @@ class PdoDB extends BaseDB
 			$sql = "(" . $comp . ")";
 		}
 
-		$this->logger->debug("query = {query}", ["method"=>__METHOD__, "query"=>$sql]);
+		$this->logger->debug("query={query}", ["method"=>__METHOD__, "query"=>$sql]);
 
 		return $sql;
 
@@ -576,7 +576,7 @@ class PdoDB extends BaseDB
 			$sql = "(" . rtrim($sql, " " . $op . " ") . ")";
 		}
 
-		$this->logger->debug("query = {query}", ["method"=>__METHOD__, "query"=>$sql]);
+		$this->logger->debug("query={query}", ["method"=>__METHOD__, "query"=>$sql]);
 
 		return $sql;
 
@@ -706,7 +706,7 @@ class PdoDB extends BaseDB
 	protected function bindParam($cmd, $name, $dataType, $value = null)
 	{
 
-		$this->logger->info("name = {name}, dataType = {dataType}, value = {value}", ["method"=>__METHOD__, "name"=>$name, "dataType"=>$dataType, "value"=>$value]);
+		$this->logger->info("name={name}, dataType={dataType}, value={value}", ["method"=>__METHOD__, "name"=>$name, "dataType"=>$dataType, "value"=>$value]);
 
 		$cmd->bindParam($name, $value, $dataType);
 
@@ -717,7 +717,7 @@ class PdoDB extends BaseDB
 	public function bindValue($cmd, $name, $dataType, $value)
 	{
 
-		$this->logger->info("name = " . $name . ", value = " . $value, ["method"=>__METHOD__, "name"=>$name, "value"=>$value]);
+		$this->logger->info("name=" . $name . ", value=" . $value, ["method"=>__METHOD__, "name"=>$name, "value"=>$value]);
 
 		$cmd->bindValue($name, $value, $dataType);
 

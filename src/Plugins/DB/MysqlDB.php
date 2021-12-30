@@ -38,7 +38,7 @@ class MysqlDB extends PdoDB
 	public function getTotalCount()
 	{
 
-		$this->logger->debug("query = SELECT FOUND_ROWS()", ["method"=>__METHOD__]);
+		$this->logger->debug("query=SELECT FOUND_ROWS()", ["method"=>__METHOD__]);
 
 		$result = 0;
 

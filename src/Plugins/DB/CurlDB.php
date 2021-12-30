@@ -31,7 +31,7 @@ abstract class CurlDB extends BaseDB
 		$this->props["connection"] = curl_init();
 
 		$this->logger->debug(
-			"dsn = {dsn}, user = {user}, password = {password}", [
+			"dsn={dsn}, user={user}, password={password}", [
 				"method" => __METHOD__,
 				"dsn" => $this->props["dsn"],
 				"user" => $this->props["user"],
@@ -53,7 +53,7 @@ abstract class CurlDB extends BaseDB
 			curl_close($this->props["connection"]);
 			$this->props["connection"] = null;
 
-			$this->logger->debug("dsn = {dsn}", ["method"=>__METHOD__, "dsn"=>$this->props["dsn"]]);
+			$this->logger->debug("dsn={dsn}", ["method"=>__METHOD__, "dsn"=>$this->props["dsn"]]);
 		}
 
 	}
@@ -63,7 +63,7 @@ abstract class CurlDB extends BaseDB
 	public function execute($cmd, $params = null)
 	{
 
-		$this->logger->info("method = {httpmethod}, url = {url}", ["method"=>__METHOD__, "httpmethod"=>$cmd["method"], "url"=>$cmd["url"]]);
+		$this->logger->info("method={httpmethod}, url={url}", ["method"=>__METHOD__, "httpmethod"=>$cmd["method"], "url"=>$cmd["url"]]);
 
 		// Init curl
 		$this->initCurl($cmd);
@@ -81,7 +81,7 @@ abstract class CurlDB extends BaseDB
 			]);
 			throw new \RuntimeException("curl_exec() failed. errno=" . curl_errno($this->props["connection"]));
 		}
-		$this->logger->debug("ret = {ret}",["method"=>__METHOD__, "ret"=>$ret]);
+		$this->logger->debug("ret={ret}",["method"=>__METHOD__, "ret"=>$ret]);
 
 		// Convert response
 		$this->props["lastResponse"] = $this->convertResponse($cmd, $ret);
@@ -113,7 +113,7 @@ abstract class CurlDB extends BaseDB
 		if (($cmd["query"] ?? null) !== null)
 		{
 			curl_setopt($this->props["connection"], CURLOPT_POSTFIELDS, $cmd["query"]);
-			$this->logger->info("query = {query}", ["method"=>__METHOD__, "query"=>$cmd["query"]]);
+			$this->logger->info("query={query}", ["method"=>__METHOD__, "query"=>$cmd["query"]]);
 		}
 
 		// Custom

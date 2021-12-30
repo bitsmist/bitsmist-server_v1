@@ -44,7 +44,11 @@ class KeyAuthorizer extends MiddlewareBase
 
 		if (!$isAuthorized)
 		{
-			$logger->alert("Not authorized", ["method"=>__METHOD__]);
+			$logger->alert("Not authorized. method={httpMethod}, resource={resource}", [
+				"method" => __METHOD__,
+				"httpMethod" => $request->getMethod(),
+				"resource" => $request->getAttribute("routeInfo")["args"]["resource"] ?? ""
+			]);
 
 			throw new HttpException(HttpException::ERRNO_PARAMETER_NOTAUTHORIZED, HttpException::ERRMSG_PARAMETER_NOTAUTHORIZED);
 		}

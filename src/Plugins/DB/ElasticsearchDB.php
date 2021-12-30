@@ -174,7 +174,7 @@ class ElasticsearchDB extends CurlDB
 			$type = $response["error"]["root_cause"][0]["type"] ?? "";
 			$reason = $response["error"]["root_cause"][0]["reason"] ?? $response["error"] ?? "";
 
-			$this->logger->error("Elasticsearch returned an error: type = {type}, reason = {reason}", [
+			$this->logger->error("Elasticsearch returned an error. type={type}, reason={reason}", [
 				"method"=>__METHOD__,
 				"type"=>$type,
 				"reason"=>$reason
