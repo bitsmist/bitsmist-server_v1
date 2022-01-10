@@ -116,7 +116,6 @@ class DBUtil
 		{
 			switch ($id)
 			{
-			case "":
 			case $listIdName:
 				$search = $this->buildSearchKeys($search, $gets);
 
@@ -184,7 +183,6 @@ class DBUtil
 				{
 					switch ($id)
 					{
-					case "":
 					case $newIdName:
 						$item = $this->buildFields($fields, $items[$i]);
 						$cnt += $db->insert($settings[$dbName]["tableName"], $item);
@@ -248,7 +246,6 @@ class DBUtil
 			{
 				switch ($id)
 				{
-				case "":
 				case $listIdName:
 					$item = $this->buildFields($fields, $items[0]);
 					$search = $searches[($gets["_search"] ?? "default")] ?? null;
@@ -310,7 +307,6 @@ class DBUtil
 			{
 				switch ($id)
 				{
-					case "":
 					case $listIdName:
 						$search = $searches[($gets["_search"] ?? "default")] ?? null;
 						$search = $this->buildSearchKeys($search, $gets);
