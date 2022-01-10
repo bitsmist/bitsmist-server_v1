@@ -279,6 +279,22 @@ abstract class BaseDB extends PluginBase
     // -------------------------------------------------------------------------
 
 	/**
+	 * Create the database command.
+	 *
+	 * @param		object			$query				Query.
+	 *
+	 * @return		object								Data command.
+	 */
+	public function createCommand($query)
+	{
+
+		return $query;
+
+	}
+
+    // -------------------------------------------------------------------------
+
+	/**
 	 * Get data from database.
 	 *
 	 * @param		object			$cmd				Database command object.
@@ -316,22 +332,6 @@ abstract class BaseDB extends PluginBase
 	// -------------------------------------------------------------------------
 	//	Protected
 	// -------------------------------------------------------------------------
-
-	/**
-	 * Create the database command.
-	 *
-	 * @param		object			$query				Query.
-	 *
-	 * @return		object								Data command.
-	 */
-	protected function createCommand($query)
-	{
-
-		return $query;
-
-	}
-
-    // -------------------------------------------------------------------------
 
 	/**
 	 * Build select query.

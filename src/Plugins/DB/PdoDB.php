@@ -114,6 +114,15 @@ class PdoDB extends BaseDB
 
 	}
 
+	// -------------------------------------------------------------------------
+
+	public function createCommand($sql)
+	{
+
+		return ($this->props["connection"]->prepare($sql));
+
+	}
+
     // -------------------------------------------------------------------------
 
 	public function getData($cmd, $params = null)
@@ -169,15 +178,6 @@ class PdoDB extends BaseDB
 		}
 
 		return $cnt;
-
-	}
-
-	// -------------------------------------------------------------------------
-
-	protected function createCommand($sql)
-	{
-
-		return ($this->props["connection"]->prepare($sql));
 
 	}
 
