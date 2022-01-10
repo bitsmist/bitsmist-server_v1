@@ -250,7 +250,7 @@ class App
 				}
 				catch (\Throwable $ex)
 				{
-					if (ini_get("display_errors"))
+					if ($this->container["settings"]["options"]["show_errors"] ?? false)
 					{
 						$this->showError($ex);
 					}
@@ -269,13 +269,13 @@ class App
 	private function showError($ex)
 	{
 
-		if (ini_get("html_errors"))
+		if ($this->container["settings"]["options"]["show_htmlErrors"] ?? false)
 		{
-			echo "<b>Fatal error</b>: " . $ex->getMessage() . " in <b>" . $ex->getFile() . "</b> on line <b>". $ex->getLine() . "</b><br>";
+			echo "\n\n<b>Fatal error</b>: " . $ex->getMessage() . " in <b>" . $ex->getFile() . "</b> on line <b>". $ex->getLine() . "</b><br>\n" . $ex->getTraceAsString();
 		}
 		else
 		{
-			echo "Fatal error: " . $ex->getMessage() . " in " . $ex->getFile() . " on line ". $ex->getLine();
+			echo "\n\nFatal error: " . $ex->getMessage() . " in " . $ex->getFile() . " on line ". $ex->getLine() . "\n" . $ex->getTraceAsString();
 		}
 
 	}
