@@ -60,11 +60,21 @@ class EchoExceptionHandler extends MiddlewareBase
 
 		if ($settings["options"]["show_htmlErrors"] ?? false)
 		{
-			$msg = "<b>Fatal error</b>: " . $ex->getMessage() . " in <b>" . $ex->getFile() . "</b> on line <b>". $ex->getLine() . "</b><br>\n" . $ex->getTraceAsString();
+			$msg .= "[Message] " . $ex->getMessage() . " in <b>" . $ex->getFile() . "</b> on line <b>". $ex->getLine() . "</b><br>\n";
+			if (method_exists($ex, "getDetailMessage") && $ex->getDetailMessage())
+			{
+				$msg .=	"[Detail] " . $ex->getDetailMessage(). "<br>\n";
+			}
+			$msg .=	"[Stacktrace]\n" . $ex->getTraceAsString();
 		}
 		else
 		{
-			$msg = "Fatal error: " . $ex->getMessage() . " in " . $ex->getFile() . " on line ". $ex->getLine() . "\n" . $ex->getTraceAsString();
+			$msg .= "[Message] " . $ex->getMessage() . " in " . $ex->getFile() . " on line ". $ex->getLine() . "\n";
+			if (method_exists($ex, "getDetailMessage") && $ex->getDetailMessage())
+			{
+				$msg .=	"[Detail] " . $ex->getDetailMessage(). "\n";
+			}
+			$msg .= "[Stacktrace]\n" . $ex->getTraceAsString();
 		}
 
 		return $msg;

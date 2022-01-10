@@ -62,4 +62,42 @@ class HttpException extends Exception
 	/** Error message for exception. */
 	CONST ERRMSG_EXCEPTION						= "Exception occurred.";
 
+	/**
+	 * Detail message.
+	 *
+	 * @var		string
+	 */
+	protected string $detailMessage				= "";
+
+	// -------------------------------------------------------------------------
+	//	Public
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Set detail message.
+	 *
+	 * @param	$msg			Detail message.
+	 *
+	 */
+	public function setDetailMessage(string $msg)
+	{
+
+		$this->detailMessage = $msg;
+
+	}
+
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Get detail message.
+	 *
+	 * @return	string
+	 */
+	public function getDetailMessage(): ?string
+	{
+
+		return $this->detailMessage;
+
+	}
+
 }
