@@ -50,7 +50,7 @@ class KeyAuthorizer extends MiddlewareBase
 				"resource" => $request->getAttribute("routeInfo")["args"]["resource"] ?? ""
 			]);
 
-			throw new HttpException(HttpException::ERRNO_PARAMETER_NOTAUTHORIZED, HttpException::ERRMSG_PARAMETER_NOTAUTHORIZED);
+			throw new HttpException(HttpException::ERRMSG_PARAMETER_NOTAUTHORIZED, HttpException::ERRNO_PARAMETER_NOTAUTHORIZED);
 		}
 
 		return $handler->handle($request);

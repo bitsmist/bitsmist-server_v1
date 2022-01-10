@@ -45,7 +45,7 @@ class HostHeaderValidator extends MiddlewareBase
 				"header" => $hostHeader,
 				"setting" => $hostSetting,
 			]);
-			throw new HttpException(HttpException::ERRNO_PARAMETER, HttpException::ERRMSG_PARAMETER);
+			throw new HttpException(HttpException::ERRMSG_PARAMETER, HttpException::ERRNO_PARAMETER);
 		}
 
 		return $handler->handle($request);

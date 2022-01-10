@@ -146,7 +146,7 @@ class ParameterValidator extends MiddlewareBase
 					"resource" => $request->getAttribute("routeInfo")["args"]["resource"] ?? ""
 				]);
 
-				throw new HttpException(HttpException::ERRNO_PARAMETER, HttpException::ERRMSG_PARAMETER);
+				throw new HttpException(HttpException::ERRMSG_PARAMETER, HttpException::ERRNO_PARAMETER);
 			}
 		}
 
@@ -182,7 +182,7 @@ class ParameterValidator extends MiddlewareBase
 					"resource" => $request->getAttribute("routeInfo")["args"]["resource"] ?? ""
 				]);
 
-				throw new HttpException(HttpException::ERRNO_PARAMETER, HttpException::ERRMSG_PARAMETER);
+				throw new HttpException(HttpException::ERRMSG_PARAMETER, HttpException::ERRNO_PARAMETER);
 			}
 
 			// Validate a parameter

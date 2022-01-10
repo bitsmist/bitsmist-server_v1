@@ -78,11 +78,11 @@ class RouteInitializer extends MiddlewareBase
 		{
 		case \FastRoute\Dispatcher::NOT_FOUND:
 			header("HTTP/1.1 404 OK\r\n");
-			throw new HttpException(HttpException::ERRNO_PARAMETER_INVALIDROUTE, HttpException::ERRMSG_PARAMETER_INVALIDROUTE);
+			throw new HttpException(HttpException::ERRMSG_PARAMETER_INVALIDROUTE, HttpException::ERRNO_PARAMETER_INVALIDROUTE);
 			break;
 		case \FastRoute\Dispatcher::METHOD_NOT_ALLOWED:
 			header("HTTP/1.1 405 OK\r\n");
-			throw new HttpException(HttpException::ERRNO_PARAMETER_INVALIDMETHOD, HttpException::ERRMSG_PARAMETER_INVALIDMETHOD);
+			throw new HttpException(HttpException::ERRMSG_PARAMETER_INVALIDMETHOD, HttpException::ERRNO_PARAMETER_INVALIDMETHOD);
 			break;
 		case \FastRoute\Dispatcher::FOUND:
 			$routeName = $routeinfo[1];

@@ -62,23 +62,4 @@ class HttpException extends Exception
 	/** Error message for exception. */
 	CONST ERRMSG_EXCEPTION						= "Exception occurred.";
 
-	// -------------------------------------------------------------------------
-	//	Constructor, Destructor
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Constructor.
-	 *
-	 * @param	$errNo			Error number.
-	 * @param	$errMessages	Error message.
-	 */
-	public function __construct(int $errNo, string $errMessage = "")
-	{
-
-		$this->props["code"] = $errNo;
-		$this->props["message"] = $errMessage;
-		parent::__construct($this->props["message"], $this->props["code"]);
-
-	}
-
 }

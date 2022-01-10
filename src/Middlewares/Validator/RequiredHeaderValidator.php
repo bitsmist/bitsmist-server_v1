@@ -45,7 +45,7 @@ class RequiredHeaderValidator extends MiddlewareBase
 					"method" => __METHOD__,
 					"headerName" => $headerName,
 				]);
-				throw new HttpException(HttpException::ERRNO_PARAMETER, HttpException::ERRMSG_PARAMETER);
+				throw new HttpException(HttpException::ERRMSG_PARAMETER, HttpException::ERRNO_PARAMETER);
 			}
 		}
 

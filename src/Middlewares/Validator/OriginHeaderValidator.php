@@ -44,7 +44,7 @@ class OriginHeaderValidator extends MiddlewareBase
 				"method" => __METHOD__,
 				"origin" => $originHeader
 			]);
-			throw new HttpException(HttpException::ERRNO_PARAMETER, HttpException::ERRMSG_PARAMETER);
+			throw new HttpException(HttpException::ERRMSG_PARAMETER, HttpException::ERRNO_PARAMETER);
 		}
 
 		return $handler->handle($request);
