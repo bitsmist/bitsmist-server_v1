@@ -145,12 +145,12 @@ class PluginService implements \ArrayAccess, \Countable, \IteratorAggregate
 	/**
 	 * Call the plugin method.
 	 *
-	 * @param	$name			Method name.
+	 * @param	$methodName		Method name.
 	 * @param	$args			Arguments to the method.
 	 *
 	 * @return	Method resuls.
 	 */
-	public function __call(string $name, ?array $args): array
+	public function __call(string $methodName, ?array $args): array
 	{
 
 		$ret = array();
@@ -158,7 +158,16 @@ class PluginService implements \ArrayAccess, \Countable, \IteratorAggregate
 		foreach ($this->plugins->keys() as $pluginName)
 		{
 			$plugin = $this->plugins[$pluginName];
-			$ret[] = call_user_func_array(array($plugin, $name), $args);
+
+			// Check if the plugin has method
+			if (!method_exists($plugin, $methodName))
+			{
+				$msg = sprintf("Plugin does not have a method. pluginName=%s, methodName=%s", $pluginName, $methodName);
+				throw new \RunTimeException($msg);
+			}
+
+			// Execute
+			$ret[] = call_user_func_array(array($plugin, $methodName), $args);
 		}
 
 		return $ret;
