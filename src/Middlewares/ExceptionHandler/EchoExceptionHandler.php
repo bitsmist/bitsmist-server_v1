@@ -30,15 +30,44 @@ class EchoExceptionHandler extends MiddlewareBase
 	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
-		$exception = $request->getAttribute("exception");
 
-//		echo "Error code:\t {$exception->getCode()}<br>";
-		echo "Error message:\t {$exception->getMessage()}<br>";
-		echo "Error file:\t {$exception->getFile()}<br>";
-		echo "Error lineno:\t {$exception->getLine()}<br>";
-		echo "Error trace:\t {$exception->getTraceAsString()}<br>";
+		$response = $handler->handle($request);
 
-		return $handler->handle($request);
+		// Add an error msg to response body
+		$response->getBody()->write($response->getBody()->getContents() . "\n\n" . $this->getErrorMsg($request));
+
+		return $response;
+
+	}
+
+	// -------------------------------------------------------------------------
+	// 	Private
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Get an error message.
+	 *
+	 * @param	$request		Request object.
+	 *
+	 * @return	string.
+	 */
+	private function getErrorMsg($request)
+	{
+
+		$ex = $request->getAttribute("exception");
+		$settings = $request->getAttribute("settings");
+		$msg = "";
+
+		if ($settings["options"]["show_htmlErrors"] ?? false)
+		{
+			$msg = "<b>Fatal error</b>: " . $ex->getMessage() . " in <b>" . $ex->getFile() . "</b> on line <b>". $ex->getLine() . "</b><br>\n" . $ex->getTraceAsString();
+		}
+		else
+		{
+			$msg = "Fatal error: " . $ex->getMessage() . " in " . $ex->getFile() . " on line ". $ex->getLine() . "\n" . $ex->getTraceAsString();
+		}
+
+		return $msg;
 
 	}
 
