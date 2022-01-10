@@ -138,15 +138,18 @@ class ParameterValidator extends MiddlewareBase
 			$validations = $allowedList[$key]["validator"] ?? [];
 			if (in_array("REQUIRED", $validations) && !array_key_exists($key, $target))
 			{
-				$request->getAttribute("services")["logger"]->alert("Missing {type} parameter. parameter={key}, method={httpMethod}, resource={resource}", [
-					"method" => __METHOD__,
-					"type" => $type,
-					"key" => $key,
-					"httpMethod" => $request->getMethod(),
-					"resource" => $request->getAttribute("routeInfo")["args"]["resource"] ?? ""
-				]);
+				$msg = sprintf("Missing %s parameter. parameter=%s, method=%s, resource=%s",
+					$type,
+					$key,
+					$request->getMethod(),
+					$request->getAttribute("routeInfo")["args"]["resource"] ?? ""
+				);
 
-				throw new HttpException(HttpException::ERRMSG_PARAMETER, HttpException::ERRNO_PARAMETER);
+				$request->getAttribute("services")["logger"]->alert("{msg}", ["method" => __METHOD__, "msg" => $msg]);
+
+				$e = new HttpException(HttpException::ERRMSG_PARAMETER, HttpException::ERRNO_PARAMETER);
+				$e->setDetailMessage($msg);
+				throw $e;
 			}
 		}
 
@@ -173,16 +176,18 @@ class ParameterValidator extends MiddlewareBase
 			// Check whether a parameter is in the list
 			if (!$ignoreExtraParams && !array_key_exists($key, $allowedList))
 			{
-				$request->getAttribute("services")["logger"]->alert("Invaild {type} parameter. parameter={key}, method={httpMethod}, resource={resource}", [
-					"method" => __METHOD__,
-					"type" => $type,
-					"key" => $key,
-//					"value" => $value,
-					"httpMethod" => $request->getMethod(),
-					"resource" => $request->getAttribute("routeInfo")["args"]["resource"] ?? ""
-				]);
+				$msg = sprintf("Invaild %s parameter. parameter=%s, method=%s, resource=%s",
+					$type,
+					$key,
+					$request->getMethod(),
+					$request->getAttribute("routeInfo")["args"]["resource"] ?? ""
+				);
 
-				throw new HttpException(HttpException::ERRMSG_PARAMETER, HttpException::ERRNO_PARAMETER);
+				$request->getAttribute("services")["logger"]->alert("{msg}", ["method" => __METHOD__, "msg" => $msg]);
+
+				$e = new HttpException(HttpException::ERRMSG_PARAMETER, HttpException::ERRNO_PARAMETER);
+				$e->setDetailMessage($msg);
+				throw $e;
 			}
 
 			// Validate a parameter

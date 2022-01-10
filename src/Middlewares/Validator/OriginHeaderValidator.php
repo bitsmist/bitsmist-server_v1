@@ -40,11 +40,13 @@ class OriginHeaderValidator extends MiddlewareBase
 		// Check if origin is in allowed origins list
 		if ($originHeader && !in_array($originHeader, $allowedOrigins))
 		{
-			$logger = $request->getAttribute("services")["logger"]->alert("Invalid origin. origin={origin}", [
-				"method" => __METHOD__,
-				"origin" => $originHeader
-			]);
-			throw new HttpException(HttpException::ERRMSG_PARAMETER, HttpException::ERRNO_PARAMETER);
+			$msg = sprintf("Invalid origin. origin=%s", $originHeader);
+
+			$request->getAttribute("services")["logger"]->alert("{msg}", ["method" => __METHOD__, "msg" => $msg]);
+
+			$e = new HttpException(HttpException::ERRMSG_PARAMETER, HttpException::ERRNO_PARAMETER);
+			$e->setDetailMessage($msg);
+			throw $e;
 		}
 
 		return $handler->handle($request);

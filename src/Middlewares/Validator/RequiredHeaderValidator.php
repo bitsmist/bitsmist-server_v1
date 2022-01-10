@@ -41,11 +41,13 @@ class RequiredHeaderValidator extends MiddlewareBase
 		{
 			if (!isset($headers[strtolower($headerName)][0]))
 			{
-				$request->getAttribute("services")["logger"]->alert("Required header doesn't exist. headerName={headerName}", [
-					"method" => __METHOD__,
-					"headerName" => $headerName,
-				]);
-				throw new HttpException(HttpException::ERRMSG_PARAMETER, HttpException::ERRNO_PARAMETER);
+				$msg = sprintf("Required header doesn't exist. headerName=%s", $headerName);
+
+				$request->getAttribute("services")["logger"]->alert("{msg}", ["method" => __METHOD__, "msg" => $msg]);
+
+				$e = new HttpException(HttpException::ERRMSG_PARAMETER, HttpException::ERRNO_PARAMETER);
+				$e->setDetailMessage($msg);
+				throw $e;
 			}
 		}
 

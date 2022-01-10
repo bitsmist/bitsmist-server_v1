@@ -40,12 +40,13 @@ class HostHeaderValidator extends MiddlewareBase
 		// Check if host header is valid
 		if ($hostHeader != $hostSetting)
 		{
-			$request->getAttribute("services")["logger"]->alert("Invalid host. header={header}, setting={setting}", [
-				"method" => __METHOD__,
-				"header" => $hostHeader,
-				"setting" => $hostSetting,
-			]);
-			throw new HttpException(HttpException::ERRMSG_PARAMETER, HttpException::ERRNO_PARAMETER);
+			$msg = sprintf("Invalid host. header=%s, setting=%s", $hostHeader, $hostSetting);
+
+			$request->getAttribute("services")["logger"]->alert("{msg}", ["method" => __METHOD__, "msg" => $msg]);
+
+			$e = new HttpException(HttpException::ERRMSG_PARAMETER, HttpException::ERRNO_PARAMETER);
+			$e->setDetailMessage($msg);
+			throw $e;
 		}
 
 		return $handler->handle($request);
