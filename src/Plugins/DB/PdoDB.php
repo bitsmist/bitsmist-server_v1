@@ -30,8 +30,6 @@ class PdoDB extends BaseDB
 
 		parent::__construct($name, $options, $container);
 
-        $this->props["dbType"] = "PDO";
-
 	}
 
 	// -------------------------------------------------------------------------
@@ -611,7 +609,9 @@ class PdoDB extends BaseDB
 			break;
 		case "@SESSION_USER_ID@":
 			$ret = $fieldName . " " . $comparer . " :" . $this->escape($parameterName);
-			$params[$parameterName] = $_SESSION["USER"]["ID"];
+			$rootName = $this->container["settings"]["options"]["session"]["name"] ?? "authInfo";
+			$idName = $this->container["settings"]["options"]["session"]["user"]["idName"] ?? "id";
+			$params[$parameterName] = $_SESSION[$rootName][$idName];
 			break;
 		default:
 			$ret = $fieldName . " " . $comparer . " :" . $this->escape($parameterName);
@@ -647,7 +647,9 @@ class PdoDB extends BaseDB
 			break;
 		case "@SESSION_USER_ID@":
 			$ret = ":" . $this->escape($key);
-			$params[$key] = $_SESSION["USER"]["ID"] ?? null;
+			$rootName = $this->container["settings"]["options"]["session"]["name"] ?? "authInfo";
+			$idName = $this->container["settings"]["options"]["session"]["user"]["idName"] ?? "id";
+			$params[$key] = $_SESSION[$rootName][$idName];
 			break;
 		default:
 			$ret = ":" . $this->escape($key);
