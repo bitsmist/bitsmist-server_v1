@@ -33,7 +33,7 @@ class FormatterUtil extends PluginBase
 	 *
 	 * @return	Formatted value.
 	 */
-	static public function format($value, ?string $type, ?string $format)
+	public static function format($value, ?string $type, ?string $format)
 	{
 
 		$ret = $value;

@@ -30,7 +30,7 @@ class Util extends PluginBase
 	 *
 	 * @var	array
 	 */
-	static public $replaceDic = null;
+	public static $replaceDic = null;
 
 	// -------------------------------------------------------------------------
 	//	public
@@ -41,7 +41,7 @@ class Util extends PluginBase
 	 *
 	 * @param	$options		Options.
 	 */
-	static public function setIni(?array $options)
+	public static function setIni(?array $options)
 	{
 
 		foreach ((array)$options as $key => $value)
@@ -61,7 +61,7 @@ class Util extends PluginBase
 	 *
 	 * @return	Instance.
 	 */
-	static public function resolveInstance($options, ...$args)
+	public static function resolveInstance($options, ...$args)
 	{
 
 		$obj = null;
@@ -94,7 +94,7 @@ class Util extends PluginBase
 	 *
 	 * @return	Replaced strings.
      */
-	static public function replaceVars($targets, ?array $dics = null)
+	public static function replaceVars($targets, ?array $dics = null)
 	{
 
 		$from = array();
