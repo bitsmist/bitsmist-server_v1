@@ -101,10 +101,10 @@ class DBUtil
 		$fields = $this->buildFieldsSelect($this->options["fields"] ?? null);
 		$searches = $this->options["searches"] ?? null;
 		$orders = $this->options["orders"] ?? null;
-		$limitParamName = $this->options["specialParameters"]["limit"] ?? "_limit";
-		$offsetParamName = $this->options["specialParameters"]["offset"] ?? "_offset";
-		$orderParamName = $this->options["specialParameters"]["order"] ?? "_order";
-		$listIdName = $this->options["specialParameters"]["list"] ?? "list";
+		$limitParamName = $settings["options"]["query"]["specialParameters"]["limit"] ?? "_limit";
+		$offsetParamName = $settings["options"]["query"]["specialParameters"]["offset"] ?? "_offset";
+		$orderParamName = $settings["options"]["query"]["specialParameters"]["order"] ?? "_order";
+		$listIdName = $settings["options"]["query"]["specialParameters"]["list"] ?? "list";
 
 		$search = $searches[($gets["_search"] ?? "default")] ?? null;
 		$limit = $gets[$limitParamName] ?? null;
@@ -168,7 +168,7 @@ class DBUtil
 		$id = $request->getAttribute("routeInfo")["args"]["id"] ?? "";
 		$settings = $request->getAttribute("settings");
 		$fields = $this->options["fields"] ?? null;
-		$newIdName = $this->options["specialParameters"]["new"] ?? "new";
+		$newIdName = $settings["options"]["query"]["specialParameters"]["new"] ?? "new";
 		$items = $this->getParamsFromBody($request, $settings["options"] ?? null);
 
 		$data = null;
@@ -234,7 +234,7 @@ class DBUtil
 		$settings = $request->getAttribute("settings");
 		$fields = $this->options["fields"] ?? null;
 		$searches = $this->options["searches"] ?? null;
-		$listIdName = $this->options["specialParameters"]["list"] ?? "list";
+		$listIdName = $settings["options"]["query"]["specialParameters"]["list"] ?? "list";
 		$items = $this->getParamsFromBody($request, $settings["options"] ?? null);
 
 		foreach ($request->getAttribute("services")["db"] as $dbName => $db)
@@ -297,7 +297,7 @@ class DBUtil
 		$gets = $request->getQueryParams();
 		$settings = $request->getAttribute("settings");
 		$searches = $this->options["searches"] ?? null;
-		$listIdName = $this->options["specialParameters"]["list"] ?? "list";
+		$listIdName = $settings["options"]["query"]["specialParameters"]["list"] ?? "list";
 
 		foreach ($request->getAttribute("services")["db"] as $dbName => $db)
 		{

@@ -34,8 +34,8 @@ class PaginationHandler extends MiddlewareBase
 		$offset = 0;
 		$pagination = null;
 		$settings = $request->getAttribute("settings");
-		$limitParameterName = $settings["specialParameters"]["limit"] ?? "_limit";
-		$offsetParameterName = $settings["specialParameters"]["offset"] ?? "_offset";
+		$limitParameterName = $settings["options"]["query"]["specialParameters"]["limit"] ?? "_limit";
+		$offsetParameterName = $settings["options"]["query"]["specialParameters"]["offset"] ?? "_offset";
 		$gets = $request->getQueryParams();
 
 		if (strtolower($request->getMethod()) == "get")
