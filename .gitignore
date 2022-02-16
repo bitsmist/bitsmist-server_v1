@@ -1,8 +1,5 @@
 /config/
-/libs/
 /public/
 /sites/
-/specs/
-/test/
 /vendor/
 composer.lock
