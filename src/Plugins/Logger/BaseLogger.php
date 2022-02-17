@@ -90,25 +90,4 @@ class BaseLogger extends PluginBase
 	{
 	}
 
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Convert an object to string with var_dump().
-	 *
-	 * @param	$target			Object to be converted.
-	 *
-	 * @return	Converted object.
-	 */
-	public function dumpObject($target)
-	{
-
-		ob_start();
-		var_dump($target);
-		$str =rtrim(ob_get_contents());
-		ob_end_clean();
-
-		return $str;
-
-	}
-
 }
