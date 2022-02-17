@@ -119,6 +119,7 @@ class ElasticsearchDB extends CurlDB
 
 		$type = "_doc";
 		$command = "";
+
 		if (!array_key_exists("id", $cmd))
 		{
 			switch ($cmd["crud"])
@@ -129,6 +130,7 @@ class ElasticsearchDB extends CurlDB
 				break;
 			case "UPDATE" :
 				$command = "_update_by_query";
+				$type = "";
 				break;
 			case "DELETE" :
 				$command = "_delete_by_query";
@@ -141,7 +143,7 @@ class ElasticsearchDB extends CurlDB
 			switch ($cmd["crud"])
 			{
 			case "UPDATE" :
-				$type = "_update";
+				$command = "_update";
 				break;
 			}
 		}
@@ -348,7 +350,12 @@ class ElasticsearchDB extends CurlDB
 		$query["script"] = "";
 		foreach ($fields as $key => $item)
 		{
-			$query["script"] .= "ctx._source." . $key . "=\"" . $this->buildValue($key, $item) . "\";";
+			$value = $this->buildValue($key, $item);
+			if ($value === null) {
+				$query["script"] .= "ctx._source." . $key . "=null;";
+			} else {
+				$query["script"] .= "ctx._source." . $key . "=\"" . $value . "\";";
+			}
 		}
 
 		// Key
