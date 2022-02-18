@@ -475,7 +475,7 @@ class DBUtil
 				$item["value"] = $parameters[$parameterName];
 			}
 
-			if ($item["value"] ?? null)
+			if (array_key_exists("value", $item))
 			{
 				$result[$key] = $item;
 			}
