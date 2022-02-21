@@ -729,7 +729,7 @@ class ElasticsearchDB extends CurlDB
 		switch($item["type"] ?? null)
 		{
 		case "DATE":
-			$ret = date(DATE_ISO8601, strtotime($value));
+			$ret = $quote . date(\DateTime::ATOM, strtotime($ret)) . $quote;
 			break;
 		}
 
@@ -742,7 +742,7 @@ class ElasticsearchDB extends CurlDB
 	protected function getDBDateTime()
 	{
 
-		$command = date(DATE_ISO8601);
+		$command = date(\DateTime::ATOM);
 
 		return $command;
 
