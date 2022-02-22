@@ -69,7 +69,7 @@ class SettingsInitializer extends MiddlewareBase
 		$appInfo["rootDir"] = Util::replaceVars($settings["options"]["appRoot"] ?? "{sysRoot}/sites/v{appVer}/{appName}");
 		Util::$replaceDic["appRoot"] = $appInfo["rootDir"];
 
-		// check app root
+		// Check app root
 		if (!file_exists($appInfo["rootDir"]))
 		{
 			throw new \RuntimeException(sprintf("App root dir does not exist. rootDir=%s", $appInfo["rootDir"]));
