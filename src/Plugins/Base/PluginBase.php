@@ -70,4 +70,23 @@ class PluginBase
 
 	}
 
+	// -------------------------------------------------------------------------
+	//	Public
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Get a specified plugin option.
+	 *
+	 * @param	string		$optionsName		Option name to get.
+	 * @param	object		$default			A value to return when no option is set.
+	 *
+	 * @return	Object
+	 */
+	public function getOption(string $optionName, $default = null)
+	{
+
+		return $this->options[$optionName] ?? $default;
+
+	}
+
 }
