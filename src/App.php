@@ -127,7 +127,7 @@ class App
 		}
 		catch (\Throwable $e)
 		{
-			$this->handleError($e, "Error occured in " . $stage);
+			$this->handleError($e, "Error occured in " . $stage . ".");
 		}
 
 	}
@@ -253,6 +253,7 @@ class App
 		// Can be modified in error handling middlewares
 		http_response_code(500);
 
+		$ex2 = null;
 		try
 		{
 			// Dispatch error middleware chain
@@ -263,15 +264,16 @@ class App
 			$response = $this->container["services"]["errorController"]->dispatch($request);
 			$this->container["services"]["emitter"]->emit($response);
 		}
-		catch (\Throwable $ex2)
+		catch (\Throwable $e)
 		{
+			$ex2 = $e;
 		}
 
 		// Show errors
 		$this->showError($ex, $extraMsg);
 		if ($ex2)
 		{
-			$this->showError($ex2, "Error occured in error middleware chain");
+			$this->showError($ex2, "Error occured in error middleware chain.");
 		}
 
 	}
