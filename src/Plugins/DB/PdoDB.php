@@ -338,7 +338,7 @@ class PdoDB extends BaseDB
 
 		foreach ((array)$fields as $key => $item)
 		{
-			if (array_key_exists("fieldName", $item))
+			if (array_key_exists("fieldName", (array)$item))
 			{
 				$fieldList .= $this->escape($item["fieldName"]) . " AS " . $this->escape($key) . ",";
 			}
