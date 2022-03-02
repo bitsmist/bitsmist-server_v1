@@ -13,6 +13,7 @@ namespace Bitsmist\v1\Utils;
 
 use Bitsmist\v1\Plugins\Base\PluginBase;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 
 // =============================================================================
 //	Utility class
@@ -110,5 +111,68 @@ class Util extends PluginBase
 		return str_replace($from, $to, $targets ?? "");
 
 	}
+
+	// -------------------------------------------------------------------------
+
+	/**
+  	 * Convert an indexed array to an associative array.
+	 *
+	 * @param	$target			Array to convert.
+	 *
+	 * @return	array			Converted array.
+     */
+	public static function convertToAssocArray(?array $target): array
+	{
+
+		$result = array();
+
+		foreach ((array)$target as $key => $value)
+		{
+			if (is_int($key))
+			{
+				$key = $value;
+				$value = null;
+			}
+
+			$result[$key] = $value;
+		}
+
+		return $result;
+
+	}
+
+	// -------------------------------------------------------------------------
+
+	/**
+  	 * Get items array from body.
+	 *
+	 * @param	$request		Request object.
+	 * @param	$options		Options.
+	 *
+	 * @return	array			Parameter arrays.
+     */
+	public static function getItemsFromBody(ServerRequestInterface $request, $options)
+	{
+
+		$itemsParamName = $options["body"]["specialParameters"]["items"] ?? null;
+		$itemParamName = $options["body"]["specialParameters"]["item"] ?? null;
+
+		if ($itemParamName)
+		{
+			$items = array(($request->getParsedBody())[$itemParamName] ?? null);
+		}
+		else if ($itemsParamName)
+		{
+			$items = ($request->getParsedBody())[$itemsParamName] ?? null;
+		}
+		else
+		{
+			$items = array($request->getParsedBody());
+		}
+
+		return $items;
+
+	}
+
 
 }

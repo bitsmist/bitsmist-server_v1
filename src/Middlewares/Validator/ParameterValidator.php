@@ -13,6 +13,7 @@ namespace Bitsmist\v1\Middlewares\Validator;
 
 use Bitsmist\v1\Exceptions\HttpException;
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
+use Bitsmist\v1\Utils\Util;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -35,14 +36,14 @@ class ParameterValidator extends MiddlewareBase
 
 		// Check query parameters
 		$allowedList = $options["query"]["parameters"] ?? array();
-		$allowedList = $this->alignArray($allowedList);
+		$allowedList = Util::convertToAssocArray($allowedList);
 		$this->checkMissing($request, $request->getQueryParams(), $allowedList, "query");
 		$this->checkValidity($request, $request->getQueryParams(), $allowedList, "query");
 
 		// Check body parameters
 		$allowedList = $options["body"]["parameters"] ?? array();
-		$allowedList = $this->alignArray($allowedList);
-		$items = $this->getParamsFromBody($request, $options);
+		$allowedList = Util::convertToAssocArray($allowedList);
+		$items = Util::getItemsFromBody($request, $options);
 		foreach ((array)$items as $item)
 		{
 			$this->checkMissing($request, $item, $allowedList, "body");
@@ -55,68 +56,6 @@ class ParameterValidator extends MiddlewareBase
 
 	// -------------------------------------------------------------------------
 	//	Private
-	// -------------------------------------------------------------------------
-
-	/**
-  	 * Convert an indexed array to an associative array.
-	 *
-	 * @param	$target			Array to convert.
-	 *
-	 * @return	array			Converted array.
-     */
-	private function alignArray(array $target): array
-	{
-
-		$result = array();
-
-		foreach ($target as $key => $value)
-		{
-			if (is_numeric($key))
-			{
-				$key = $value;
-				$value = null;
-			}
-
-			$result[$key] = $value;
-		}
-
-		return $result;
-
-	}
-
-	// -------------------------------------------------------------------------
-
-	/**
-  	 * Get parameter arrays from body.
-	 *
-	 * @param	$request		Request object.
-	 * @param	$options		Options.
-	 *
-	 * @return	array			Parameter arrays.
-     */
-	private function getParamsFromBody(ServerRequestInterface $request, $options)
-	{
-
-		$itemsParamName = $options["body"]["specialParameters"]["items"] ?? null;
-		$itemParamName = $options["body"]["specialParameters"]["item"] ?? null;
-
-		if ($itemParamName)
-		{
-			$items = array(($request->getParsedBody())[$itemParamName] ?? null);
-		}
-		else if ($itemsParamName)
-		{
-			$items = ($request->getParsedBody())[$itemsParamName] ?? null;
-		}
-		else
-		{
-			$items = array($request->getParsedBody());
-		}
-
-		return $items;
-
-	}
-
 	// -------------------------------------------------------------------------
 
 	/**
