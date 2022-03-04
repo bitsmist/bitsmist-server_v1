@@ -12,7 +12,7 @@
 namespace Bitsmist\v1\Middlewares\Handler;
 
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
-use Bitsmist\v1\Utils\DBUtil;
+use Bitsmist\v1\Utils\DBGatewayUtil;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -35,7 +35,7 @@ class DBHandler extends MiddlewareBase
 		if ($dbCount > 0)
 		{
 			// Handle database
-			$db = new DBUtil($this->options);
+			$db = new DBGatewayUtil($this->options);
 			$methodName = strtolower($request->getMethod()) . "Items";
 			$data = $db->$methodName($request);
 

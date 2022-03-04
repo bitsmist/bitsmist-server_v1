@@ -12,7 +12,7 @@
 namespace Bitsmist\v1\Middlewares\Authenticator;
 
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
-use Bitsmist\v1\Utils\DBUtil;
+use Bitsmist\v1\Utils\DBGatewayUtil;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -34,7 +34,7 @@ class DBLoginAuthenticator extends MiddlewareBase
 		$logger = $request->getAttribute("services")["logger"];
 
 		// Handle database
-		$db = new DBUtil($this->options);
+		$db = new DBGatewayUtil($this->options);
 		$data = $db->getItems($request);
 
 		if ($db->lastResult["count"] == 1)

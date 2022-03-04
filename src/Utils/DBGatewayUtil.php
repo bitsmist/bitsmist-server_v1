@@ -15,10 +15,10 @@ use Bitsmist\v1\Utils\Util;
 use Psr\Http\Message\ServerRequestInterface;
 
 // =============================================================================
-//	Database utility class
+//	Database Gateway utility class
 // =============================================================================
 
-class DBUtil
+class DBGatewayUtil
 {
 
 	// -------------------------------------------------------------------------
@@ -552,7 +552,7 @@ class DBUtil
 	 *
 	 * @return	Parameter array.
 	 */
-	private function buildFieldsFromParameters(array $parameters): ?array
+	private function buildFieldsFromParameters(?array $parameters): ?array
 	{
 
 		$result = array();
