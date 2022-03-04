@@ -11,6 +11,7 @@
 
 namespace Bitsmist\v1\Utils;
 
+use Bitsmist\v1\Utils\Util;
 use Psr\Http\Message\ServerRequestInterface;
 
 // =============================================================================
@@ -25,39 +26,18 @@ class DBUtil
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Record count of the last DB.
-	 *
-	 * @var	int		Record count
-	 */
-	public $resultCount = 0;
-
-	/**
-	 * Record counts.
-	 *
-	 * @var	array	Record counts
-	 */
-	public $resultCounts;
-
-	/**
-	 * Total record count of the last DB.
-	 *
-	 * @var	int	Total record count
-	 */
-	public $totalCount = 0;
-
-	/**
-	 * Total record counts.
-	 *
-	 * @var	array	Total record count
-	 */
-	public $totalCounts;
-
-	/**
 	 * Data retrieved from DB.
 	 *
-	 * @var	array	Total record count
+	 * @var	array	Data
 	 */
-	public $data;
+	public $results;
+
+	/**
+	 * Data retrieved from the last DB.
+	 *
+	 * @var	array	Data
+	 */
+	public $lastResult;
 
 	// -------------------------------------------------------------------------
 	//	Constructor, Destructor
@@ -76,7 +56,7 @@ class DBUtil
 	}
 
 	// -------------------------------------------------------------------------
-	//	Protected
+	//	Public
 	// -------------------------------------------------------------------------
 
 	/**
@@ -89,62 +69,45 @@ class DBUtil
 	public function getItems(ServerRequestInterface $request): ?array
 	{
 
-		$this->resultCount = 0;
-		$this->totalCount = 0;
-		$this->resultCounts = array();
-		$this->totalCounts = array();
-		$this->data = array();
-
-		$id = $request->getAttribute("routeInfo")["args"]["id"] ?? "";
-		$gets = $request->getQueryParams();
+		// Get settings
 		$settings = $request->getAttribute("settings");
-		$fields = $this->buildFieldsSelect($this->options["fields"] ?? null);
-		$searches = $this->options["searches"] ?? null;
-		$orders = $this->options["orders"] ?? null;
-		$limitParamName = $settings["options"]["query"]["specialParameters"]["limit"] ?? "_limit";
-		$offsetParamName = $settings["options"]["query"]["specialParameters"]["offset"] ?? "_offset";
-		$orderParamName = $settings["options"]["query"]["specialParameters"]["order"] ?? "_order";
 		$listIdName = $settings["options"]["query"]["specialParameters"]["list"] ?? "list";
 
-		$search = $searches[($gets["_search"] ?? "default")] ?? null;
-		$limit = $gets[$limitParamName] ?? null;
-		$offset = $gets[$offsetParamName] ?? null;
-		$order = $orders[($gets[$orderParamName] ?? "default")] ?? null;
+		// Get Parameters
+		$id = $this->getID($request);
+		list ($limit, $offset) = $this->getLimitOffset($settings, $request->getQueryParams());
 
-		$data = null;
+		$this->initResults();
 		foreach ($request->getAttribute("services")["db"] as $dbName => $db)
 		{
+			$fields = $this->getField($settings, null, $db->getOption("fields"));
+
 			switch ($id)
 			{
 			case $listIdName:
-				$search = $this->buildSearchKeys($search, $gets);
-
-				// Get data
-				$data = $db->select($settings[$dbName]["tableName"], $fields, $search, $order, $limit, $offset);
-				if ($data) {
-					$this->resultCount = count($data);
-					$this->totalCount = count($data);
-				}
-
-				// Get total count
-				if ($limit)
-				{
-					$this->totalCount = $db->getTotalCount();
-				}
+				$search = $this->getSearch($settings, $request->getQueryParams(), $db->getOption("searches"));
+				$order = $this->getOrder($settings, $request->getQueryParams());
+				$items = $db->select($settings[$dbName]["tableName"], $fields, $search, $order, $limit, $offset);
 				break;
 			default:
-				$data = $db->selectById($settings[$dbName]["tableName"], $fields, [ "fieldName" => $settings[$dbName]["keyName"] ?? "", "value" => $id ]);
-				$this->resultCount = count($data);
-				$this->totalCount = count($data);
+				$items = $db->selectById($settings[$dbName]["tableName"], $fields, [ "fieldName" => $settings[$dbName]["keyName"] ?? "", "value" => $id ]);
 				break;
 			}
 
-			$this->resultCounts[] = $this->resultCount;
-			$this->totalCounts[] = $this->totalCount;
-			$this->data[] = $data;
+			if ($items) {
+				$count = $totalCount = count($items);
+			}
+
+			// Get total count
+			if ($limit)
+			{
+				$totalCount = $db->getTotalCount();
+			}
+
+			$this->addResult($count, $totalCount, $items);
 		}
 
-		return $data;
+		return $items;
 
 	}
 
@@ -160,21 +123,18 @@ class DBUtil
 	public function postItems(ServerRequestInterface $request): ?array
 	{
 
-		$this->resultCount = 0;
-		$this->totalCount = 0;
-		$this->resultCounts = array();
-		$this->totalCounts = array();
-
-		$id = $request->getAttribute("routeInfo")["args"]["id"] ?? "";
+		// Get settings
 		$settings = $request->getAttribute("settings");
-		$fields = $this->options["fields"] ?? null;
 		$newIdName = $settings["options"]["query"]["specialParameters"]["new"] ?? "new";
-		$items = $this->getParamsFromBody($request, $settings["options"] ?? null);
 
-		$data = null;
+		// Get parameters
+		$id = $this->getID($request);
+		$items = Util::getItemsFromBody($request, $settings["options"] ?? null);
+
+		$this->initResults();
 		foreach ($request->getAttribute("services")["db"] as $dbName => $db)
 		{
-			// beginTrans()
+			$db->beginTrans();
 
 			try
 			{
@@ -184,31 +144,29 @@ class DBUtil
 					switch ($id)
 					{
 					case $newIdName:
-						$item = $this->buildFields($fields, $items[$i]);
+						$item = $this->getField($settings, $items[$i], $db->getOption("fields"));
 						$cnt += $db->insert($settings[$dbName]["tableName"], $item);
 						break;
 					default:
-						$item = $this->buildFields($fields, $items[$i]);
+						$item = $this->getField($settings, $items[$i], $db->getOption("fields"));
 						$cnt += $db->insertWithId($settings[$dbName]["tableName"], $item, ["fieldName" => $settings[$dbName]["keyName"] ?? "", "value" => $id]);
 						break;
 					}
 				}
-				$this->resultCount = $cnt;
-				$this->totalCount = $cnt;
 
-				// commitTrans($dbName);
+				$db->commitTrans($dbName);
 			}
 			catch (\Exception $e)
 			{
-				// rollbackTrans();
+				$db->rollbackTrans();
 				throw $e;
 			}
 
-			$this->resultCounts[] = $this->resultCount;
-			$this->totalCounts[] = $this->totalCount;
+			$this->addResult($cnt, $cnt, $item);
 		}
 
-        return null;
+        //return $item;
+		return null;
 
 	}
 
@@ -224,22 +182,18 @@ class DBUtil
 	public function putItems(ServerRequestInterface $request): ?array
 	{
 
-		$this->resultCount = 0;
-		$this->totalCount = 0;
-		$this->resultCounts = array();
-		$this->totalCounts = array();
-
-		$id = $request->getAttribute("routeInfo")["args"]["id"] ?? "";
-		$gets = $request->getQueryParams();
+		// Get settings
 		$settings = $request->getAttribute("settings");
-		$fields = $this->options["fields"] ?? null;
-		$searches = $this->options["searches"] ?? null;
 		$listIdName = $settings["options"]["query"]["specialParameters"]["list"] ?? "list";
-		$items = $this->getParamsFromBody($request, $settings["options"] ?? null);
 
+		// Get parameters
+		$id = $this->getID($request);
+		$items = Util::getItemsFromBody($request, $settings["options"] ?? null);
+
+		$this->initResults();
 		foreach ($request->getAttribute("services")["db"] as $dbName => $db)
 		{
-			// beginTrans();
+			$db->beginTrans();
 
 			$cnt = 0;
 			try
@@ -247,32 +201,31 @@ class DBUtil
 				switch ($id)
 				{
 				case $listIdName:
-					$item = $this->buildFields($fields, $items[0]);
-					$search = $searches[($gets["_search"] ?? "default")] ?? null;
-					$search = $this->buildSearchKeys($search, $gets);
+					$item = $this->getField($settings, $items[0], $db->getOption("fields"));
+					$search = $this->getSearch($settings, $request->getQueryParams(), $db->getOption("searches"));
 					$cnt = $db->update($settings[$dbName]["tableName"], $item, $search);
 					break;
 				default:
-					$item = $this->buildFields($fields, $items[0]);
+					$item = $this->getField($settings, $items[0], $db->getOption("fields"));
 					$cnt = $db->updateById($settings[$dbName]["tableName"], $item, ["fieldName" => $settings[$dbName]["keyName"] ?? "", "value" => $id]);
 					break;
 				}
 				$this->resultCount = $cnt;
 				$this->totalCount = $cnt;
 
-				// commitTrans();
+				$db->commitTrans();
 			}
 			catch (\Exception $e)
 			{
-				// rollbackTrans();
+				$db->rollbackTrans();
 				throw $e;
 			}
 
-			$this->resultCounts[] = $this->resultCount;
-			$this->totalCounts[] = $this->totalCount;
+			$this->addResult($cnt, $cnt, $item);
 		}
 
-        return null;
+        //return $item;
+		return null;
 
 	}
 
@@ -288,50 +241,211 @@ class DBUtil
 	public function deleteItems(ServerRequestInterface $request): ?array
 	{
 
-		$this->resultCount = 0;
-		$this->totalCount = 0;
-		$this->resultCounts = array();
-		$this->totalCounts = array();
-
-		$id = $request->getAttribute("routeInfo")["args"]["id"] ?? "";
-		$gets = $request->getQueryParams();
+		// Get settings
 		$settings = $request->getAttribute("settings");
-		$searches = $this->options["searches"] ?? null;
 		$listIdName = $settings["options"]["query"]["specialParameters"]["list"] ?? "list";
 
+		// Get parameters
+		$id = $this->getID($request);
+
+		$this->initResults();
 		foreach ($request->getAttribute("services")["db"] as $dbName => $db)
 		{
-			// beginTrans();
+			$db->beginTrans();
 
 			try
 			{
 				switch ($id)
 				{
 					case $listIdName:
-						$search = $searches[($gets["_search"] ?? "default")] ?? null;
-						$search = $this->buildSearchKeys($search, $gets);
+						$search = $this->getSearch($settings, $request->getQueryParams(), $db->getOption("searches"));
 						$cnt = $db->delete($settings[$dbName]["tableName"], $search);
 						break;
 					default:
 						$cnt = $db->deleteById($settings[$dbName]["tableName"], ["fieldName" => $settings[$dbName]["keyName"] ?? "", "value" => $id]);
 						break;
 				}
-				$this->resultCount = $cnt;
-				$this->totalCount = $cnt;
 
-				// commitTrans();
+				$db->commitTrans();
 			}
 			catch (\Exception $e)
 			{
-				// rollbackTrans();
+				$db->rollbackTrans();
 				throw $e;
 			}
 
-			$this->resultCounts[] = $this->resultCount;
-			$this->totalCounts[] = $this->totalCount;
+			$this->addResult($cnt, $cnt, null);
 		}
 
         return null;
+
+	}
+
+	// -------------------------------------------------------------------------
+	//	Protected
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Init result variables.
+	 */
+	protected function initResults()
+	{
+
+		$this->results = array();
+
+	}
+
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Add result to result array.
+	 *
+	 * @param	$count			Record count.
+	 * @param	$totalCount		Total count.
+	 * @param	$items			Data..
+	 */
+	protected function addResult($count, $totalCount, $items)
+	{
+
+		$result = array(
+			"count"			=> $count,
+			"totalCount"	=> $totalCount,
+			"items"			=> $items,
+		);
+
+		$this->results[] = $result;
+		$this->lastResult = $result;
+
+	}
+
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Get id value from URL parameters.
+	 *
+	 * @param	$settings		Search settings.
+	 * @param	$params			URL parameters.
+	 *
+	 * @return	array			Parameter array.
+	 */
+	private function getID($request)
+	{
+
+		$id = $request->getAttribute("routeInfo")["args"]["id"] ?? "";
+
+		return $id;
+
+	}
+
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Get field parameter array from settings and URL parameters.
+	 *
+	 * @param	$settings		Search settings.
+	 * @param	$params			URL parameters.
+	 * @param	$dbSettings		DB specific search settings.
+	 *
+	 * @return	array			Parameter array.
+	 */
+	private function getField($settings, $params, $dbSettings = null)
+	{
+
+		$fieldSettings = Util::convertToAssocArray($this->options["fields"] ?? null);
+
+		// Merge DB specific options
+		if ($dbSettings)
+		{
+			$fieldSettings = array_replace_recursive($fieldSettings, Util::convertToAssocArray($dbSettings));
+		}
+
+		if ($fieldSettings)
+		{
+			return $this->buildFieldsFromSettings($fieldSettings, $params);
+		}
+		else
+		{
+			return $this->buildFieldsFromParameters($params);
+		}
+
+	}
+
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Get search parameter array from settings and URL parameters.
+	 *
+	 * @param	$settings		Search settings.
+	 * @param	$params			URL parameters.
+	 * @param	$dbSettings		DB specific search settings.
+	 *
+	 * @return	array			Parameter array.
+	 */
+	private function getSearch($settings, $params, $dbSettings = null)
+	{
+
+		$searchParamName = $settings["options"]["query"]["specialParameters"]["search"] ?? "_search";
+		$searchPattern = $params[$searchParamName] ?? "default";
+		$searchSettings = $this->options["searches"][$searchPattern] ?? null;
+
+		// Merge DB specific options
+		if ($dbSettings && dbSettings[$searchPattern])
+		{
+			$searchSettings = array_replace_recursive($searchSettings, $dbSettings[$searchPattern]);
+		}
+
+		return  $this->buildSearchKeys($searchSettings, $params);
+
+	}
+
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Get order parameter array from settings and URL parameters.
+	 *
+	 * @param	$settings		Search settings.
+	 * @param	$params			URL parameters.
+	 * @param	$dbSettings		DB specific search settings.
+	 *
+	 * @return	array			Parameter array.
+	 */
+	private function getOrder($settings, $params, $dbSettings = null)
+	{
+
+		$orderParamName = $settings["options"]["query"]["specialParameters"]["order"] ?? "_order";
+		$orderPattern = $params[$orderParamName] ?? "default";
+		$orderSettings = $this->options["orders"][$orderPattern] ?? null;
+
+		// Merge DB specific options
+		if ($dbSettings && $dbSettings[$orderPattern])
+		{
+			$orderSettings = array_replace_recursive($orderSettings, $dbSettings[$orderPattern]);
+		}
+
+		return $orderSettings;
+
+	}
+
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Get limit/offset value from URL parameters.
+	 *
+	 * @param	$settings		Search settings.
+	 * @param	$params			URL parameters.
+	 *
+	 * @return	array			Parameter array.
+	 */
+	private function getLimitOffset($settings, $params)
+	{
+
+		$limitParamName = $settings["options"]["query"]["specialParameters"]["limit"] ?? "_limit";
+		$limit = $params[$limitParamName] ?? null;
+
+		$offsetParamName = $settings["options"]["query"]["specialParameters"]["offset"] ?? "_offset";
+		$offset = $params[$offsetParamName] ?? null;
+
+		return array($limit, $offset);
 
 	}
 
@@ -340,142 +454,86 @@ class DBUtil
 	// -------------------------------------------------------------------------
 
 	/**
-  	 * Get parameter arrays from body.
+	 * Build parameter array for search query from URL parameters and settings.
 	 *
-	 * @param	$request		Request object.
-	 * @param	$options		Options.
-	 *
-	 * @return	array			Parameter arrays.
-     */
-	private function getParamsFromBody($request, $options)
-	{
-
-		$itemsParamName = $options["body"]["specialParameters"]["items"] ?? null;
-		$itemParamName = $options["body"]["specialParameters"]["item"] ?? null;
-
-		if ($itemParamName)
-		{
-			$items = array(($request->getParsedBody())[$itemParamName] ?? null);
-		}
-		else if ($itemsParamName)
-		{
-			$items = ($request->getParsedBody())[$itemsParamName] ?? null;
-		}
-		else
-		{
-			$items = array($request->getParsedBody());
-		}
-
-		return $items;
-
-	}
-
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Build parameter array for search query from URL parameters and the spec.
-	 *
-	 * @param	&$search		Search spec.
+	 * @param	$searchSettings	Search settings.
 	 * @param	$parameters		URL parameters.
 	 *
 	 * @return	array			Parameter array.
 	 */
-	private function buildSearchKeys(?array &$search, array $parameters): ?array
+	private function buildSearchKeys(?array $searchSettings, array $params): ?array
 	{
 
-		if (!$search) return null;
+		$ret = array();
 
-		for ($i = 0; $i < count($search); $i++)
+		for ($i = 0; $i < count((array)$searchSettings); $i++)
 		{
-			$type = $search[$i]["type"] ?? null;
+			$item = $searchSettings[$i];
+
+			$type = $searchSettings[$i]["type"] ?? null;
 			if ($type == "parameters")
 			{
-				$this->buildSearchKeys($search[$i]["fields"], $parameters);
+				$item["fields"] = $this->buildSearchKeys($searchSettings[$i]["fields"], $params);
 			}
 			else
 			{
-				$parameterName = $search[$i]["parameterName"] ?? null;
+				$parameterName = $searchSettings[$i]["parameterName"] ?? null;
 				if ($parameterName)
 				{
-					$value  = $parameters[$parameterName] ?? null;
-					$compareType = $search[$i]["compareType"] ?? null;
+					$value = $params[$parameterName] ?? null;
+					$compareType = $searchSettings[$i]["compareType"] ?? null;
 					switch ($compareType)
 					{
 					case "flag":
-						if (($parameters[$parameterName] ?? null) === null || $value == 0 || $value == "off")
+						if (($params[$parameterName] ?? null) === null || $value == 0 || $value == "off")
 						{
-							$search[$i]["value"] = $search[$i]["defaultValue"] ?? null;
+							$item["value"] = $searchSettings[$i]["defaultValue"] ?? null;
 						}
 						break;
 					default:
 						if ($value !== null)
 						{
-							$search[$i]["value"] = $value;
+							$item["value"] = $value;
 						}
 					}
 				}
 			}
+
+			$ret[] = $item;
 		}
 
-		return $search;
+		return $ret;
 
 	}
 
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Dispatch buildFieldsFromList() or buildFieldsFromParameters() depending on a parameter.
+	 * Build fields array from both URL parameters and settings.
 	 *
-	 * @param	$fields			Fields spec.
+	 * @param	$fields			Fields settings.
 	 * @param	$parameters		URL parameters.
 	 *
 	 * @return	array			Parameter array.
 	 */
-	private function buildFields(?array $fields, array $parameters): array
-	{
-
-		if ($fields)
-		{
-			return $this->buildFieldsFromList($fields, $parameters);
-		}
-		else
-		{
-			return $this->buildFieldsFromParameters($parameters);
-		}
-
-	}
-
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Build parameter array from both parameters and settings.
-	 *
-	 * @param	$fields			Fields spec.
-	 * @param	$parameters		URL parameters.
-	 *
-	 * @return	array			Parameter array.
-	 */
-	private function buildFieldsFromList(?array $fields, array $parameters): array
+	private function buildFieldsFromSettings(?array $fields, ?array $parameters): array
 	{
 
 		$result = array();
 
 		foreach ((array)$fields as $key => $item)
 		{
-			if (is_numeric($key))
-			{
-				$key = $item;
-				$item = array();
-			}
-
 			// Get a value from URL parameter if exists
-			$parameterName = $item["parameterName"] ?? $key;
-			if (array_key_exists($parameterName, $parameters))
+			if ($parameters)
 			{
-				$item["value"] = $parameters[$parameterName];
+				$parameterName = $item["parameterName"] ?? $key;
+				if (array_key_exists($parameterName, $parameters))
+				{
+					$item["value"] = $parameters[$parameterName];
+				}
 			}
 
-			if (array_key_exists("value", $item))
+			if (array_key_exists("value", (array)$item))
 			{
 				$result[$key] = $item;
 			}
@@ -488,9 +546,9 @@ class DBUtil
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Build fields array from parameters.
+	 * Build fields array from URL parameters.
 	 *
-	 * @param	$fields			Fields spec.
+	 * @param	$parameters		URL parameters.
 	 *
 	 * @return	Parameter array.
 	 */
@@ -501,48 +559,7 @@ class DBUtil
 
 		foreach ((array)$parameters as $key => $value)
 		{
-			if (is_numeric($key))
-			{
-				$key = $value;
-				$value = null;
-			}
-
 			$result[$key] = array("value" => $value);
-		}
-
-		return $result;
-
-	}
-
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Build fields array for select.
-	 *
-	 * @param	$fields			Fields spec.
-	 *
-	 * @return	Parameter array.
-	 */
-	private function buildFieldsSelect(?array $fields): ?array
-	{
-
-		$result = null;
-
-		if ($fields)
-		{
-			$result = array();
-			foreach ((array)$fields as $key => $item)
-			{
-				if (is_numeric($key))
-				{
-					$key = $item;
-					$result[$key] = array();
-				}
-				else
-				{
-					$result[$key] = $item;
-				}
-			}
 		}
 
 		return $result;
