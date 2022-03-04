@@ -311,7 +311,7 @@ class ElasticsearchDB extends CurlDB
 
 		foreach ($fields as $key => $item)
 		{
-			$query[$key] = $this->buildValue($key, $item);
+			$query[$key] = $this->buildValue($item);
 		}
 
 		$ret = array();
@@ -350,12 +350,7 @@ class ElasticsearchDB extends CurlDB
 		$query["script"] = "";
 		foreach ($fields as $key => $item)
 		{
-			$value = $this->buildValue($key, $item);
-			if ($value === null) {
-				$query["script"] .= "ctx._source." . $key . "=null;";
-			} else {
-				$query["script"] .= "ctx._source." . $key . "=\"" . $value . "\";";
-			}
+			$query["script"] .= "ctx._source." . $key . "=" . $this->quoteValue($item, $this->buildValue($item)) . ";";
 		}
 
 		// Key
@@ -709,14 +704,14 @@ class ElasticsearchDB extends CurlDB
 
 	}
 
-	// -------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
-	protected function buildValue($key, $item)
+	protected function buildValue($item)
 	{
 
-		$ret = $value = $item["value"] ?? null;
+		$ret = $item["value"] ?? null;
 
-		switch((string)$value)
+		switch((string)$ret)
 		{
 		case "@NULL@":
 			$ret = null;
@@ -726,10 +721,49 @@ class ElasticsearchDB extends CurlDB
 			break;
 		}
 
+		return $this->formatValue($item, $ret);
+
+	}
+
+	// -------------------------------------------------------------------------
+
+	protected function formatValue($item, $value)
+	{
+
+		$ret = $value;
+
 		switch($item["type"] ?? null)
 		{
 		case "DATE":
-			$ret = $quote . date(\DateTime::ATOM, strtotime($ret)) . $quote;
+				$ret = date(\DateTime::ATOM, strtotime($value));
+				break;
+		}
+
+		return $ret;
+
+	}
+
+	// -------------------------------------------------------------------------
+
+	protected function quoteValue($item, $value, $quote = "'")
+	{
+
+		$ret = "";
+
+		switch($item["type"] ?? null)
+		{
+		case "NUMBER":
+			$ret = ($value ? $value : 0);
+			break;
+		default:
+			if ($value === null)
+			{
+				$ret = "null";
+			}
+			else
+			{
+				$ret = $quote . $value . $quote;
+			}
 			break;
 		}
 
