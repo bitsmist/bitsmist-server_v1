@@ -40,8 +40,8 @@ class DBHandler extends MiddlewareBase
 			$data = $db->$methodName($request);
 
 			$request = $request->withAttribute("data", $data);
-			$request = $request->withAttribute("resultCount", $db->resultCount);
-			$request = $request->withAttribute("totalCount", $db->totalCount);
+			$request = $request->withAttribute("resultCount", $db->lastResult["count"]);
+			$request = $request->withAttribute("totalCount", $db->lastResult["totalCount"]);
 		}
 
 		return $handler->handle($request);

@@ -37,7 +37,7 @@ class DBLoginAuthenticator extends MiddlewareBase
 		$db = new DBUtil($this->options);
 		$data = $db->getItems($request);
 
-		if ($db->resultCount == 1)
+		if ($db->lastResult["count"] == 1)
 		{
 			// Found
 			$rootName = $request->getAttribute("settings")["options"]["session"]["name"] ?? "authInfo";
@@ -64,8 +64,8 @@ class DBLoginAuthenticator extends MiddlewareBase
 		}
 
 		$request = $request->withAttribute("data", $data);
-		$request = $request->withAttribute("resultCount", $db->resultCount);
-		$request = $request->withAttribute("totalCount", $db->totalCount);
+		$request = $request->withAttribute("resultCount", $db->lastResult["count"]);
+		$request = $request->withAttribute("totalCount", $db->lastResult["totalCount"]);
 
 		return $handler->handle($request);
 
