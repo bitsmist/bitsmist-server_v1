@@ -44,6 +44,7 @@ class RouteInitializer extends MiddlewareBase
 			break;
 		}
 
+		// Set setting vars dictionary
 		Util::$replaceDic = array_merge($routeInfo["args"], Util::$replaceDic);
 
 		$request = $request->withAttribute("routeInfo", $routeInfo);

@@ -44,49 +44,18 @@ class SettingsInitializer extends MiddlewareBase
 
 		$container = $request->getAttribute("container");
 		$settings = $container["settings"];
-		$args = $request->getAttribute("routeInfo")["args"];
 
-		// System info
-		$sysInfo = array();
-		$sysInfo["version"] = $request->getAttribute("app")->getVersion();
-		$sysInfo["rootDir"] = rtrim($settings["options"]["sysRoot"], "/");
-
-		// App Info
-		$appInfo = array();
-		$appInfo["domain"] = $args["appDomain"] ?? $_SERVER["HTTP_HOST"];
-		$appInfo["name"] = $args["appName"] ?? $appInfo["domain"];
-		$appInfo["version"] = $args["appVer"] ?? 1;
-		$appInfo["lang"] = $args["appLang"] ?? "en";
-
-		// App Info (appRoot)
-		Util::$replaceDic = array_merge([
-			"sysRoot" => $sysInfo["rootDir"],
-			"sysVer" => $sysInfo["version"],
-			"appVer" => $appInfo["version"],
-			"appName" => $appInfo["name"],
-			"method" => strtolower($request->getMethod()),
-		], $args);
-		$appInfo["rootDir"] = Util::replaceVars($settings["options"]["appRoot"] ?? "{sysRoot}/sites/v{appVer}/{appName}");
-		Util::$replaceDic["appRoot"] = $appInfo["rootDir"];
-
-		// Check app root
-		if (!file_exists($appInfo["rootDir"]))
-		{
-			throw new \RuntimeException(sprintf("App root dir does not exist. rootDir=%s", $appInfo["rootDir"]));
-		}
-
-		$request = $request->withAttribute("appInfo", $appInfo);
-		$request = $request->withAttribute("sysInfo", $sysInfo);
-
-		// Load extra setting files
+		// Load setting files
 		$files = Util::replaceVars($this->getOption("uses"));
 		$settings = $this->loadSettings($files, $settings);
 
+		/*
 		// Reload my settings and do it again
 		// since settings might be added in the extra setting files
 		$this->options = $settings[$this->name];
 		$files = Util::replaceVars($this->getOption("uses"));
 		$settings = $this->loadSettings($files, $settings);
+		 */
 
 		$container["settings"] = $settings;
 
