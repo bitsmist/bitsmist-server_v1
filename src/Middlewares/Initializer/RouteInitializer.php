@@ -13,6 +13,7 @@ namespace Bitsmist\v1\Middlewares\Initializer;
 
 use Bitsmist\v1\Exceptions\HttpException;
 use Bitsmist\v1\Middlewares\Base\MiddlewareBase;
+use Bitsmist\v1\Utils\Util;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -43,6 +44,8 @@ class RouteInitializer extends MiddlewareBase
 			break;
 		}
 
+		Util::$replaceDic = array_merge($routeInfo["args"], Util::$replaceDic);
+
 		$request = $request->withAttribute("routeInfo", $routeInfo);
 
 		return $handler->handle($request);
@@ -60,14 +63,32 @@ class RouteInitializer extends MiddlewareBase
 	 *
 	 * @return	Route arguments.
      */
-	private function loadRoute_FastRoute($routes)
+	private function loadRoute_FastRoute($routeSettings)
 	{
 
-		$dispatcher = \FastRoute\simpleDispatcher(function(\FastRoute\RouteCollector $r) use ($routes) {
-			foreach ($routes as $routeName => $route)
+		$dispatcher = \FastRoute\simpleDispatcher(function(\FastRoute\RouteCollector $r) use ($routeSettings) {
+			foreach ($routeSettings as $routeName => $route)
 			{
-				$methods = explode(",", $route["method"] ?? "GET,POST,PUT,PATCH,DELETE,OPTIONS");
-				$r->addRoute($methods, $route["route"], $routeName);
+				$routes = array();
+
+				// One route
+				if ($route["route"] ?? "")
+				{
+					$routes[] = $route;
+				}
+				// Multiple routes
+				else if ($route["routes"] ?? "")
+				{
+					$routes = array_merge($routes, $route["routes"]);
+				}
+
+				// Add routes
+				for ($i = 0; $i < count($routes) ; $i++)
+				{
+					$methods = explode(",", $routes[$i]["method"] ?? "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+					$handler = $routes[$i]["handler"] ?? "default";
+					$r->addRoute($methods, $routes[$i]["route"], $handler);
+				}
 			}
 		});
 
