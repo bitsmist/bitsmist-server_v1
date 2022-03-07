@@ -44,7 +44,7 @@ class PaginationHandler extends MiddlewareBase
 			if($limit)
 			{
 				$offset = $gets[$offsetParameterName] ?? 0;
-				list($page, $pageMax) = $this->getPagination($request->getAttribute("totalCount"), $limit, $offset);
+				list($page, $pageMax) = $this->getPagination($request->getAttribute("totalCount") ?? 0, $limit, $offset);
 				$pagination = array("limit" => $limit, "offset" => $offset, "pageCurrent" => $page, "pageLast" => $pageMax);
 			}
 		}
