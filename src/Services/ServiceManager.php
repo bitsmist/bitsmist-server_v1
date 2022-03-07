@@ -12,8 +12,6 @@
 namespace Bitsmist\v1\Services;
 
 use Bitsmist\v1\Services\PluginService;
-use Bitsmist\v1\Utils\Util;
-use Pimple\Container;
 
 // =============================================================================
 //	Service manager class
