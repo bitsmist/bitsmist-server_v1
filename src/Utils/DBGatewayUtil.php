@@ -80,6 +80,8 @@ class DBGatewayUtil
 		$this->initResults();
 		foreach ($request->getAttribute("services")["db"] as $dbName => $db)
 		{
+			$count = $totalCount = 0;
+			$items = null;
 			$fields = $this->getField($settings, null, $db->getOption("fields"));
 
 			switch ($id)
@@ -88,20 +90,22 @@ class DBGatewayUtil
 				$search = $this->getSearch($settings, $request->getQueryParams(), $db->getOption("searches"));
 				$order = $this->getOrder($settings, $request->getQueryParams());
 				$items = $db->select($settings[$dbName]["tableName"], $fields, $search, $order, $limit, $offset);
+				if ($items) {
+					$count = $totalCount = count($items);
+				}
+
+				// Get total count
+				if ($limit)
+				{
+					$totalCount = $db->getTotalCount();
+				}
 				break;
 			default:
 				$items = $db->selectById($settings[$dbName]["tableName"], $fields, [ "fieldName" => $settings[$dbName]["keyName"] ?? "", "value" => $id ]);
+				if ($items) {
+					$count = $totalCount = count($items);
+				}
 				break;
-			}
-
-			if ($items) {
-				$count = $totalCount = count($items);
-			}
-
-			// Get total count
-			if ($limit)
-			{
-				$totalCount = $db->getTotalCount();
 			}
 
 			$this->addResult($count, $totalCount, $items);
@@ -134,11 +138,12 @@ class DBGatewayUtil
 		$this->initResults();
 		foreach ($request->getAttribute("services")["db"] as $dbName => $db)
 		{
-			$db->beginTrans();
+			$cnt = 0;
+			$item = null;
 
+			$db->beginTrans();
 			try
 			{
-				$cnt = 0;
 				for ($i = 0; $i < count($items); $i++)
 				{
 					switch ($id)
@@ -165,7 +170,6 @@ class DBGatewayUtil
 			$this->addResult($cnt, $cnt, $item);
 		}
 
-        //return $item;
 		return null;
 
 	}
@@ -193,9 +197,10 @@ class DBGatewayUtil
 		$this->initResults();
 		foreach ($request->getAttribute("services")["db"] as $dbName => $db)
 		{
-			$db->beginTrans();
-
 			$cnt = 0;
+			$item = null;
+
+			$db->beginTrans();
 			try
 			{
 				switch ($id)
@@ -224,7 +229,6 @@ class DBGatewayUtil
 			$this->addResult($cnt, $cnt, $item);
 		}
 
-        //return $item;
 		return null;
 
 	}
@@ -251,19 +255,20 @@ class DBGatewayUtil
 		$this->initResults();
 		foreach ($request->getAttribute("services")["db"] as $dbName => $db)
 		{
-			$db->beginTrans();
+			$cnt = 0;
 
+			$db->beginTrans();
 			try
 			{
 				switch ($id)
 				{
-					case $listIdName:
-						$search = $this->getSearch($settings, $request->getQueryParams(), $db->getOption("searches"));
-						$cnt = $db->delete($settings[$dbName]["tableName"], $search);
-						break;
-					default:
-						$cnt = $db->deleteById($settings[$dbName]["tableName"], ["fieldName" => $settings[$dbName]["keyName"] ?? "", "value" => $id]);
-						break;
+				case $listIdName:
+					$search = $this->getSearch($settings, $request->getQueryParams(), $db->getOption("searches"));
+					$cnt = $db->delete($settings[$dbName]["tableName"], $search);
+					break;
+				default:
+					$cnt = $db->deleteById($settings[$dbName]["tableName"], ["fieldName" => $settings[$dbName]["keyName"] ?? "", "value" => $id]);
+					break;
 				}
 
 				$db->commitTrans();
@@ -328,7 +333,7 @@ class DBGatewayUtil
 	 *
 	 * @return	array			Parameter array.
 	 */
-	private function getID($request)
+	protected function getID($request)
 	{
 
 		$id = $request->getAttribute("routeInfo")["args"]["id"] ?? "";
@@ -348,7 +353,7 @@ class DBGatewayUtil
 	 *
 	 * @return	array			Parameter array.
 	 */
-	private function getField($settings, $params, $dbSettings = null)
+	protected function getField($settings, $params, $dbSettings = null)
 	{
 
 		$fieldSettings = Util::convertToAssocArray($this->options["fields"] ?? null);
@@ -381,7 +386,7 @@ class DBGatewayUtil
 	 *
 	 * @return	array			Parameter array.
 	 */
-	private function getSearch($settings, $params, $dbSettings = null)
+	protected function getSearch($settings, $params, $dbSettings = null)
 	{
 
 		$searchParamName = $settings["options"]["query"]["specialParameters"]["search"] ?? "_search";
@@ -409,7 +414,7 @@ class DBGatewayUtil
 	 *
 	 * @return	array			Parameter array.
 	 */
-	private function getOrder($settings, $params, $dbSettings = null)
+	protected function getOrder($settings, $params, $dbSettings = null)
 	{
 
 		$orderParamName = $settings["options"]["query"]["specialParameters"]["order"] ?? "_order";
@@ -436,7 +441,7 @@ class DBGatewayUtil
 	 *
 	 * @return	array			Parameter array.
 	 */
-	private function getLimitOffset($settings, $params)
+	protected function getLimitOffset($settings, $params)
 	{
 
 		$limitParamName = $settings["options"]["query"]["specialParameters"]["limit"] ?? "_limit";
