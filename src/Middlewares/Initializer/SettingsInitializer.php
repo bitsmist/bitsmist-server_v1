@@ -50,8 +50,8 @@ class SettingsInitializer extends MiddlewareBase
 
 		/*
 		// Reload my settings and do it again
-		// since settings might be added in the extra setting files
-		$this->options = $settings[$this->name];
+		// since setting files might be added in the extra setting files
+		$this->options = $container["settings"][$this->name];
 		$files = $container["vars"]->replace($this->getOption("uses"));
 		$container["settings"] = $this->loadSettings($files, $container["settings"]);
 		 */
