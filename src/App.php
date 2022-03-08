@@ -13,6 +13,7 @@ namespace Bitsmist\v1;
 
 use Bitsmist\v1\Exceptions\HttpException;
 use Bitsmist\v1\Utils\Util;
+use Bitsmist\v1\Utils\VarStoreUtil;
 use Pimple\Container;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -74,6 +75,7 @@ class App
 		$this->container["request"] = $this->loadRequest();
 		$this->container["response"] = $this->loadResponse();
 		$this->container["services"] = $this->loadServices();
+		$this->container["vars"] = new VarStoreUtil();
 
 	}
 
@@ -119,6 +121,7 @@ class App
 			$request = $request->withAttribute("resultMessage", HttpException::ERRMSG_NONE);
 			$request = $request->withAttribute("services", $this->container["services"]);
 			$request = $request->withAttribute("settings", $this->container["settings"]);
+			$request = $request->withAttribute("vars", $this->container["vars"]);
 			$response = $this->container["services"]["mainController"]->dispatch($request);
 
 			// Emit

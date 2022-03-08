@@ -31,7 +31,7 @@ class AppInfoInitializer extends MiddlewareBase
 	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
-		$settings = $request->getAttribute("container")["settings"];
+		$container = $request->getAttribute("container");
 		$args = $request->getAttribute("routeInfo")["args"] ?? null;
 
 		// App Info
@@ -41,14 +41,14 @@ class AppInfoInitializer extends MiddlewareBase
 		$appInfo["lang"] = $args["appLang"] ?? "en";
 
 		// Set setting vars dictionary
-		Util::$replaceDic["appVer"] = $appInfo["version"];
-		Util::$replaceDic["appName"] = $appInfo["name"];
+		$container["vars"]["appVer"] = $appInfo["version"];
+		$container["vars"]["appName"] = $appInfo["name"];
 
 		// App Info (appRoot)
-		$appInfo["rootDir"] = Util::replaceVars($settings["options"]["appRoot"] ?? "{sysRoot}/sites/v{appVer}/{appName}");
+		$appInfo["rootDir"] = $container["vars"]->replace($container["settings"]["options"]["appRoot"] ?? "{sysRoot}/sites/v{appVer}/{appName}");
 
-		// Set setting vars dictionary
-		Util::$replaceDic["appRoot"] = $appInfo["rootDir"];
+		// Set setting vars dictionary (appRoot)
+		$container["vars"]["appRoot"] = $appInfo["rootDir"];
 
 		// Check app root
 		if (!file_exists($appInfo["rootDir"]))

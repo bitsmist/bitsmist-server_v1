@@ -32,11 +32,11 @@ class RouteInitializer extends MiddlewareBase
 	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
-		$settings = $request->getAttribute("container")["settings"];
-		$className = $settings["router"]["className"] ?? "nikic\FastRoute";
-		$routes = $settings["router"]["routes"];
-
+		$container = $request->getAttribute("container");
+		$className = $container["settings"]["router"]["className"] ?? "nikic\FastRoute";
+		$routes = $container["settings"]["router"]["routes"];
 		$routeInfo = null;
+
 		switch ($className)
 		{
 		case "nikic\FastRoute":
@@ -45,7 +45,7 @@ class RouteInitializer extends MiddlewareBase
 		}
 
 		// Set setting vars dictionary
-		Util::$replaceDic = array_merge($routeInfo["args"], Util::$replaceDic);
+		$container["vars"]->merge($routeInfo["args"]);
 
 		$request = $request->withAttribute("routeInfo", $routeInfo);
 

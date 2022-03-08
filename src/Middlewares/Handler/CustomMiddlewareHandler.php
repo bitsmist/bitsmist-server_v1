@@ -53,7 +53,7 @@ class CustomMiddlewareHandler extends MiddlewareBase
 		$this->nextHandler = $handler;
 
 		// Get custom handlers
-		$files = Util::replaceVars($this->getOption("uses"));
+		$files = $request->getAttribute("vars")->replace($this->getOption("uses"));
 		$this->handlers = $this->getHandlers($files);
 
 		reset($this->handlers);

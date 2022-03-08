@@ -43,21 +43,20 @@ class SettingsInitializer extends MiddlewareBase
 	{
 
 		$container = $request->getAttribute("container");
-		$settings = $container["settings"];
 
 		// Load setting files
-		$files = Util::replaceVars($this->getOption("uses"));
-		$settings = $this->loadSettings($files, $settings);
+		$files = $container["vars"]->replace($this->getOption("uses"));
+		$container["settings"] = $this->loadSettings($files, $container["settings"]);
 
 		/*
 		// Reload my settings and do it again
 		// since settings might be added in the extra setting files
 		$this->options = $settings[$this->name];
-		$files = Util::replaceVars($this->getOption("uses"));
-		$settings = $this->loadSettings($files, $settings);
+		$files = $container["vars"]->replace($this->getOption("uses"));
+		$container["settings"] = $this->loadSettings($files, $container["settings"]);
 		 */
 
-		$container["settings"] = $settings;
+//		$container["settings"] = $settings;
 
 		return $handler->handle($request);
 

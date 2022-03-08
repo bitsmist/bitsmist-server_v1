@@ -31,19 +31,17 @@ class SysInfoInitializer extends MiddlewareBase
 	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
-		$settings = $request->getAttribute("container")["settings"];
+		$container = $request->getAttribute("container");
 
 		// System info
 		$sysInfo = array();
 		$sysInfo["version"] = $request->getAttribute("app")->getVersion();
-		$sysInfo["rootDir"] = rtrim($settings["options"]["sysRoot"], "/");
+		$sysInfo["rootDir"] = rtrim($container["settings"]["options"]["sysRoot"] ?? "", "/");
 
 		// Set setting vars dictionary
-		Util::$replaceDic = array(
-			"sysRoot" => $sysInfo["rootDir"],
-			"sysVer" => $sysInfo["version"],
-			"method" => strtolower($request->getMethod()),
-		);
+		$container["vars"]["sysRoot"] = $sysInfo["rootDir"];
+		$container["vars"]["sysVer"] = $sysInfo["version"];
+		$container["vars"]["method"] = strtolower($request->getMethod());
 
 		$request = $request->withAttribute("sysInfo", $sysInfo);
 

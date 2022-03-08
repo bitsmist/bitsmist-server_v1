@@ -36,7 +36,7 @@ class CustomResponseHandler extends CustomRequestHandler
 		$response = $handler->handle($request);
 
 		// Get handlers
-		$files = $this->replaceVars($this->getOption("uses"));
+		$files = $request->getAttribute("vars")->replace($this->getOption("uses"));
 		$handlers = $this->getHandlers($files);
 
 		// Handle response

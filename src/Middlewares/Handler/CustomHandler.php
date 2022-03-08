@@ -32,7 +32,7 @@ class CustomHandler extends MiddlewareBase
 	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
-		$files = Util::replaceVars($this->getOption("uses"));
+		$files = $request->getAttribute("vars")->replace($this->getOption("uses"));
 		list ($reqHandlers, $resHandlers) = $this->getHandlers($files);
 
 		// Handle request
