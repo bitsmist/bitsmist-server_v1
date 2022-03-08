@@ -75,6 +75,7 @@ class App
 		$this->container["request"] = $this->loadRequest();
 		$this->container["response"] = $this->loadResponse();
 		$this->container["services"] = $this->loadServices();
+		$this->container["controllers"] = $this->loadControllers();
 		$this->container["vars"] = new VarStoreUtil();
 
 	}
@@ -110,11 +111,11 @@ class App
 			$request = $this->container["request"];
 			$request = $request->withAttribute("app", $this);
 			$request = $request->withAttribute("container", $this->container);
-			$this->container["services"]["setupController"]->dispatch($request);
+			$this->container["controllers"]["setupController"]->dispatch($request);
 
 			// Dispatch main middleware chain
 			$stage = "main middleware chain";
-			$request = $this->container["services"]["setupController"]->getRequest();
+			$request = $this->container["controllers"]["setupController"]->getRequest();
 			$request = $request->withAttribute("app", null); // Remove access to app
 			$request = $request->withAttribute("container", null); // Remove access to container
 			$request = $request->withAttribute("resultCode", HttpException::ERRNO_NONE);
@@ -122,11 +123,11 @@ class App
 			$request = $request->withAttribute("services", $this->container["services"]);
 			$request = $request->withAttribute("settings", $this->container["settings"]);
 			$request = $request->withAttribute("vars", $this->container["vars"]);
-			$response = $this->container["services"]["mainController"]->dispatch($request);
+			$response = $this->container["controllers"]["mainController"]->dispatch($request);
 
 			// Emit
 			$stage = "emitter";
-			$this->container["services"]["emitter"]->emit($response);
+			$this->container["controllers"]["emitterController"]->emit($response);
 		}
 		catch (\Throwable $e)
 		{
@@ -138,6 +139,28 @@ class App
 	// -------------------------------------------------------------------------
 	//	Protected
 	// -------------------------------------------------------------------------
+
+	/**
+	 * Create a default controller manager.
+	 *
+	 * @return	Controler manager manager.
+	 */
+	protected function loadControllers()
+	{
+
+		$options = $this->container["settings"]["controllers"] ?? array();
+
+		// Set default class if none is set
+		if (!isset($options["className"]) && !isset($options["class"]))
+		{
+			$options["className"] = "Bitsmist\\v1\Services\ServiceManager";
+		}
+
+		return Util::resolveInstance($options, "controllers", $options, $this->container);
+
+	}
+
+    // -------------------------------------------------------------------------
 
 	/**
 	 * Create a default service manager.
@@ -260,12 +283,12 @@ class App
 		try
 		{
 			// Dispatch error middleware chain
-			$request = $this->container["services"]["mainController"]->getRequest() ?? $this->container["request"];
+			$request = $this->container["controllers"]["mainController"]->getRequest() ?? $this->container["request"];
 			$request = $request->withAttribute("exception", $ex);
 			$request = $request->withAttribute("services", $this->container["services"]);
 			$request = $request->withAttribute("settings", $this->container["settings"]);
-			$response = $this->container["services"]["errorController"]->dispatch($request);
-			$this->container["services"]["emitter"]->emit($response);
+			$response = $this->container["controllers"]["errorController"]->dispatch($request);
+			$this->container["controllers"]["emitterController"]->emit($response);
 		}
 		catch (\Throwable $e)
 		{
