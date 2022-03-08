@@ -22,7 +22,7 @@ use Psr\Http\Message\ServerRequestInterface;
 //	Middlware service class
 // =============================================================================
 
-class MiddlewareService extends PluginService implements  RequestHandlerInterface
+class MiddlewareService extends PluginService implements RequestHandlerInterface
 {
 
 	// -------------------------------------------------------------------------
@@ -56,44 +56,6 @@ class MiddlewareService extends PluginService implements  RequestHandlerInterfac
 	{
 
 		return $this->request;
-
-	}
-
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Add a middleware.
-	 *
-	 * @param	$middleware		Middleware instance or middleware name.
-	 * @param	$options		Middleware options.
-	 *
-	 * @return	Added middleware.
-	 */
-	public function add($middleware, ?array $options)
-	{
-
-		if (is_string($middleware))
-		{
-			$this->plugins[$middleware] = function ($c) use ($middleware, $options) {
-				try
-				{
-					// Merge settings
-					$options = array_merge($this->container["settings"][$middleware] ?? array(), $options ?? array());
-
-					// Get instance
-					return Util::resolveInstance($options, $middleware, $options, $this->container);
-				}
-				catch (\Throwable $e)
-				{
-					throw new \RuntimeException("Failed to create a middleware. middlewearName=" . $middleware . ", reason=" . $e->getMessage());
-				}
-			};
-		}
-		else
-		{
-			$hash = spl_object_hash($middleware);
-			$this->plugins[$hash] = $middleware;
-		}
 
 	}
 
