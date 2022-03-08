@@ -77,17 +77,17 @@ class PluginService implements \ArrayAccess, \Countable, \IteratorAggregate
 			if (is_numeric($key))
 			{
 				// Does not have options
-				$title = $value;
+				$plugin = $value;
 				$pluginOptions = null;
 			}
 			else
 			{
 				// Has options
-				$title = $key;
+				$plugin = $key;
 				$pluginOptions = $value;
 			}
 
-			$this->add($title, $pluginOptions);
+			$this->add($plugin, $pluginOptions);
 		}
 
 	}
@@ -99,28 +99,34 @@ class PluginService implements \ArrayAccess, \Countable, \IteratorAggregate
 	/**
 	 * Add a plugin.
 	 *
-	 * @param	$title			Plugin name.
+	 * @param	$plugin			Plugin name or plugin object.
 	 * @param	$options		Plugin options.
-	 *
-	 * @return	Added plugin.
 	 */
-	public function add(string $title, ?array $options)
+	public function add($plugin, ?array $options)
 	{
 
-		$this->plugins[$title] = function ($c) use ($title, $options) {
-			try
-			{
-				// Merge settings
-				$options = array_merge($this->container["settings"][$title] ?? array(), $options ?? array());
+		if (is_string($plugin))
+		{
+			$this->plugins[$plugin] = function ($c) use ($plugin, $options) {
+				try
+				{
+					// Merge settings
+					$options = array_merge($this->container["settings"][$plugin] ?? array(), $options ?? array());
 
-				// Get instance
-				return Util::resolveInstance($options, $title, $options, $this->container);
-			}
-			catch (\Throwable $e)
-			{
-				throw new \RuntimeException("Failed to create a plugin. pluginName=" . $title . ", reason=" . $e->getMessage());
-			}
-		};
+					// Get instance
+					return Util::resolveInstance($options, $plugin, $options, $this->container);
+				}
+				catch (\Throwable $e)
+				{
+					throw new \RuntimeException("Failed to create a plugin. pluginName=" . $plugin . ", reason=" . $e->getMessage());
+				}
+			};
+		}
+		else
+		{
+			$hash = spl_object_hash($plugin);
+			$this->plugins[$hash] = $plugin;
+		}
 
 	}
 
@@ -181,6 +187,7 @@ class PluginService implements \ArrayAccess, \Countable, \IteratorAggregate
 		return count($this->plugins->keys());
 
 	}
+
 	// -------------------------------------------------------------------------
 
 	public function getIterator(): \Traversable
