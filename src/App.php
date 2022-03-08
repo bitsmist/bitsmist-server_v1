@@ -174,7 +174,7 @@ class App
 		// Set default class if none is set
 		if (!isset($options["className"]))
 		{
-			$options["className"] = "\Zend\Diactoros\ServerRequestFactory";
+			$options["className"] = "\Laminas\Diactoros\ServerRequestFactory";
 		}
 
 		$body = $_POST;
@@ -212,7 +212,7 @@ class App
 		// Set default class if none is set
 		if (!isset($options["className"]) && !isset($options["class"]))
 		{
-			$options["className"] = "\Zend\Diactoros\Response";
+			$options["className"] = "\Laminas\Diactoros\Response";
 		}
 
 		return Util::resolveInstance($options);
