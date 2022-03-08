@@ -93,7 +93,8 @@ class RouteInitializer extends MiddlewareBase
 			}
 		});
 
-		$routeinfo = $dispatcher->dispatch($_SERVER["REQUEST_METHOD"], $_SERVER["REQUEST_URI"]);
+		$uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+		$routeinfo = $dispatcher->dispatch($_SERVER["REQUEST_METHOD"], $uri);
 
 		$args = null;
 		switch ($routeinfo[0])
