@@ -84,7 +84,7 @@ class App
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Get application version number.
+	 * Get Bitmist Server version number.
 	 *
 	 * @return	string
 	 */
@@ -105,8 +105,8 @@ class App
 
 		try
 		{
-			// Dispatch initializing middleware chain
-			$stage = "initializing middleware chain";
+			// Dispatch setup middleware chain
+			$stage = "setup middleware chain";
 			$request = $this->container["request"];
 			$request = $request->withAttribute("app", $this);
 			$request = $request->withAttribute("container", $this->container);
