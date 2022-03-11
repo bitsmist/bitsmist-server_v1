@@ -44,33 +44,20 @@ class StartSessionHandler extends MiddlewareBase
 			$cookieOptions = $request->getAttribute("settings")["options"]["session"]["cookieOptions"] ?? null;
 			if ($cookieOptions)
 			{
-				$currentOptions = session_get_cookie_params();
-				$newOptions = array_merge($currentOptions, $cookieOptions);
-
-				if(PHP_VERSION_ID < 70300)
-				{
-					session_set_cookie_params(
-						$newOptions["lifetime"],
-						$newOptions["path"],
-						$newOptions["domain"],
-						$newOptions["secure"],
-						$newOptions["httponly"]
-					);
-				}
-				else
-				{
-					session_set_cookie_params($newOptions);
-				}
+				session_set_cookie_params($cookieOptions);
 			}
 
-			//session_set_save_handler($handler, true);
-
 			// Start session
-			session_start();
-
-			return $handler->handle($request);
+			if (!session_start())
+			{
+				throw new \RuntimeException("session_start() failed.");
+			}
 		}
 
+		// Overwrite options
+		setcookie(session_name(), session_id(), $cookieOptions);
+
+		return $handler->handle($request);
 	}
 
 }
