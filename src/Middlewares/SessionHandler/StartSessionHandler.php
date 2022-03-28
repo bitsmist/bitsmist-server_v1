@@ -31,6 +31,9 @@ class StartSessionHandler extends MiddlewareBase
 	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
 	{
 
+		$cookieOptions = $request->getAttribute("settings")["options"]["session"]["cookieOptions"] ?? null;
+		$expires = "";
+
 		if (session_status() != PHP_SESSION_ACTIVE)
 		{
 			// Set session name
@@ -41,9 +44,12 @@ class StartSessionHandler extends MiddlewareBase
 			}
 
 			// Set cookie options
-			$cookieOptions = $request->getAttribute("settings")["options"]["session"]["cookieOptions"] ?? null;
 			if ($cookieOptions)
 			{
+				// Save "expires" option and remove from cookie options.
+				$expires = $cookieOptions["expires"] ?? "";
+				unset($cookieOptions["expires"]);
+
 				session_set_cookie_params($cookieOptions);
 			}
 
@@ -52,6 +58,18 @@ class StartSessionHandler extends MiddlewareBase
 			{
 				throw new \RuntimeException("session_start() failed.");
 			}
+		}
+
+		// Convert "lifetime" to "expires"
+		if (array_key_exists("lifetime", $cookieOptions))
+		{
+			$expires = ( $expires ? $expires : time() + $cookieOptions["lifetime"] );
+			unset($cookieOptions["lifetime"]);
+		}
+
+		if ($expires)
+		{
+			$cookieOptions["expires"] = $expires;
 		}
 
 		// Overwrite options
