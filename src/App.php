@@ -75,6 +75,7 @@ class App
 		$this->container["request"] = $this->loadRequest();
 		$this->container["response"] = $this->loadResponse();
 		$this->container["controllers"] = $this->loadControllers();
+		$this->container["services"] = $this->loadServices();
 		$this->container["vars"] = new VarStoreUtil();
 
 	}
@@ -156,6 +157,28 @@ class App
 		}
 
 		return Util::resolveInstance($options, "controllers", $options, $this->container);
+
+	}
+
+    // -------------------------------------------------------------------------
+
+	/**
+	 * Create a default service manager.
+	 *
+	 * @return	Service manager.
+	 */
+	protected function loadServices()
+	{
+
+		$options = $this->container["settings"]["services"] ?? array();
+
+		// Set default class if none is set
+		if (!isset($options["className"]) && !isset($options["class"]))
+		{
+			$options["className"] = "Bitsmist\\v1\Services\PluginService";
+		}
+
+		return Util::resolveInstance($options, "services", $options, $this->container);
 
 	}
 
