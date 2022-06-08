@@ -152,7 +152,7 @@ class App
 		// Set default class if none is set
 		if (!isset($options["className"]) && !isset($options["class"]))
 		{
-			$options["className"] = "Bitsmist\\v1\Services\ServiceManager";
+			$options["className"] = "Bitsmist\\v1\Services\PluginService";
 		}
 
 		return Util::resolveInstance($options, "controllers", $options, $this->container);
@@ -207,7 +207,7 @@ class App
 	protected function loadResponse()
 	{
 
-		$options = $this->container["settings"]["response"];
+		$options = $this->container["settings"]["response"] ?? array();
 
 		// Set default class if none is set
 		if (!isset($options["className"]) && !isset($options["class"]))
