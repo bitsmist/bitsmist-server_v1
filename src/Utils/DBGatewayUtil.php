@@ -82,7 +82,7 @@ class DBGatewayUtil
 		{
 			$count = $totalCount = 0;
 			$items = null;
-			$fields = $this->getField($settings, null, $db->getOption("fields"));
+			$fields = $this->getField($settings, null, $db->getOption("fields"), ["keepEmptyField"=>true]);
 
 			switch ($id)
 			{
@@ -347,13 +347,14 @@ class DBGatewayUtil
 	/**
 	 * Get field parameter array from settings and URL parameters.
 	 *
-	 * @param	$settings		Search settings.
+	 * @param	$settings		Settings.
 	 * @param	$params			URL parameters.
 	 * @param	$dbSettings		DB specific search settings.
+	 * @param	$options		Options.
 	 *
 	 * @return	array			Parameter array.
 	 */
-	protected function getField($settings, $params, $dbSettings = null)
+	protected function getField($settings, $params, $dbSettings = null, $options = null)
 	{
 
 		$fieldSettings = Util::convertToAssocArray($this->options["fields"] ?? null);
@@ -366,7 +367,7 @@ class DBGatewayUtil
 
 		if ($fieldSettings)
 		{
-			return $this->buildFieldsFromSettings($fieldSettings, $params);
+			return $this->buildFieldsFromSettings($fieldSettings, $params, $options);
 		}
 		else
 		{
@@ -518,13 +519,15 @@ class DBGatewayUtil
 	 *
 	 * @param	$fields			Fields settings.
 	 * @param	$parameters		URL parameters.
+	 * @param	$options		Options.
 	 *
 	 * @return	array			Parameter array.
 	 */
-	private function buildFieldsFromSettings(?array $fields, ?array $parameters): array
+	private function buildFieldsFromSettings(?array $fields, ?array $parameters, $options): array
 	{
 
 		$result = array();
+		$keepEmptyField = $options["keepEmptyField"] ?? false;
 
 		foreach ((array)$fields as $key => $item)
 		{
@@ -538,7 +541,7 @@ class DBGatewayUtil
 				}
 			}
 
-			if (array_key_exists("value", (array)$item))
+			if ($keepEmptyField || array_key_exists("value", (array)$item))
 			{
 				$result[$key] = $item;
 			}
