@@ -86,7 +86,7 @@ class BaseLogger extends PluginBase
      * @param	$message
      * @param	$context
      */
-    public function log($level, $message, array $context = array())
+    public function log($level, $message, array $context = array()) : void
 	{
 	}
 

@@ -34,7 +34,7 @@ class FileLogger extends BaseLogger
      * @param	$message
      * @param	$context
      */
-    public function log($level, $message, array $context = array())
+    public function log($level, $message, array $context = array()) : void
 	{
 
 	    if ($this->priority[$level] >= $this->priority[$this->level]) {
